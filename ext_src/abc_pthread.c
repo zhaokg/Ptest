@@ -10,6 +10,7 @@
 #elif defined(MAC_OS)
 	#include <sys/param.h>
 	#include <sys/sysctl.h>
+   #include "abc_pthread.h"  // needed for cpu_set__t
 #elif defined(LINUX_OS) || defined(SOLARIS_OS)
    //https://docs.oracle.com/cd/E36784_01/html/E36874/sysconf-3c.html
 	#include <unistd.h> // needed for sysconf
@@ -126,7 +127,7 @@ int GetNumCores(void)  {
 }
 
 ////////////////////////////////////////////////////////////////////
-#if defined(_WIN32) || defined(WIN64_OS) ||  defined(MAC_OS)  || defined(SOLARIS_OS)
+#if defined(_WIN32) || defined(WIN64_OS) ||  defined(MAC_OS) 
 
 void  CPU_ZERO(cpu_set_t* cs) {
     cs->core_count = GetNumCores();

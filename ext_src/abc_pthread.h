@@ -5,8 +5,9 @@
 
 extern int GetNumCores(void);
 
-#if defined(_WIN32) || defined(WIN64_OS) ||  defined(MAC_OS)  || defined(SOLARIS_OS)
 ////////////////////////////////////////////////////////////////////
+#if defined(_WIN32) || defined(WIN64_OS) ||  defined(MAC_OS)   
+
 typedef struct cpu_set { 
         int        core_count; 
         uint64_t   core_mask[4]; 
@@ -17,8 +18,8 @@ extern void  CPU_SET(int num, cpu_set_t* cs);
 extern int   CPU_ISSET(int num, cpu_set_t* cs);
 extern int   CPU_get_first_bit_id(cpu_set_t* cs);
 
-////////////////////////////////////////////////////////////////////
 #endif
+////////////////////////////////////////////////////////////////////
  
 #if defined(WIN64_OS) || defined(WIN32_OS)
 
@@ -271,6 +272,10 @@ static INLINE int  pthread_create(pthread_t* tid, const pthread_attr_t* attr, vo
     #include <sys/processor.h>
     #include <sys/procset.h>
      
+    typedef  int cpu_set_t;
+    static inline void   CPU_ZERO(cpu_set_t* cs) { *cs = 0; }
+   static inline void   CPU_SET(int num, cpu_set_t* cs) { num = num % GetNumCores(); *cs = num; }
+
     static int sched_getaffinity(pthread_t pid, size_t cpu_size, cpu_set_t* cpu_set) {
        //https://github.com/tpapagian/mosbench/blob/c250c395fab356ab83413db43bf9844cb4f63d4f/micro/bench.c
         processorid_t obind;
