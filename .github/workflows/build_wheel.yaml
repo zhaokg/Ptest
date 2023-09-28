@@ -17,11 +17,24 @@ jobs:
         name: Install Python
         with:
              python-version: '3.7'
-      - name: Build wheels
+             
+      - name: Copy Project.toml 38 39
+        run: |            
+             cp  pyproject_np1.21.0_ma3839.toml  pyproject.toml       
+      - name: Build wheels3839
         uses: pypa/cibuildwheel@v2.16.1
         env:
           CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_BUILD: cp37-*  cp38-*
+          CIBW_BUILD: cp38-*  cp39-*
+          
+      - name: Copy Project.toml 310
+        run: |            
+             cp  pyproject_np1.21.3_miwma310.toml  pyproject.toml       
+      - name: Build wheels310
+        uses: pypa/cibuildwheel@v2.16.1
+        env:
+          CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_BUILD: cp310-* 
           
       - uses: actions/upload-artifact@v3
         with:
