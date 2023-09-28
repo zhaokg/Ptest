@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-11]
-        cibw_build: ["cp37-* cp38-* cp39-* cp310-* ]
+        cibw_build: ["cp37-* cp38-* "]
 
     steps:
       - uses: actions/checkout@v4
