@@ -3,39 +3,49 @@ name: Build
 on: [workflow_dispatch] # manual tigger
 
 jobs:
-  build_wheels_macos:
-    name: Build wheels on ${{ matrix.os }}
+  build_wheels:
+    name: Make ${{ matrix.os }} ${{ matrix.cibw_arch }} wheels
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
-        os: [macos-11]
-        cibw_build: ["cp37-* cp38-* "]
+        os: [windows-latest]
+        pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
+        exclude:
+          - os: ubuntu-latest
+            cibw_arch: aarch64            
+            cibw_build: "cp37-*"        
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        name: Install Python
+      - name: Install Python
+        uses: actions/setup-python@v4
         with:
              python-version: '3.7'
              
-      - name: Copy Project.toml 38 39
-        run: |            
-             cp  pyproject_np1.21.0_ma3839.toml  pyproject.toml       
-      - name: Build wheels3839
+      - if: startsWith(runner.os, 'Windows') && ( matrix.pybuild =="cp37-*" ||matrix.pybuild =="cp38-*")
+        shell: cmd
+        run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml       
+      - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =="cp39-*" 
+        shell: cmd
+        run:  copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
+      - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =="cp310-*" 
+        shell: cmd
+        run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml         
+      - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =="cp311-*" 
+        shell: cmd
+        run:  copy pyproject_np1.23.2_miwma311.toml  pyproject.toml  
+
+      - if: startsWith(runner.os, 'Windows')
+        run:  type  pyproject.toml 
+      
+      - name: Build wheels ....
         uses: pypa/cibuildwheel@v2.16.1
         env:
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_BUILD: cp38-*  cp39-*
+          #CIBW_ARCHS_MACOS:        x86_64 arm64
+          CIBW_BUILD:   ${{ matrix.pybuild }}            #cp38-*  cp39-*
           
-      - name: Copy Project.toml 310
-        run: |            
-             cp  pyproject_np1.21.3_miwma310.toml  pyproject.toml       
-      - name: Build wheels310
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_BUILD: cp310-* 
+ 
           
       - uses: actions/upload-artifact@v3
         with:
