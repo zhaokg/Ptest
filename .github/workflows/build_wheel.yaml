@@ -74,14 +74,16 @@ jobs:
         #     echo ${{ matrix.pybuild }} 
         run:  type  pyproject.toml    
 
-##################### LINUX ####################
+        ##################### LINUX ####################
+        ##################### LINUX ####################
+        
       - if: startsWith(runner.os, 'Linux')        
         run:    echo "ARCH_TARGET=x86_64 aarch64 " >>   $GITHUB_ENV        
         shell:  bash                               # cmd
  
  
       - if: startsWith(runner.os, 'Linux')
-        run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
+        run: cp  pyproject_np1.17.3_miw3738.toml  pyproject.toml
       - if: startsWith(runner.os, 'Linux')        
         uses: pypa/cibuildwheel@v2.16.1
         env:
@@ -90,7 +92,7 @@ jobs:
              CIBW_BUILD:   cp37-*  cp38-*        
    
       - if: startsWith(runner.os, 'Linux')     
-        run:  copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
+        run:  cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
       - if: startsWith(runner.os, 'Linux')        
         uses: pypa/cibuildwheel@v2.16.1
         env:
@@ -99,7 +101,7 @@ jobs:
              CIBW_BUILD:   cp39-* 
 
       - if: startsWith(runner.os, 'Linux')    
-        run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
+        run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
       - if: startsWith(runner.os, 'Linux')        
         uses: pypa/cibuildwheel@v2.16.1
         env:
@@ -108,7 +110,7 @@ jobs:
              CIBW_BUILD:   cp310-*    
 
       - if: startsWith(runner.os, 'Linux')      
-        run:  copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
+        run:  cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
       - if: startsWith(runner.os, 'Linux')        
         uses: pypa/cibuildwheel@v2.16.1
         env:
