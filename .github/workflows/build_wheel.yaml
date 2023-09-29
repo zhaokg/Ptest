@@ -28,6 +28,7 @@ jobs:
         shell: cmd
         run: |
              echo "PYVERSION=cp3dd-x" >> $GITHUB_ENV 
+             echo "::set-env name=PYVERSION::cp3dd-*"  
         
       - run:  echo $PYVERSION  
         shell: cmd
