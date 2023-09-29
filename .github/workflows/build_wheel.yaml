@@ -13,7 +13,7 @@ jobs:
         pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
         exclude:
           - os: ubuntu-latest
-            cibw_arch: aarch64            
+            #cibw_arch: aarch64            
             cibw_build: "cp37-*"        
 
     steps:
