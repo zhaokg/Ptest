@@ -38,10 +38,9 @@ jobs:
         run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
       - if: startsWith(runner.os, 'Windows')        
         uses: pypa/cibuildwheel@v2.16.1
-        shell: pwsh 
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64
+             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
       - if: startsWith(runner.os, 'Windows')     
@@ -51,7 +50,7 @@ jobs:
         shell: pwsh 
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64          
+             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64          
              CIBW_BUILD:   cp39-* 
 
       - if: startsWith(runner.os, 'Windows')    
@@ -61,7 +60,7 @@ jobs:
         shell: pwsh 
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64          
+             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64          
              CIBW_BUILD:   cp310-*    
 
       - if: startsWith(runner.os, 'Windows')      
@@ -71,7 +70,7 @@ jobs:
         shell: pwsh 
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64    
+             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64    
              CIBW_BUILD:   cp311-*              
              
       - if: startsWith(runner.os, 'Windows')   
@@ -81,10 +80,9 @@ jobs:
 
 ##################### LINUX ####################
       - if: startsWith(runner.os, 'Linux')        
-        run:    echo "ARCH_TARGET=x86_64" >>  $env:GITHUB_ENV        
-        shell:  pwsh                               # cmd
-      - run:  echo $env:ARCH_TARGET
-        shell: pwsh 
+        run:    echo "ARCH_TARGET=x86_64" >>   $GITHUB_ENV        
+        shell:  bash                               # cmd
+ 
  
       - if: startsWith(runner.os, 'Linux')
         run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
@@ -92,7 +90,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64
+             CIBW_ARCHS:   $ARCH_TARGET   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
       - if: startsWith(runner.os, 'Linux')     
@@ -101,7 +99,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64          
+             CIBW_ARCHS:   $ARCH_TARGET  #all, native AMD64 x86 ARM64          
              CIBW_BUILD:   cp39-* 
 
       - if: startsWith(runner.os, 'Linux')    
@@ -110,7 +108,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64          
+             CIBW_ARCHS:   $ARCH_TARGET   #all, native AMD64 x86 ARM64          
              CIBW_BUILD:   cp310-*    
 
       - if: startsWith(runner.os, 'Linux')      
@@ -119,6 +117,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   $env:ARCH_TARGET   #all, native AMD64 x86 ARM64    
+             CIBW_ARCHS:   $ARCH_TARGET   #all, native AMD64 x86 ARM64    
              CIBW_BUILD:   cp311-*                  
         
