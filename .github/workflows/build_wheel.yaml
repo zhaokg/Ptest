@@ -8,6 +8,8 @@ jobs:
   build_wheels:
     name: Make ${{ matrix.os }} wheels for  ${{ matrix.pybuild }}
     runs-on: ${{ matrix.os }}
+    env:
+      PYVERSION: "cp37-*"
     strategy:
       fail-fast: true
       matrix:
