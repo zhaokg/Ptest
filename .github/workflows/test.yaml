@@ -32,6 +32,6 @@ jobs:
         run:  echo $env:MY_ENV_VAR
         shell: pwsh 
         env:
-           MY_ENV_NEW_VAR: $MY_ENV_VAR
+           MY_ENV_NEW_VAR: ${{ env.MY_ENV_VAR }}
  
     
