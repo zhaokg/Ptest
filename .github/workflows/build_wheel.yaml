@@ -19,13 +19,13 @@ jobs:
             #pybuild: "cp37-*"        
 
     steps:
+ 
              
       #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
       - if: startsWith(runner.os, 'Windows')
         shell: cmd
         run: |
-             copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml 
-             echo "::set-env name=PYVERSION::cp3dxxx"
+             echo "::set-env name=PYVERSION::cp3dd-*"
         
       - run:  echo $PYVERSION
         
