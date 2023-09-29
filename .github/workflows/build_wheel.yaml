@@ -24,7 +24,7 @@ jobs:
              python-version: '3.7'
              
       #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
-     -  if: startsWith(runner.os, 'Windows')
+      - if: startsWith(runner.os, 'Windows')
         shell: cmd
         run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml 
         uses: pypa/cibuildwheel@v2.16.1
@@ -33,7 +33,7 @@ jobs:
              CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
-     -  if: startsWith(runner.os, 'Windows')     
+      - if: startsWith(runner.os, 'Windows')     
         run:  copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
         uses: pypa/cibuildwheel@v2.16.1
         env:
@@ -41,7 +41,7 @@ jobs:
              CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64             
              CIBW_BUILD:   cp39-* 
 
-     -  if: startsWith(runner.os, 'Windows')     
+      - if: startsWith(runner.os, 'Windows')    
         run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
         uses: pypa/cibuildwheel@v2.16.1
         env:
@@ -49,7 +49,7 @@ jobs:
              CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64             
              CIBW_BUILD:   cp310-*    
 
-     -  if: startsWith(runner.os, 'Windows')     
+      - if: startsWith(runner.os, 'Windows')      
         run:  copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
         uses: pypa/cibuildwheel@v2.16.1
         env:
@@ -57,7 +57,7 @@ jobs:
              CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64             
              CIBW_BUILD:   cp311-*              
              
-       - if: startsWith(runner.os, 'Windows')
+      - if: startsWith(runner.os, 'Windows')   
         run: |
              type  pyproject.toml 
              echo ${{ matrix.pybuild }}
