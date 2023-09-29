@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os:      [windows-latest]
+        os:      [ubuntu-latest]
         #pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
         #exclude:
         #  - os: ubuntu-latest
@@ -71,13 +71,12 @@ jobs:
              CIBW_BUILD:   cp311-*              
              
       - if: startsWith(runner.os, 'Windows')   
-        run: |
-             type  pyproject.toml 
-             echo ${{ matrix.pybuild }}
+        #     echo ${{ matrix.pybuild }} 
+        run:  type  pyproject.toml    
 
 ##################### LINUX ####################
       - if: startsWith(runner.os, 'Linux')        
-        run:    echo "ARCH_TARGET=x86_64" >>   $GITHUB_ENV        
+        run:    echo "ARCH_TARGET=x86_64 aarch64 " >>   $GITHUB_ENV        
         shell:  bash                               # cmd
  
  
@@ -116,4 +115,8 @@ jobs:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
              CIBW_ARCHS:   $ARCH_TARGET   #all, native AMD64 x86 ARM64    
              CIBW_BUILD:   cp311-*                  
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
         
