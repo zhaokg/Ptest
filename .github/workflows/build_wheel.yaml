@@ -23,7 +23,7 @@ jobs:
         with:
              python-version: '3.7'
              
-      - if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-'
+      - if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
         shell: cmd
         run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml       
       - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =='cp39-*' 
@@ -37,7 +37,8 @@ jobs:
         run:  copy pyproject_np1.23.2_miwma311.toml  pyproject.toml  
 
       - if: startsWith(runner.os, 'Windows')
-        run:  type  pyproject.toml 
+        run: type  pyproject.toml 
+        run: echo ${{ matrix.pybuild }}
       
       - name: Build wheels ....
         uses: pypa/cibuildwheel@v2.16.1
