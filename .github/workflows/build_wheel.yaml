@@ -22,7 +22,12 @@ jobs:
 
     steps:    
       #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
-      
+      - uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+             python-version: '3.7'
+             
       - if: startsWith(runner.os, 'Windows')        
         run:    echo "ARCH_TARGET=amd64" >>  $env:GITHUB_ENV        
         shell:  pwsh                               # cmd
@@ -30,7 +35,7 @@ jobs:
         shell: pwsh 
  
       - if: startsWith(runner.os, 'Windows')
-        run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
+        run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
       - if: startsWith(runner.os, 'Windows')        
         uses: pypa/cibuildwheel@v2.16.1
         env:
