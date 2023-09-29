@@ -88,7 +88,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   ${{env.ARCH_TARGET}}   #all, native AMD64 x86 ARM64
+             CIBW_ARCHS:   x86_64 aarch64   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
       - if: startsWith(runner.os, 'Linux')     
@@ -97,7 +97,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   ${{env.ARCH_TARGET}}  #all, native AMD64 x86 ARM64          
+             CIBW_ARCHS:   x86_64 aarch64  #all, native AMD64 x86 ARM64          
              CIBW_BUILD:   cp39-* 
 
       - if: startsWith(runner.os, 'Linux')    
@@ -106,7 +106,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   ${{env.ARCH_TARGET}}    #all, native AMD64 x86 ARM64          
+             CIBW_ARCHS:  x86_64 aarch64   #all, native AMD64 x86 ARM64          
              CIBW_BUILD:   cp310-*    
 
       - if: startsWith(runner.os, 'Linux')      
@@ -115,7 +115,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.1
         env:
              #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   ${{env.ARCH_TARGET}}   #all, native AMD64 x86 ARM64    
+             CIBW_ARCHS:  x86_64 aarch64   #all, native AMD64 x86 ARM64    
              CIBW_BUILD:   cp311-*                  
         
       - uses: actions/upload-artifact@v3
