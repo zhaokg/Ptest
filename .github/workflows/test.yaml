@@ -14,12 +14,12 @@ jobs:
       fail-fast: true
       matrix:
         os:      [ubuntu-latest, windows-latest]
-        pybuild: [ cp37-* ,  cp38-*   ]
+        pybuild: [ "cp37-*   cp38-*" ]
         exclude:
           - os: ubuntu-latest
-            pybuild: cp37-* cp38-*
-          - os: latest
-            pybuild: cp38-*            
+            pybuild: "cp37-*"
+          - os: windows-latest
+            pybuild: "cp38-*"            
         #include:
         #  - os:  macos_latest
                  
