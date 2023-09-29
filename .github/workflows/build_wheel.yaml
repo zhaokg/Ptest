@@ -37,8 +37,9 @@ jobs:
         run:  copy pyproject_np1.23.2_miwma311.toml  pyproject.toml  
 
       - if: startsWith(runner.os, 'Windows')
-        run: type  pyproject.toml 
-        run: echo ${{ matrix.pybuild }}
+        run: |
+             type  pyproject.toml 
+             echo ${{ matrix.pybuild }}
       
       - name: Build wheels ....
         uses: pypa/cibuildwheel@v2.16.1
