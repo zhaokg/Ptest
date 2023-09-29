@@ -1,0 +1,33 @@
+name: test
+on: [push, pull_request]
+#on: [workflow_dispatch] # manual tigger
+env:
+  WORKFLOW_VAR: workflow_variable 
+
+jobs:
+  build_wheels:
+    name: Make ${{ matrix.os }} wheels for  ${{ matrix.pybuild }}
+    runs-on: ${{ matrix.os }}
+    env:
+      JOB_VAR: "I am a job variable..."
+    strategy:
+      fail-fast: true
+      matrix:
+        os:      [ubuntu-latest, windows-latest]
+        pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
+        exclude:
+          - os: ubuntu-latest
+            pybuild: cp37-*
+        include:
+          - os:  macos_latest
+                 
+
+    steps:    
+            
+      - if: startsWith(runner.os, 'Windows') && matrix.pybuild == "cp37-*"      
+        run:    echo "MY_ENV_VAR=a quick test" >>  $env:GITHUB_ENV        
+        shell:  pwsh                               # cmd
+      - run:  echo $env:MY_ENV_VAR
+        shell: pwsh 
+ 
+    

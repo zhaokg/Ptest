@@ -1,8 +1,8 @@
+
 name: Build
-on: [push, pull_request]
-#on: [workflow_dispatch] # manual tigger
-#env:
-   #PYVERSION: "cp37-*"
+#on: [push, pull_request]
+on: [workflow_dispatch] # manual tigger
+
 
 jobs:
   build_wheels:
@@ -21,7 +21,7 @@ jobs:
             #pybuild: "cp37-*"        
 
     steps:    
-      #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
+      
       - uses: actions/checkout@v4
       - name: Install Python
         uses: actions/setup-python@v4
