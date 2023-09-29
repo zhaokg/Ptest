@@ -2,7 +2,7 @@ name: Build
 on: [push, pull_request]
 #on: [workflow_dispatch] # manual tigger
 env:
-   PYVERSION: "cp37-*"
+   #PYVERSION: "cp37-*"
 
 jobs:
   build_wheels:
