@@ -79,7 +79,7 @@ jobs:
         
       - if: startsWith(runner.os, 'Linux')        
         run:    echo "ARCH_TARGET=x86_64 aarch64 " >>   $GITHUB_ENV        
-        shell:  bash                               # cmd
+        #shell:  bash                               # cmd
  
  
       - if: startsWith(runner.os, 'Linux')
