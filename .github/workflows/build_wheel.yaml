@@ -4,7 +4,7 @@ on: [workflow_dispatch] # manual tigger
 
 jobs:
   build_wheels:
-    name: Make ${{ matrix.os }} ${{ matrix.cibw_arch }} wheels
+    name: Make ${{ matrix.os }} wheels for  ${{ matrix.pybuild }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
