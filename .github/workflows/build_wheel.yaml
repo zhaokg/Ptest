@@ -25,12 +25,12 @@ jobs:
       #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
       
       - if: startsWith(runner.os, 'Windows')
-        shell: cmd
+        shell:  pwsh #cmd
         run: |
              echo "PYVERSION=cp3dd-xyyy" >>  $env:GITHUB_ENV
  
         
       - run:  echo $env:PYVERSION
-        shell: cmd
+        shell: pwsh 
  
         
