@@ -9,12 +9,12 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [windows-latest]
-        pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
+        os:      [windows-latest]
+        #pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
         exclude:
           - os: ubuntu-latest
             #cibw_arch: aarch64            
-            pybuild: "cp37-*"        
+            #pybuild: "cp37-*"        
 
     steps:
       - uses: actions/checkout@v4
@@ -23,30 +23,45 @@ jobs:
         with:
              python-version: '3.7'
              
-      - if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
+      #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
+     -  if: startsWith(runner.os, 'Windows')
         shell: cmd
-        run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml       
-      - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =='cp39-*' 
-        shell: cmd
+        run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml 
+        uses: pypa/cibuildwheel@v2.16.1
+        env:
+             #CIBW_ARCHS_MACOS:        x86_64 arm64
+             CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64
+             CIBW_BUILD:   cp37-*  cp38-*        
+   
+     -  if: startsWith(runner.os, 'Windows')     
         run:  copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =='cp310-*'
-        shell: cmd
-        run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml         
-      - if: startsWith(runner.os, 'Windows') &&  matrix.pybuild =='cp311-*'
-        shell: cmd
-        run:  copy pyproject_np1.23.2_miwma311.toml  pyproject.toml  
+        uses: pypa/cibuildwheel@v2.16.1
+        env:
+             #CIBW_ARCHS_MACOS:        x86_64 arm64  AMD64 x86 ARM64
+             CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64             
+             CIBW_BUILD:   cp39-* 
 
-      - if: startsWith(runner.os, 'Windows')
+     -  if: startsWith(runner.os, 'Windows')     
+        run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
+        uses: pypa/cibuildwheel@v2.16.1
+        env:
+             #CIBW_ARCHS_MACOS:        x86_64 arm64
+             CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64             
+             CIBW_BUILD:   cp310-*    
+
+     -  if: startsWith(runner.os, 'Windows')     
+        run:  copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
+        uses: pypa/cibuildwheel@v2.16.1
+        env:
+             #CIBW_ARCHS_MACOS:        x86_64 arm64
+             CIBW_ARCHS:   AMD64 #all, native AMD64 x86 ARM64             
+             CIBW_BUILD:   cp311-*              
+             
+       - if: startsWith(runner.os, 'Windows')
         run: |
              type  pyproject.toml 
              echo ${{ matrix.pybuild }}
       
-      - name: Build wheels ....
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-          #CIBW_ARCHS_MACOS:        x86_64 arm64
-          CIBW_BUILD:   ${{ matrix.pybuild }}            #cp38-*  cp39-*
-          
  
           
       - uses: actions/upload-artifact@v3
