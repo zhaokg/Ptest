@@ -16,8 +16,7 @@ jobs:
         os:      [ubuntu-latest, windows-latest]
         pybuild: [ "cp37-*   cp38-*" ]
         exclude:
-          - os: ubuntu-latest
-            pybuild: [ "cp37-*   cp38-*" ]
+          - os: ubuntu-latest            
           - os: windows-latest
             pybuild: "cp38-*"            
         #include:
@@ -25,7 +24,7 @@ jobs:
                  
 
     steps:    
-            
+      #https://stackoverflow.com/questions/66733076/github-actions-set-environment-variable-for-windows-build-with-powershell     
       - if: startsWith(runner.os, 'Windows') && matrix.pybuild == 'cp37-*'
         run:    echo "MY_ENV_VAR=a quick test" >>  $env:GITHUB_ENV        
         shell:  pwsh                               # cmd
@@ -33,6 +32,6 @@ jobs:
         run:  echo $env:MY_ENV_VAR
         shell: pwsh 
         env:
-           MY_ENV_NEW_VAR: "$env:MY_ENV_VAR"
+           MY_ENV_NEW_VAR: $MY_ENV_VAR
  
     
