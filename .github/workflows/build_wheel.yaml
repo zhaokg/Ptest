@@ -19,13 +19,14 @@ jobs:
             #pybuild: "cp37-*"        
 
     steps:
- 
-             
+      #echo "::set-env name=PYVERSION::cp3dd-*"             
       #if: startsWith(runner.os, 'Windows') && ( matrix.pybuild=='cp37-*' ||matrix.pybuild =='cp38-' )
+      
       - if: startsWith(runner.os, 'Windows')
         shell: cmd
         run: |
-             echo "::set-env name=PYVERSION::cp3dd-*"
+             echo "PYVERSION=cp3dd-*" >> $GITHUB_ENV 
         
-      - run:  echo $PYVERSION
+      - run: echo $PYVERSION && echo "PYVERSION=cp3dd333-*" >> $GITHUB_ENV 
+      - run: echo $PYVERSION && echo "PYVERSION=cp3dd33xx3-*" >> $GITHUB_ENV 
         
