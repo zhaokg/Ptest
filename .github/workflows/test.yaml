@@ -25,7 +25,7 @@ jobs:
 
     steps:    
       #https://stackoverflow.com/questions/66733076/github-actions-set-environment-variable-for-windows-build-with-powershell     
-      - if: startsWith(runner.os, 'Windows') && matrix.pybuild == 'cp38-*'
+      - if: startsWith(runner.os, 'Windows') && matrix.pybuild == 'cp37-*'
         run:    echo "MY_ENV_VAR=a quick test" >>  $env:GITHUB_ENV        
         shell:  pwsh                               # cmd
       - if: startsWith(runner.os, 'Windows')
