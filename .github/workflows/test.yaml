@@ -24,7 +24,7 @@ jobs:
 
     steps:    
             
-      - if: startsWith(runner.os, 'Windows') && matrix.pybuild == "cp37-*"
+      - if: startsWith(runner.os, 'Windows') && (matrix.pybuild == "cp37-*")
         run:    echo "MY_ENV_VAR=a quick test" >>  $env:GITHUB_ENV        
         shell:  pwsh                               # cmd
       - run:  echo $env:MY_ENV_VAR
