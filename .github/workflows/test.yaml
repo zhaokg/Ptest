@@ -21,8 +21,7 @@ jobs:
             pybuild: "cp38-*"            
         #include:
         #  - os:  macos_latest
-                 
-
+ 
     steps:    
       #https://stackoverflow.com/questions/66733076/github-actions-set-environment-variable-for-windows-build-with-powershell     
       - if: startsWith(runner.os, 'Windows') && ${{ matrix.pybuild }} == 'cp37-*'
