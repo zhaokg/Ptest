@@ -222,6 +222,28 @@
 #endif
 
  
+// CHeck if it is the MUSL C library
+// https://stackoverflow.com/questions/58177815/how-to-actually-detect-musl-libc
+#if defined(GCC_COMPILER) || defined(CLANG_COMPILER)
+
+
+
+#endif
+
+
+#ifdef _GNU_SOURCE 
+	#include <features.h>
+	#ifndef __USE_GNU
+	    #define __MUSL__ 
+	#endif
+#else
+	#define _GNU_SOURCE
+	#include <features.h>
+	#ifndef __USE_GNU
+	#define __MUSL__ 
+	#endif
+	#undef _GNU_SOURCE /* don't contaminate other includes unnecessarily */
+#endif
 
 /* yes I know, the top of this file is quite ugly */
 #ifdef MSVC_COMPILER
