@@ -4,11 +4,11 @@ on: [push, pull_request]
 
 
 jobs:
-  build_wheels_linux:
+  build_wheels_linux_aarch64:
     name: Make ${{ matrix.os }} wheels  
     runs-on: ${{ matrix.os }}
     env:
-      arch: x86_64 #  aarch64
+      arch:   aarch64  #  aarch64 x86_64
       CIBW_SKIP:   '*-musllinux_*' 
       CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
     strategy:
@@ -16,24 +16,24 @@ jobs:
       matrix:
         os:      [ubuntu-latest]    
 
-    steps:       
+    steps:  
+    
       - uses: actions/checkout@v4
       - name: Install Python
         uses: actions/setup-python@v4
         with:
              python-version: '3.7'
  
-      - run: cp  pyproject_np1.17.3_miw3738.toml  pyproject.toml
-      - uses: pypa/cibuildwheel@v2.16.1
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*  
+       - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64    #all
    
       - run: cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
       - uses: pypa/cibuildwheel@v2.16.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp39-* 
+             CIBW_BUILD:   cp38-*  cp39-* 
              
       - run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
       - uses: pypa/cibuildwheel@v2.16.1
