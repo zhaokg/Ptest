@@ -4,15 +4,17 @@ on: [push, pull_request]
 
 
 jobs:
-  build_wheels_win:
+  build_wheels_linux:
     name: Make ${{ matrix.os }} wheels  
     runs-on: ${{ matrix.os }}
     env:
-      arch: AMD64 
+      arch: x86_64 #  aarch64
+      CIBW_SKIP:   '*-musllinux_*' 
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
     strategy:
       fail-fast: true
       matrix:
-        os:      [windows-latest]    
+        os:      [ubuntu-latest]    
 
     steps:       
       - uses: actions/checkout@v4
@@ -25,7 +27,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*        
+             CIBW_BUILD:   cp37-*  cp38-*  
    
       - run: copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
       - uses: pypa/cibuildwheel@v2.16.1
@@ -43,13 +45,11 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp311-*          
+             CIBW_BUILD:  cp311-*     
               
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
-
-
           
              
  
