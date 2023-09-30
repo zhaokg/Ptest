@@ -8,7 +8,7 @@ jobs:
     name: Make ${{ matrix.os }} wheels  
     runs-on: ${{ matrix.os }}
     env:
-      arch: amd64 
+      arch: AMD64 
     strategy:
       fail-fast: true
       matrix:
@@ -48,6 +48,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
+
 
           
              
