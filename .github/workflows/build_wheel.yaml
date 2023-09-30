@@ -1,124 +1,54 @@
-
 name: Build
-#on: [push, pull_request]
-on: [workflow_dispatch] # manual tigger
+on: [push, pull_request]
+#on: [workflow_dispatch] # manual tigger
 
 
 jobs:
-  build_wheels:
-    name: Make ${{ matrix.os }} wheels for  ${{ matrix.pybuild }}
+  build_wheels_win:
+    name: Make ${{ matrix.os }} wheels  
     runs-on: ${{ matrix.os }}
     env:
-      PYVERSION: "cp37-*"
+      arch: amd64 
     strategy:
       fail-fast: true
       matrix:
-        os:      [ubuntu-latest]
-        #pybuild: ["cp37-*", "cp38-*" ,"cp39-*"]
-        #exclude:
-        #  - os: ubuntu-latest
-            #cibw_arch: aarch64            
-            #pybuild: "cp37-*"        
+        os:      [windows-latest]    
 
-    steps:    
-      
+    steps:       
       - uses: actions/checkout@v4
       - name: Install Python
         uses: actions/setup-python@v4
         with:
              python-version: '3.7'
-             
-      - if: startsWith(runner.os, 'Windows')        
-        run:    echo "ARCH_TARGET=amd64" >>  $env:GITHUB_ENV        
-        shell:  pwsh                               # cmd
-      - run:  echo $env:ARCH_TARGET
-        shell: pwsh 
  
-      - if: startsWith(runner.os, 'Windows')
-        run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
-      - if: startsWith(runner.os, 'Windows')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64
+      - run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
+      - uses: pypa/cibuildwheel@v2.16.1
+        env:             
+             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
-      - if: startsWith(runner.os, 'Windows')     
-        run:  copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - if: startsWith(runner.os, 'Windows')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64          
+      - run: copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.1
+        env:             
+             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp39-* 
-
-      - if: startsWith(runner.os, 'Windows')    
-        run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - if: startsWith(runner.os, 'Windows')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64          
-             CIBW_BUILD:   cp310-*    
-
-      - if: startsWith(runner.os, 'Windows')      
-        run:  copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - if: startsWith(runner.os, 'Windows')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   AMD64   #all, native AMD64 x86 ARM64    
-             CIBW_BUILD:   cp311-*              
              
-      - if: startsWith(runner.os, 'Windows')   
-        #     echo ${{ matrix.pybuild }} 
-        run:  type  pyproject.toml    
-
-        ##################### LINUX ####################
-        ##################### LINUX ####################
-        
-      - if: startsWith(runner.os, 'Linux')        
-        run:    echo "ARCH_TARGET=x86_64 aarch64 " >>   $GITHUB_ENV        
-        #shell:  bash                               # cmd
- 
- 
-      - if: startsWith(runner.os, 'Linux')
-        run: cp  pyproject_np1.17.3_miw3738.toml  pyproject.toml
-      - if: startsWith(runner.os, 'Linux')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   x86_64     #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*        
-   
-      - if: startsWith(runner.os, 'Linux')     
-        run:  cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - if: startsWith(runner.os, 'Linux')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:   x86_64    #all, native AMD64 x86 ARM64          
-             CIBW_BUILD:   cp39-* 
-
-      - if: startsWith(runner.os, 'Linux')    
-        run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - if: startsWith(runner.os, 'Linux')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:  x86_64 aarch64   #all, native AMD64 x86 ARM64          
-             CIBW_BUILD:   cp310-*    
-
-      - if: startsWith(runner.os, 'Linux')      
-        run:  cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - if: startsWith(runner.os, 'Linux')        
-        uses: pypa/cibuildwheel@v2.16.1
-        env:
-             #CIBW_ARCHS_MACOS:        x86_64 arm64
-             CIBW_ARCHS:  x86_64 aarch64   #all, native AMD64 x86 ARM64    
-             CIBW_BUILD:   cp311-*                  
-        
+      - run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.1
+        env:             
+             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
+             CIBW_BUILD:    cp310-*
+              
+      - run: copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.1
+        env:             
+             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp311-*          
+              
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
-        
+
+          
+             
+ 

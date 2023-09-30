@@ -1,6 +1,6 @@
 name: test
-on: [push, pull_request]
-#on: [workflow_dispatch] # manual tigger
+#on: [push, pull_request]
+on: [workflow_dispatch] # manual tigger
 env:
   WORKFLOW_VAR: workflow_variable 
 
@@ -33,5 +33,15 @@ jobs:
         shell: pwsh 
         env:
            MY_ENV_NEW_VAR: ${{ env.MY_ENV_VAR }}
+           
+                 - if: startsWith(runner.os, 'Windows') && ${{ matrix.pybuild }} == 'cp37-*'
+        run:    echo "MY_ENV_VAR=a quick test" >>  $env:GITHUB_ENV        
+        shell:  pwsh                               # cmd
+        
+      - if: startsWith(runner.os, 'Linux')
+        run:    echo "MY_ENV_VAR=a quick test" >>  $GITHUB_ENV  
+      - run:  echo $MY_ENV_VAR 
+        if: startsWith(runner.os, 'Linux')      
+ 
  
     
