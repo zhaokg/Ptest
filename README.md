@@ -38,7 +38,7 @@ A package **`Rbeast`** has been deposited here at PyPI: https://pypi.org/project
   ```python
     pip install Rbeast
   ```
-  Currently, binary wheel files were built for Windows and macOS (x86_64 CPUs only). For other OS platforms or CPU architectures (e.g., arm64) or if the pre-built wheel doesn't work on your computer, please try to install from the source:
+  Currently, binary wheel files were built for common OS platforms and CPU architectures (e.g., Linux, Windows, and macOS for both x86_64 and arm64 CPUs). If the pre-built wheel doesn't work on your computer, please try to install from the source:
  
   ```python
   pip install Rbeast --no-binary :none:
