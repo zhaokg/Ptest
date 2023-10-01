@@ -27,7 +27,7 @@
 #define MKLRAND_LIBRARY 0
  
 //#define  R_RELEASE
-//#define  P_RELEASE
+#define  P_RELEASE
 //#define  M_RELEASE
 
 #ifdef R_RELEASE

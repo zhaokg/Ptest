@@ -39,7 +39,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.1
         env:             
              CIBW_ARCHS:  arm64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp39-*              
+             CIBW_BUILD:  cp38-*    cp39-*              
              
       - run: cp pyproject_np1.21.3_miwma310.toml pyproject.toml 
       - uses: pypa/cibuildwheel@v2.16.1

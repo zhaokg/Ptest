@@ -1136,7 +1136,7 @@ void  pow256_ps_ptr(F32PTR px, float n, F32PTR out) {
 
 
 ///////////////////////////////////////////////////////////////////////////
-#ifdef CLANG_COMPILER
+#if defined(CLANG_COMPILER) && !defined(ARM64_OS)
     //3pragma clang attribute push (__attribute__((target("avx,avx2"))), apply_to=function)
     #pragma clang attribute pop
 #endif

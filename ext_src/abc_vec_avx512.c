@@ -26,7 +26,8 @@
 
 ///////////////////////////////////////////////////////////////////////////
 //https://clickhouse.tech/codebrowser/html_report/ClickHouse/src/Functions/TargetSpecific.h.html
-#ifdef CLANG_COMPILER
+ 
+#if  defined(CLANG_COMPILER) && !defined(ARM64_OS) 
     #pragma clang optimize on
     //https://stackoverflow.com/questions/46165752/does-clang-have-something-like-pragma-gcc-target
    // #pragma clang attribute push (__attribute__((target("sse,sse2,sse3,ssse3,sse4,popcnt,avx,avx2"))), apply_to=function)
@@ -2459,7 +2460,7 @@ static char a = 'a';
 
 
 ///////////////////////////////////////////////////////////////////////////
-#ifdef CLANG_COMPILER
+#if defined(CLANG_COMPILER) && !defined(ARM64_OS)
     //pragma clang attribute push (__attribute__((target("avx,avx2"))), apply_to=function)
     #pragma clang attribute pop
 #endif

@@ -2504,7 +2504,7 @@ static char a = 'a';
 
 
 ///////////////////////////////////////////////////////////////////////////
-#ifdef CLANG_COMPILER
+#if defined(CLANG_COMPILER) && !defined(ARM64_OS)
     //pragma clang attribute push (__attribute__((target("avx,avx2"))), apply_to=function)
     #pragma clang attribute pop
 #endif

@@ -181,7 +181,9 @@
 //https://docs.scipy.org/doc/numpy-1.10.1/reference/c-api.array.html#miscellaneous
 
 /*
-Suppose I have two files coolmodule.c and coolhelper.c which need to be compiled and linked into a single extension module. Suppose coolmodule.c contains the required initcool module initialization function (with the import_array() function called). Then, coolmodule.c would have at the top:
+Suppose I have two files coolmodule.c and coolhelper.c which need to be compiled and linked into a
+single extension module. Suppose coolmodule.c contains the required initcool module initialization 
+function (with the import_array() function called). Then, coolmodule.c would have at the top:
 
 #define PY_ARRAY_UNIQUE_SYMBOL cool_ARRAY_API
 #include numpy/arrayobject.h
@@ -190,7 +192,8 @@ On the other hand, coolhelper.c would contain at the top:
 #define NO_IMPORT_ARRAY
 #define PY_ARRAY_UNIQUE_SYMBOL cool_ARRAY_API
 #include numpy/arrayobject.h
-You can also put the common two last lines into an extension-local header file as long as you make sure that NO_IMPORT_ARRAY is #defined before #including that file.
+You can also put the common two last lines into an extension-local header file as long as you make
+sure that NO_IMPORT_ARRAY is #defined before #including that file.
 */
 
 	#ifdef  IMPORT_NUMPY

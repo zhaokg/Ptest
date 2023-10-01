@@ -371,17 +371,19 @@ void avx_pcg_random_vec8_slow(local_pcg32_random_t* rng,U32PTR rnd, I32 N) {
 
 
 void SetupPCG_AVX2(void){
+
 	 local_pcg_set_seed = avx_pcg_set_seed;
 	 //local_pcg_random = avx_pcg_random;
 	 local_pcg_random=avx_pcg_random_with_internalbuf;
 	 local_pcg_print_state = avx_pcg_print_state;
  
 }
+
 #endif
 
 
 ///////////////////////////////////////////////////////////////////////////
-#ifdef CLANG_COMPILER
+#if defined(CLANG_COMPILER) && !defined(ARM64_OS)
     //pragma clang attribute push (__attribute__((target("avx,avx2"))), apply_to=function)
     #pragma clang attribute pop
 #endif
