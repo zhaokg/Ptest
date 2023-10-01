@@ -266,7 +266,7 @@ jobs:
              
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [build_wheels_mac, build_sdist]
+    needs: [  build_sdist , build_wheels_win, build_wheels_linux,build_wheels_linux_aarch64, build_wheels_musl_linux,   build_wheels_mac]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     steps:
