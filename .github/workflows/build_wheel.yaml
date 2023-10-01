@@ -20,7 +20,7 @@ jobs:
         with:
           path: ./dist/*.tar.gz
           
- build_wheels_mac:
+  build_wheels_mac:
     name: Make ${{ matrix.os }} wheels  
     runs-on: ${{ matrix.os }}
     env:
@@ -48,7 +48,7 @@ jobs:
           path: ./wheelhouse/*.whl		          
           
              
- upload_pypi:
+  upload_pypi:
     name: Upload to PyPI (prod)
     needs: [build_wheels_mac, build_sdist]
     runs-on: ubuntu-22.04
