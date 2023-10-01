@@ -20,5 +20,47 @@ jobs:
         with:
           path: ./dist/*.tar.gz
           
+ build_wheels_mac:
+    name: Make ${{ matrix.os }} wheels  
+    runs-on: ${{ matrix.os }}
+    env:
+      arch:   x86_64  #  aarch64 x86_64
+      CIBW_SKIP:   '*-musllinux_aarch64' 
+    strategy:
+      fail-fast: true
+      max-parallel: 5
+      matrix:
+        os:      [macos-latest]    
+
+    steps:  
+  
+      - uses: actions/checkout@v4
+  
+   
+      - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.1
+        env:             
+             CIBW_ARCHS:  arm64    #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp311-*  
              
- 
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl		          
+          
+             
+ upload_pypi:
+    name: Upload to PyPI (prod)
+    needs: [build_wheels_mac, build_sdist]
+    runs-on: ubuntu-22.04
+    #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@v1.5.0
+        with:
+          user: zhaokg
+          repository_url: https://test.pypi.org/legacy/
+          password: ${{ secrets.PYPI_PASSWORD }} 
