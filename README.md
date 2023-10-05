@@ -29,24 +29,12 @@ library(Rbeast); data(Nile); o = beast(Nile); plot(o)
 
 ## Installation for Python 
 
-<h2 id="abcc">aaaa</h2>h2>
+<h2 id="abcc">aaaa</h2>
 
 <p  align="left">   
  <a href= "https://github.com/zhaokg/Rbeast"> <img src="https://img.shields.io/static/v1?style=plastic&logo=github&label=see also&message=github.com/zhaokg/Rbeast&color=brightgreen" height="20"></a>
 </p> 
 
-A package **`Rbeast`** has been deposited here at PyPI: https://pypi.org/project/Rbeast/. Install from a binary wheel using:
  
-  ```python
-    pip install Rbeast
-  ```
-  Currently, binary wheel files were built for common OS platforms and CPU architectures (e.g., Linux, Windows, and macOS for both x86_64 and arm64 CPUs). If the pre-built wheel doesn't work on your computer, please try to install from the source:
- 
-  ```python
-  pip install Rbeast --no-binary :none:
-  ```
- The installation from sources requires a C/C++ compiler (e.g., gcc, and clang) to build the binary package, which should be hassle-free on Linux ( with gcc) or Mac (with clang or xcode) and may be tricky on Windows systems. If needed, contact Kaiguang Zhao (zhao.1423@osu.edu) to help build the package for your specific OS platforms and Python versions.
-
- ## Run and test Rbeast in Python
 
  
