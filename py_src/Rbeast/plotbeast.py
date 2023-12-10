@@ -562,7 +562,7 @@ def plot_o(h, ytitle, has, clr, x, t, t2t, Y, CI ):
     # points( t,   Y,    type = 'l',col='#333333');
     # TypeError: stem() got an unexpected keyword argument 'use_line_collection'
     # https://matplotlib.org/3.1.0/api/_as_gen/matplotlib.pyplot.stem.html
-    if version >= '3.3':
+    if version < '3.3': # the sign direction changed thanks to KBodolai 
          h.stem( t, Y,  linefmt='-', markerfmt=None ,use_line_collection=True)
     else: 
          h.stem( t, Y,  linefmt='-', markerfmt=None)
@@ -573,7 +573,7 @@ def plot_oprob(h, ytitle, has, clr, x, t, t2t, Prob1, Prob, ncp, cp):
     #% plot(c(t2t[1], t2t), c(0.22, Prob1), type='n', ann=FALSE, xaxt='n', yaxt='n');
    #   # polygon(t2t, Prob1, col  = rgb(col[1],col[2],col[3],alpha), border = NA);
    #    # points( t,   Prob,  col  = rgb(col[1],col[2],col[3])  ,       lwd = 1,type = 'l' );
-    if version >= '3.3':
+    if version <  '3.3':  # the sign direction changed thanks to KBodolai 
          h.stem(t, Prob,  linefmt='-', markerfmt=None,use_line_collection=True)
     else: 
          h.stem(t, Prob,  linefmt='-', markerfmt=None)
@@ -582,7 +582,7 @@ def plot_oprob(h, ytitle, has, clr, x, t, t2t, Prob1, Prob, ncp, cp):
 def plot_error(h, ytitle, has, clr, x, t, t2t, Yerr):
     #% plot(t, Yerr, type='n', ann=FALSE, xaxt='n', yaxt='n');
     h.plot(t, t - t, color=clr);
-    if version >= '3.3':
+    if version < '3.3':  # the sign direction changed thanks to KBodolai 
          h.stem(t, Yerr, linefmt='-', markerfmt=None,use_line_collection=True)
     else: 
          h.stem(t, Yerr, linefmt='-', markerfmt=None)

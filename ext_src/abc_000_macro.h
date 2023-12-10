@@ -14,7 +14,7 @@
  
 // file externsion: .mexw64 for Matlab, .pyd for Pyhton
 
-#define R_INTERFACE  1
+#define R_INTERFACE   0
 #define M_INTERFACE   0
 #define P_INTERFACE    0
 /*------------------------------------------------------------*/

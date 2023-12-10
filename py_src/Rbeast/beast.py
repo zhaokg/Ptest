@@ -1,17 +1,22 @@
 from .             import Rbeast as cb
 from .cvt_to_numpy import force_convert_to_numpy
 
-def beast(Y, \
-          start          = 1,
-          deltat         = 1,
-          season         = 'harmonic',  # 'harmonic','dummy','svd','none'
-          period         = float('nan'),
-          scp_minmax     = [0, 10],
-          sorder_minmax  = [0, 5],
-          sseg_minlength = None,  # an integer
-          tcp_minmax     = [0, 10],
-          torder_minmax  = [0, 1],
-          tseg_minlength = None,  # an integer
+def beast(Y,                     \
+          start            = 1,
+          deltat           = 1,
+          season           = 'harmonic',  # 'harmonic','dummy','svd','none'
+          period           = float('nan'),
+          scp_minmax       = [0, 10], # the min and max numbers of seasonal changepoints
+          sorder_minmax    = [0, 5],
+          sseg_minlength   = None,       # an integer
+          sseg_leftmargin  = None,       # an integer
+          sseg_rightmargin = None,       # an integer
+          tcp_minmax       = [0, 10],    # the min and max numbers of trend changepoints
+          torder_minmax    = [0, 1],
+          tseg_minlength   = None,  # an integer
+          tseg_leftmargin  = None,  # an integer
+          tseg_rightmargin = None,  # an integer
+          method           = 'bayes', # 'bayes','bic','aic','aicc','hic'
           detrend        = False,
           deseasonalize  = False,
           mcmc_seed      = 0,
@@ -31,11 +36,21 @@ def beast(Y, \
           **kwargs
           ):
       """
+      
+      
 ################################################################################################
-Bayesian changepoint detection and time series decomposition for a regular 1D signal or time series
+ Bayesian changepoint detection and time series decomposition for regular or irregular time series data
     
-Y = trend + error is fitted if the data has no periodic/seasonal variation (i.e., season='none')
-Y = trend + seasonal + error is fitted if the data has  no periodic/seasonal variation 
+   The fitted model is:
+	 Y= trend + error             if data has no periodic/seasonal variation (i.e., season='none')
+     Y= trend + seasonal + error  if data has periodic/seasonal variation 
+     Y= trend + outlier  + error  if data is trend-only (no seasonal variation) but with potential outliers
+     Y= trend + seasonal + outlier + error if data has periodic/seasonal variation and also has outliers
+   where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
+   be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
+   be inferred; and the outlier component refers to potential pikes or dips at isolated data points and is included
+   only if metadata.hasOutlierCmpnt=True (in beast123) or hasOutlier=True (in beast or beast_irreg)
+  
 
  *Quick Examples*:
 --------------------------------------------------------------------------------------------------
@@ -72,7 +87,7 @@ start:
 deltat: 
          a number or string; the time interval between consecutive datapoints.. Use a string to specify the time unit
          (e.g., '1/12 year', '1.0 month', '30 days'). Possile units are year,
-freq:  Deprecated. Replaced with 'period'. See below
+freq:    Deprecated. Replaced with 'period'. See below
 period:  
          a number or string to specify the period if peridodic/seasonal variations 
          are present in the data. If period is given a zero, negative value or 'none' 
@@ -83,10 +98,10 @@ period:
          if any, should be consistent with the unit of 'deltat'. If given as a string,
          the unit of period needs to be expicilty specified (e.g., '1 year', '12 mon', '365 days')
 season: 
-         a string specifier. Possible values - 'none':  trend-only data with no 
-         seasonality; 'harmonic': the seasonal/peridoic  component modelled via 
-         harmonic curves; 'dummy': the seasonal component  modelled via a dummy 
-         basis (i.e., pulse-like bases); 'svd': svd-derived  bases (experimental 
+         a string specifier. Possible values - (1) 'none':  trend-only data with no 
+         seasonality; (2)'harmonic': the seasonal/peridoic  component modelled via 
+         harmonic curves; (3)'dummy': the seasonal component  modelled via a dummy 
+         basis (i.e., pulse-like bases); (4)'svd': svd-derived  bases (experimental 
          feature)
 scp_minmax: 
          a vector of two integers (e.g.,[0,5]); the min and max number of
@@ -94,25 +109,54 @@ scp_minmax:
 sorder_minmax: 
          a vector of two integers (e.g.,[1,3]); the min and max harmonic orders of
          seasonal changepoints (scp) allowed
-sseg_min: 
+sseg_minlength: 
          an integer; the min length of the segment for the seasonal component 
          i.e., the min distance between neighorbing changepoints)
+sseg_leftmargin: 
+         an integer;  the number of leftmost data points excluded for seasonal changepoint detection.
+         That is,  no changepoints are allowed in the starting window/segment of length sseg_leftmargin. 
+         sseg_leftmargin must be an unitless integer–the number of time intervals/data points so that the
+         time window in the original unit is sseg_leftmargin*deltat. If missing, sseg_leftmargin defaults
+         to the minimum segment length 'sseg_min'
+sseg_rightmargin: 
+         an integer;  the number of rightmost data points excluded for seasonal changepoint detection.
+         That is,  no changepoints are allowed in the ending window/segment of length sseg_rightmargin. 
+         sseg_rightmargin must be an unitless integer–the number of time intervals/data points so that the
+         time window in the original unit is sseg_rightmargin*deltat. If missing, sseg_rightmargin defaults
+         to the minimum segment length 'sseg_min'		 
 tcp_minmax: 
-         a vector of two integers (e.g.,[0,5]); the min and max number of
+         a vector of two integers (e.g.,[0,5]); the min and max numbers of
          trend changepoints (tcp) allowed
 torder_minmax: 
          a vector of two integers (e.g.,[1,3]); the min and max orders of
          polynomials used to model the trend
-tseg_min: 
+tseg_minlength: 
          an integer; the min length of the segment for the trend component (i.e.,
-         the min distance between neighorbing changepoints)%
+         the min distance between neighorbing changepoints)
+tseg_leftmargin: 
+         an integer;  the number of leftmost data points excluded for trend changepoint detection.
+         That is,  no trend changepoints are allowed in the starting window/segment of length tseg_leftmargin. 
+         tseg_leftmargin must be an unitless integer–the number of time intervals/data points so that the
+         time window in the original unit is tseg_leftmargin*deltat. 
+tseg_rightmargin: 
+         an integer;  the number of rightmost data points excluded for trend changepoint detection.
+         That is,  no trend changepoints are allowed in the ending window/segment of length tseg_rightmargin. 
+         tseg_rightmargin must be an unitless integer–the number of time intervals/data points so that the
+         time window in the original unit is tseg_rightmargin*deltat.
+method: 
+         a string to specify the method used to formulat model posterior probability.
+         Possible values are
+         (1) 'bayes': the full Bayesian formulation (this is the default)  
+         (2)'bic': approximation of posterior probability using the Bayesian information criterion (bic)
+         (3)'aic': approximation of posterior probability using the Akaike information criterion (aic)
+         (4)'aicc': approximation of posterior probability using the corrected Akaike information criterion (aicc)
+         (5)'hic': approximation of  posterior probability using the Hannan–Quinn information criterion  (hic)
 deseasonalize: 
-         boolean; if true, the input time series will be first
-         de-seasonalized before applying beast by removing a global seasonal 
-         component
+         boolean; if true, the input time series will be first de-seasonalized before applying
+         beast by removing a global seasonal component
 detrend: 
-         boolean; if true, the input time series will be first
-         de-trend before applying beast by removing a global trend %
+         boolean; if true, the input time series will be first de-trend before applying 
+         beast by removing a global trend  
 mcmc_seed: 
          a seed for the random number generator; set it to a non-zero
          integer to reproduce the results among different runs
@@ -123,13 +167,19 @@ mcmc_thin:
 mcmc_burnin: 
          the number of initial samples of each chain to be discarded
 mcmc_chains: 
-         the number of MCMC chains%
+         the number of MCMC chains 
 print_progress: 
          boolean; if true, a progress bar is shown
 print_options: 
          boolean; if true, print the beast paramers. 
 quiet:
          boolean; if true, supress all the messages and printing
+hasOutlier:
+        boolean; if true, the model with an outlier component ( Y = trend + outlier + error if season='none') 
+		or Y = trend+season+outlier+error) will be fitted.
+ocp_max:
+        integer; needed only if hasOutlier=True to specify the maximum number of outliers (i.e., 
+        outlier-type changepoints) allowed in the time series
 gui: 
         boolean; if true, show a gui to demostrate the MCMC sampling; runs only 
         on Windows not Linux or MacOS
@@ -297,11 +347,18 @@ at zhao.1423@osu.edu.
             prior.seasonMinKnotNum = scp_minmax[0]
             prior.seasonMaxKnotNum = scp_minmax[1]
             prior.seasonMinSepDist = sseg_minlength
+            prior.seasonLeftMargin  = sseg_leftmargin
+            prior.seasonRightMargin = sseg_rightmargin
       prior.trendMinOrder	  = torder_minmax[0]
       prior.trendMaxOrder	  = torder_minmax[1]
-      prior.trendMinKnotNum  = tcp_minmax[0]
-      prior.trendMaxKnotNum  = tcp_minmax[1]
-      prior.trendMinSepDist  = tseg_minlength
+      prior.trendMinKnotNum   = tcp_minmax[0]
+      prior.trendMaxKnotNum   = tcp_minmax[1]
+      prior.trendMinSepDist   = tseg_minlength
+      prior.trendLeftMargin   = tseg_leftmargin
+      prior.trendRightMargin  = tseg_rightmargin      
+      if hasOutlier:
+            prior.outlierMaxKnotNum = ocp_max
+      
       prior.K_MAX            = 500
       prior.precValue        = precValue
       prior.precPriorType    = precPriorType
@@ -350,7 +407,6 @@ at zhao.1423@osu.edu.
         #class xxx:
         #   pass
         #module.setClassObjects(xxx)      
-        o = cb.Rbeast('beastv4',Y, metadata, prior, mcmc, extra)      
+        o = cb.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra)      
       return (o)
-
 

@@ -23,6 +23,8 @@ extern int   CPU_get_first_bit_id(cpu_set_t* cs);
  
 #if defined(WIN64_OS) || defined(WIN32_OS)
 
+#include "stdlib.h"  // needed for free() in pthread_attr_destroy()
+
 //https://stackoverflow.com/questions/13828913/mingw-gcc-not-recognizing-memstatusex
 //https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers?redirectedfrom=MSDN
 
@@ -115,15 +117,27 @@ static INLINE int pthread_attr_init(pthread_attr_t * attr) {
     attr->lpAttributeList   = NULL;
     attr->sizeAttributeList = 0;
 
-#ifdef WIN64_OS    
-    // stackoverflow.com/questions/25472441/pthread-affinity-before-create-threads
-    DWORD  attributeCounts = 1L;
-    SIZE_T size;
-    if ( InitializeProcThreadAttributeList(NULL, attributeCounts, 0, &size) || GetLastError() == ERROR_INSUFFICIENT_BUFFER) 
-    {      
-       attr->sizeAttributeList  = size;
-       // Get the size of the mem needed for attributeLists
-       // The actual allocation will be done in pthread_setaffinity_np
+    #ifdef WIN64_OS    
+        // stackoverflow.com/questions/25472441/pthread-affinity-before-create-threads
+        DWORD  attributeCounts = 1L;
+        SIZE_T size;
+        if ( InitializeProcThreadAttributeList(NULL, attributeCounts, 0, &size) || GetLastError() == ERROR_INSUFFICIENT_BUFFER) 
+        {      
+           attr->sizeAttributeList  = size;
+           // Get the size of the mem needed for attributeLists
+           // The actual allocation will be done in pthread_setaffinity_np
+        }
+    #endif
+    return 0;
+}
+
+static INLINE  int pthread_attr_destroy(pthread_attr_t* attr) {
+// This function was defined in Rtools' : C:/RBuildTools/4.2/x86_64-w64-mingw32.static.posix/lib/libpthread.a(libwinpthread_la-thread.o
+#ifdef WIN64_OS
+    if (attr->lpAttributeList != NULL) {
+        DeleteProcThreadAttributeList(attr->lpAttributeList);
+        free(attr->lpAttributeList);
+        //lpAttributeList is allocated in pthread_attr_setaffinity_np().
     }
 #endif
     return 0;
@@ -162,8 +176,8 @@ static INLINE int         pthread_join(pthread_t thread, void **retvalue_ptr) {
   //Even after the thread exited - its handle is valid. You can for instance query its return value
 	WaitForSingleObject(thread, INFINITE);
     if (retvalue_ptr) {
-        //https://stackoverflow.com/questions/7100441/how-can-you-get-the-return-value-of-a-windows-thread
-        GetExitCodeThread(thread, retvalue_ptr);
+        //https:// stackoverflow.com/questions/7100441/how-can-you-get-the-return-value-of-a-windows-thread
+        GetExitCodeThread(thread, (LPDWORD) retvalue_ptr);
     }
 	CloseHandle(thread);
     return 0;

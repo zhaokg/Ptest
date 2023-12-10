@@ -1,22 +1,42 @@
 from . import Rbeast as cb
-from .cvt_to_numpy import force_convert_to_numpy
-#Y = force_convert_to_numpy(Y)
+from .cvt_to_numpy import force_convert_to_numpy  ### Y = force_convert_to_numpy(Y)
 
-def beast123(Y, metadata=None, prior=None, mcmc=None, extra=None ):
-
+def beast123( Y,                  # Y can be 1D (one time series), 2D (many ts), or 3D (stacked images)
+              metadata = None,    # an object with many fields to describe Y 
+              prior    = None,    # an object with many fields to specify the bayesian model
+              mcmc     = None,    # an object to specify the MCMC simulation parameters 
+              extra    = None,    # an object to specify the outputs 
+              method   = 'bayes', # 'bayes','bic','aic','aicc','hic'
+             ):
       """
+   
+   
 ################################################################################################
  Bayesian changepoint detection and time series decomposition for regular or irregular time series data
     
-    Y = trend + error            is fitted if the data has no periodic/seasonal variation (i.e., season='none')
-    Y = trend + seasonal + error is fitted if the data has  no periodic/seasonal variation 
+   The fitted model is:
+	 Y= trend + error             if data has no periodic/seasonal variation (i.e., season='none')
+     Y= trend + seasonal + error  if data has periodic/seasonal variation 
+     Y= trend + outlier  + error  if data is trend-only (no seasonal variation) but with potential outliers
+     Y= trend + seasonal + outlier + error if data has periodic/seasonal variation and also has outliers
+   where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
+   be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
+   be inferred; and the outlier component refers to potential pikes or dips at isolated data points and is included
+   only if metadata.hasOutlierCmpnt=True (in beast123) or hasOutlier=True ( in beast or beast_irreg)
 
-*Important Note*:
+
+*Note*:
 --------------------------------------------------------------------------------------------------
-    Currently, the BEAST algorithm is implemented to handle only regular time series for computational advantages.
-    The function 'beast_irreg' accepts irregular time series but internally it aggregates them into regular ones
-    prior to applying the BEAST model. For the aggregation, both the "time" and "deltat" args are needed
-    to specify indvidial times of data points and the regular time interval desired. 
+    (1) beast123() is an all-inclusive function that duplicates the functionalities of beast() 
+     and beast_irreg(). beast123() can handle a single, multiple, or 3D stacked time series, being
+     either regular or irregular.  beast123() internally supports parallel computing if the input is mutliple time
+     series or stacked time series images. It allows for customization through four object argumentsa: metadata,
+     prior, mcmc, and extra.
+
+    (2) Currently, the BEAST algorithm is implemented to handle regular time series purely for computational 
+    advantages. The function 'beast_irreg' does accept irregular time series but internally it still 
+    aggregates them into regular ones prior to applying the BEAST model. For the aggregation, both the "time"
+    and "deltat" args are needed to specify indvidial times of data points and the regular time interval desired. 
 
 *Quick Examples*:
 --------------------------------------------------------------------------------------------------
@@ -45,15 +65,19 @@ rb.plot(o)
  
      |> metadata <| a struct variable specifying metadata for the input Y 
 
-     metadata.isRegularOrdered : Deprecated. Now use 'startTime' and 'deltaTime' to 
-                                 specify times for evenly-spaced data, and use 'time' to
-                                 provide times of individual data points for
-                                 irregular or regular data
-
-     metadata.season           : a string specifier. 'none' - trend-only  data,
-                                 'harmonic' - harmonic model for the seasonal component,     
-                                 'dummy' - dummy model for the seasonal component     
-     metadata.period           : the period of the seasonal/periodic  comonent
+     metadata.season           : a string specifier about the seasonal component. Possible values are
+	                             (1) 'none' - trend-only data with no seasonlity or periodic variation,
+                                 (2) 'harmonic' - harmonic model for the seasonal component,     
+                                 (3) 'dummy' - dummy model for the seasonal component     
+                                 (4) 'svd': (experimental feature) the same as 'harmonic' except that the 
+                                  periodic/seasonal component is modeled as a linear combination of function 
+                                  bases derived from a Single-value decomposition. The SVD-based basis functions 
+                                  are more parsimonious than the harmonic sin/cos bases in parameterizing the 
+                                  seasonal variations; therefore, more subtle changepoints are likely to be detected.
+     metadata.period           : the period of the seasonal/periodic component
+     metadata.isRegularOrdered : Deprecated. Now use 'metadata.startTime' and ' metadata.deltaTime' to 
+                                 specify times for evenly-spaced data, and use ' metadata.time' to
+                                 provide times of individual data points for irregular or regular data	 
      metadata.startTime        : the start time of regular input
      metadata.deltaTime        : the time interval between consecutive data
                                  points. For regular time seires, it
@@ -61,45 +85,64 @@ rb.plot(o)
                                  for irregular time series, deltaTime
                                  specifies the interval at which the
                                  irregular input is aggregated/resampled
-     metadata.time             : for irregular inputs only, specify the
-                                 individual times of data points. Both
-                                 string and numeric vectors are allowed,
-                                 check rdrr.io/cran/Rbeast/man/beast123.html
+     metadata.time             : for irregular inputs (or regular or unordered data), specify 
+                                 the individual times of data points. Bothstring and numeric vectors
+                                 are allowed, check rdrr.io/cran/Rbeast/man/beast123.html
                                  for more details.
-     metadata.whichDimIsTime   : which dim of the 2D or 3D input refer to
-                                 time
+     metadata.whichDimIsTime   : which dim of the 2D or 3D input refer to time
      metadata.missingValue     : a value indicating bad/missing data
-     metadata.maxMissingRate   : the max missingness rate beyond which the
-                                 ts will be ignored
-     metadata.deseasonalize    : if true, the input ts is first
-                                de-seasonalize by removing a global seasonal
-                                component, prior to applying BEAST
-     metadata.detrend          : if true, the input ts is first
-                                de-trended by removing a global trend 
-                                component, prior to applying BEAST
+     metadata.maxMissingRate   : the max missingness rate beyond which the ts will be ignored
+     metadata.deseasonalize    : if true, the input ts is first de-seasonalize by removing a global 
+                                seasonal component, prior to applying BEAST
+     metadata.detrend          : if true, the input ts is first de-trended by removing
+                                 a global trend component, prior to applying BEAST
+     metadata.hasOutlierCmpnt  : boolean; if true, the model with an outlier component.
+                                 Y = trend + outlier + error if season='none' or
+                                 Y = trend+season+outlier+error will be fitted.
+								 
  
     |> prior <|  prior hyperparameter for the BEAST model
-    
- 
-     prior.seasonMinOrder  : min harmonic order considered for the seasonal
-                           compnt
-     prior.seasonMaxOrder  : max harmonic order considered for the seasonal
-                           compnt
-     prior.seasonMinKnotNum : min number of seasonal changepints allowed
-     prior.seasonMaxKnotNum : max number of seasonal changepints allowed
+  
+     prior.seasonMinOrder  : min harmonic order considered for the seasonal compnt
+     prior.seasonMaxOrder  : max harmonic order considered for the seasonal compnt
+     prior.seasonMinKnotNum : min number of seasonal changepoints allowed
+     prior.seasonMaxKnotNum : max number of seasonal changepoints allowed
      prior.seasonMinSepDist : the min segment length of a seaosnal segment
                              (i.e, the min seperation distance between
                              neighorboring seasonal changepoints)
-     prior.trendMinOrder	   : min polyonimal order considered for the trend
-                           compnt
-     prior.trendMaxOrder	   : max polyonimal order considered for the trend
-                           compnt
+     prior.seasonLeftMargin:  an integer;  the number of leftmost data points excluded for 
+	                         seasonal changepoint detection. That is,  no seasonal changepoints are allowed in 
+	                         the starting window/segment of length seasonLeftMargin. seasonLeftMargin must
+	                         be an unitless integer–the number of time intervals/data points so that the
+	                         time window in the original unit is seasonLeftMargin*deltat. If missing,
+	                         seasonLeftMargin defaults to the minimum segment length 'seasonMinSepDist'
+     prior.seasonRightMargin:  an integer;  the number of rightmost data points excluded for 
+	                         seasonal changepoint detection. That is,  no changepoints are allowed in 
+	                         the ending window/segment of length seasonRightMargin. seasonRightMargin must
+	                         be an unitless integer–the number of time intervals/data points so that the
+	                         time window in the original unit is seasonRightMargin*deltat. If missing,
+	                         seasonRightMargin defaults to the minimum segment length 'seasonMinSepDist'
+     prior.trendMinOrder	: min polyonimal order considered for the trend compnt
+     prior.trendMaxOrder	: max polyonimal order considered for the trend compnt
      prior.trendMinKnotNum  : min number of trend changepints allowed
      prior.trendMaxKnotNum  : max number of trend changepints allowed
-     prior.trendMinSepDist  : the min segment length of a trend segment
-                             (i.e, the min seperation distance between
-                             neighorboring trend changepoints)
- 
+     prior.trendMinSepDist  : the min segment length of a trend segment(i.e, the min seperation distance
+                             between any two neighorboring trend changepoints)
+     prior.trendLeftMargin:  an integer;  the number of leftmost data points excluded for 
+	                         trend changepoint detection. That is,  no trend changepoints are allowed in 
+	                         the starting window/segment of length trendLeftMargin. trendLeftMargin must
+	                         be an unitless integer–the number of time intervals/data points so that the
+	                         time window in the original unit is trendLeftMargin*deltat. If missing,
+	                         trendLeftMargin defaults to the minimum segment length 'trendMinSepDist'
+     prior.trendRightMargin:  an integer;  the number of rightmost data points excluded for 
+	                         trend changepoint detection. That is,  no trend changepoints are allowed in 
+	                         the ending window/segment of length trendRightMargin. trendRightMargin must
+	                         be an unitless integer–the number of time intervals/data points so that the
+	                         time window in the original unit is trendRightMargin*deltat. If missing,
+	                         trendRightMargin defaults to the minimum segment length 'trendMinSepDist'							 
+    prior.outlierMaxKnotNum : an integer; needed only if meta.hasOutlierCmpnt=True to specify the maximum 
+                             number of outliers (i.e., outlier-type changepoints) allowed in the time series	 
+
      |> mcmc <|    parameters to set up the MCMC sampler
  
      mcmc.seed             : the seed for the random number generator            
@@ -153,7 +196,15 @@ rb.plot(o)
                                  concurrent threads per cpu core
      extra.numParThreads        : specify the number of total concurrent
                                 threads
-
+     |> method <|  a string specifier of the method for formulating model posterior probability.
+          Possible values are 
+         (1) 'bayes': the full Bayesian formulation (this is the default)  
+         (2)'bic': approximation of posterior probability using the Bayesian information criterion (bic)
+         (3)'aic': approximation of posterior probability using the Akaike information criterion (aic)
+         (4)'aicc': approximation of posterior probability using the corrected Akaike information criterion (aicc)
+         (5)'hic': approximation of  posterior probability using the Hannan–Quinn information criterion  (hic)
+         
+		 
      *Note*:
     --------------------------------------------------------------------------------------------------
      beast, beast_irreg, and beast123 calls the same dll extension library written in C/C++
@@ -201,7 +252,7 @@ Examples:
 --------------------------------------------------------------------------------------------------
 import Rbeast as rb
 
-Nile, year=rb.load_example('Nile')   # Nile river annual streamflow: trend-only data
+Nile, year = rb.load_example('Nile')   # Nile river annual streamflow: trend-only data
 metadata   = rb.args()       # an empty object to suff more attribute fields
 metadata.season    = 'none'  # trend-only
 metadata.startTime = 1871;
@@ -223,7 +274,7 @@ rb.print(o)
 rb.plot(o, ncpStat='median')       
  
 ohio.datestr1   # strings of times for ohio.ndvi
-metadata = lambda:None
+metadata              = lambda:None
 metadata.time         = rb.args( dateStr=ohio.datestr1, strFmt='????yyyy?mm?dd' )
 metadata.deltaTime    = 1/12;   # aggregate into a monthly ts
 metadata.period       = 1.0;     # period= 1/12 x 12 (freq)
@@ -319,7 +370,7 @@ at zhao.1423@osu.edu.
                 
             metadata.time = time
             
-      o = cb.Rbeast('beastv4',Y, metadata, prior, mcmc, extra)
+      o = cb.Rbeast('beast_' + method,Y, metadata, prior, mcmc, extra)
       return (o)
 
 
