@@ -858,7 +858,7 @@ int beast2_main_corev4_mthrd(void* dummy)
 					} while (  IsNaN(MODEL.curr.marg_lik) && ntries < 20 );
 
 					if ( IsNaN(MODEL.curr.marg_lik) ) {
-						#if !(defined(R_RELEASE) || defined(M_RELEASE)) 
+						#if !(defined(R_RELEASE) || defined(M_RELEASE) ||  defined(P_RELEASE)) 
 						r_printf("skip3 | prec: %.4f| marg_lik_cur: %.4f \n",  MODEL.precVec[0], MODEL.curr.marg_lik);
 						#endif
 						skipCurrentPixel = 3;

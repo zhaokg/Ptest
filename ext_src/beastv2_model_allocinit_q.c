@@ -31,15 +31,15 @@ extern void PreCaclModelNumber(I32 minOrder, I32 maxOrder, I32 maxNumseg, I32 N,
 
 void  ReInit_PrecValues(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR opt) {
 // Called before running a new time series to make sure the existant values of precVec have no NAN
-	I32 hasNaNs = 0;
+	I32 hasNaNsInfs = 0;
 	for (int i = 0; i < MODEL.nPrec; i++) {
-			if (IsNaN(MODEL.precVec[i])) {
-				hasNaNs = 1L;
+			if (IsNaN(MODEL.precVec[i]) || IsInf(MODEL.precVec[i])) {
+				hasNaNsInfs = 1L;
 				break;
 			}				
 	}
 
-	if (hasNaNs) {
+	if (hasNaNsInfs) {
 			F32 precValue = opt->prior.precValue;
 			r_ippsSet_32f(precValue,       MODEL.precVec,    MODEL.nPrec);
 			r_ippsSet_32f(logf(precValue), MODEL.logPrecVec, MODEL.nPrec);

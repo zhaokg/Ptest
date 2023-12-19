@@ -148,8 +148,8 @@ def plot(o, index=0,\
         return None
 
     # %%
-    hasData   = isfield(o, "data")   and  not isempty(getfield(o, 'data'));
-    hasSeason = isfield(o, 'season') and not  isempty(o.season);
+    hasData   = isfield(o, "data")   and  not  isempty(getfield(o, 'data'));
+    hasSeason = isfield(o, 'season') and  not  isempty(o.season);
     if hasSeason:
         hasSOrder = isfield(o.season, 'order') and not  isempty(o.season.order);
         hasAmp    = isfield(o.season, 'amp')   and not isempty(o.season.amp);
@@ -196,7 +196,7 @@ def plot(o, index=0,\
     nPlots = length(vars)
     
     if (nPlots == 0):
-        error("No valid variable names speciffied int the 'vars' argument. Possible names include 'st','t','s','sorder','torder','scp','tcp','samp','tslp','o', 'ocp', and 'error'. ")
+        error("No valid variable names specified int the 'vars' argument. Possible names include 'st','t','s','sorder','torder','scp','tcp','samp','tslp','o', 'ocp', and 'error'. ")
 
 
     #######################################################
@@ -310,6 +310,9 @@ def axeslayout(opt, hLayout, fig):
     H = [];
     fig.clf()
     ax = fig.subplots(len(winList), 1)  # plt.figure()  fig.add_axes
+    if (len(winList)==1):               # ax is an object not an array
+        ax = np_array(ax, dtype=object) 
+        ax = ax.reshape(1)              # convert it to an array so ax[0] is valid
     for i in range(len(winList)):
         # H.append( fig.add_axes([0,i/4.0,1,1]) )
         idx = winList[i];
