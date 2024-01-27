@@ -1,7 +1,7 @@
 #include "abc_000_macro.h"
 #include "abc_000_warning.h"
 
-#if defined(MSVC_COMPILER)
+#if defined(COMPILER_MSVC)
 #include "intrin.h"                //_rdstc
 #endif
 
@@ -247,6 +247,9 @@ static  void ComputeMargLik_prec01_BIC(BEAST2_MODELDATA_PTR data, BEAST2_MODEL_P
 #define LOCAL(...) do{ __VA_ARGS__ } while(0);
 //extern MemPointers* mem;
 //time_t start, end; 
+
+#define  DEBUG_MODE  0
+
 int beast2_main_corev4_bic(int _whichCritia_)   {
 
 	whichCriteria = _whichCritia_;
@@ -255,8 +258,11 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	// Do not use 'const MemPointers MEM' bcz Clang will asssume other fields as zeros (e.g., alloc, and alloc0).
 	MemPointers MEM = (MemPointers){.init = mem_init,};
 	MEM.init(&MEM);
-	//MEM.checkHeader = 1;
+
+#if DEBUG_MODE == 1
+	MEM.checkHeader = 1;
 	//mem = &MEM;
+#endif
 
 	VSLStreamStatePtr stream;
 
@@ -269,14 +275,6 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	//const   QINT  q = 1L;
 	const QINT  q   = opt->io.q;
 	
-	// Pre-allocate memory to save samples for calculating credibile intervals	
-	CI_PARAM     ciParam = {0,};
-	CI_RESULT    ci[MAX_NUM_BASIS];
-	if (extra.computeCredible) {
-		ConstructCIStruct(	opt->mcmc.credIntervalAlphaLevel, opt->mcmc.samples, opt->io.N*opt->io.q,  //for MRBEAST
-							opt->prior.numBasis,&MEM, &extra.fastCIComputation, &ciParam, ci );  
-	}
-
 	// Allocate MEMORY FOR BASIS VARIABLE: Initialzie two pointers to BASIS
 	BEAST2_MODEL  MODEL = {0,};
 	AllocInitModelMEM(&MODEL, opt, &MEM);
@@ -286,7 +284,6 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 		U64 seed = (opt->mcmc.seed == 0) ? TimerGetTickCount() : (opt->mcmc.seed+0x4f352a3dc);
 		r_vslNewStream(&stream, VSL_BRNG_MT19937, seed);   	
 	)
-	
 
 	const U32PTR  RND32        = MyALLOC(MEM, MAX_RAND_NUM,     U32, 64);
 	const U16PTR  RND16        = MyALLOC(MEM, MAX_RAND_NUM * 2, U16, 64);
@@ -314,23 +311,55 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	BEAST2_Result_AllocMEM(&resultChain, opt, &MEM); 	
 	BEAST2_Result_AllocMEM(&result,      opt, &MEM);
 	
+	// Pre-allocate memory to save samples for calculating credibile intervals	 
+	const   I32  NumCIVars = MODEL.NUMBASIS + opt->extra.computeTrendSlope;
+	CI_PARAM     ciParam   = { 0, };
+	CI_RESULT    ci[MAX_NUM_BASIS + 1];
+	if (extra.computeCredible) {
+		ConstructCIStruct(opt->mcmc.credIntervalAlphaLevel, opt->mcmc.samples, opt->io.N * opt->io.q,  //for MRBEAST
+			              NumCIVars, &MEM, &extra.fastCIComputation, &ciParam, ci);
+	}
+
 	if (extra.computeCredible) {
 		I32  Npad           = (opt->io.N + 7) / 8 * 8;
 		I32  XnewtermOffset = 0;
 		Npad = opt->io.N;    //Correct for the inconsitency of X and Y in gemm and gemv
-		for (I32 i = 0; i < MODEL.NUMBASIS; i++) {
-			if (MODEL.b[i].type == SEASONID|| MODEL.b[i].type == DUMMYID || MODEL.b[i].type == SVDID)
-				ci[i].result     = resultChain.sCI,		         //season		
-			    ci[i].newDataRow = Xnewterm + XnewtermOffset;	 //season		
-			else if (MODEL.b[i].type == TRENDID)
-				ci[i].result     = resultChain.tCI,               //trend			
-			    ci[i].newDataRow = Xnewterm  + XnewtermOffset;    //trend		
-			else if (MODEL.b[i].type == OUTLIERID)
-				ci[i].result     = resultChain.oCI,               //outlier
-			    ci[i].newDataRow = Xnewterm + XnewtermOffset;     //outlier       
 
+		I08 hasSeasonCmpnt  = opt->prior.basisType[0] == SEASONID || opt->prior.basisType[0] == DUMMYID || opt->prior.basisType[0] == SVDID;
+		I08 hasTrendCmpnt   = 1;
+		I08 hasOutlierCmpnt = opt->prior.basisType[opt->prior.numBasis - 1] == OUTLIERID;
+		
+		int numCIVars      =  0;
+		if (hasSeasonCmpnt) {
+			ci[numCIVars].result     = resultChain.sCI;		         //season		
+		    ci[numCIVars].newDataRow = Xnewterm + XnewtermOffset;	 //season		
+			numCIVars++;
 			XnewtermOffset += Npad * q;   //FOR MRBEAST
 		}
+
+		if (hasTrendCmpnt) {
+			ci[numCIVars].result      = resultChain.tCI;               //trend			
+			ci[numCIVars].newDataRow  = Xnewterm  + XnewtermOffset;    //trend			
+			numCIVars++;
+			XnewtermOffset += Npad * q;   //FOR MRBEAST
+		}	 
+
+
+		if (hasOutlierCmpnt) {
+		  ci[numCIVars].result     = resultChain.oCI,               //outlier
+		  ci[numCIVars].newDataRow = Xnewterm + XnewtermOffset;     //outlier  
+		  numCIVars++;
+		  XnewtermOffset += Npad * q;   //FOR MRBEAST
+		}
+
+		if (opt->extra.computeTrendSlope) {
+			ci[numCIVars].result     = resultChain.tslpCI;           //trend  slope		
+			ci[numCIVars].newDataRow = Xnewterm + XnewtermOffset;    //trend  slope	
+			numCIVars++;
+			XnewtermOffset += Npad * q;   //FOR MRBEAST
+		}
+		//NumCAIvars should equal  MODEL.NUMBASIS + opt->extra.computeTrendSlope;
+
 	} //NUMVAR_FOR_CI=3
 
 	const CORESULT coreResults[MAX_NUM_BASIS];
@@ -341,7 +370,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	opt->prior.alpha1 = 0.;
 	opt->prior.alpha2 = 0.;
 
-	const BEAST2_HyperPar  hyperPar = {.alpha_1=opt->prior.alpha1,.alpha_2=opt->prior.alpha2,.del_1=opt->prior.delta1,  .del_2=opt->prior.delta2};
+	const BEAST2_HyperPar  hyperPar = { .alpha_1=opt->prior.alpha1,.alpha_2=opt->prior.alpha2,.del_1=opt->prior.delta1,  .del_2=opt->prior.delta2};
 
 	/****************************************************************************/
 	//		THE OUTERMOST LOOP: Loop through all the time series one by one
@@ -392,8 +421,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	NUM_OF_PROCESSED_PIXELS       = 0;  //this is also a global variable.
 	for (U32 pixelIndex = 1; pixelIndex <= NUM_PIXELS; pixelIndex++)
 	{
-		// Fecth a new time-series: set up Y, nMissing,  n, rowsMissing	
-
+		// Fecth a new time-series: set up Y, nMissing,  n, rowsMissing		
 		F32PTR MEMBUF           = Xnewterm; // Xnewterm is a temp mem buf.
 		BEAST2_fetch_timeSeries(&yInfo, pixelIndex,  MEMBUF, &(opt->io));
 
@@ -415,14 +443,12 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 		__START_IF_NOT_SKIP_TIMESESIRIES__  
 		if (!skipCurrentPixel) {
 
-		 
 		if (q == 1) {  // for BEASTV4
-		
-			    
+
 				// alpha2_star  = alpha_2 + 0.5(YtY-beta*X'Y) = 0.5* (  [YtY+2*alpha_2] - beta*X'Y  )
 				// YtY+2*alpha_2  is pre-cacluated here. THe "2" before alpha_2 is to undo the division
 				// later in the calcution of alpha2_star
-				yInfo.YtY_plus_alpha2Q[0] = yInfo.YtY_plus_alpha2Q[0] + 2 * hyperPar.alpha_2; 
+				yInfo.YtY_plus_alpha2Q[0] = yInfo.YtY_plus_alpha2Q[0] + 2 * hyperPar.alpha_2;
 				
 				//Pre-compute alpha1_start, which depends only on n.
 				yInfo.alpha1_star = yInfo.n * 0.5 + hyperPar.alpha_1;    
@@ -579,6 +605,10 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				//CHANGE: new.newKnot, numSeg, SEG/R1/2, orders2, newIdx, nKnot_new, jumpType,propinfo.pRND.rnd8/32				
 				basis->Propose(basis, &NEW, &NewCol, &PROPINFO); //info->mem=Xnewterm is used as a temp membuf here
 
+				#if DEBUG_MODE == 1
+					MEM.verify_header(&MEM);
+				#endif
+
 				#ifdef __DEBUG__
 					I32 basisIdx = basis - MODEL.b;		
 					flagSat[NEW.newKnot - 1] += basisIdx == 0 && (NEW.jumpType == BIRTH || NEW.jumpType == MOVE);					 
@@ -619,6 +649,9 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				if (yInfo.nMissing > 0 && Knewterm > 0 /*&& basis->type != OUTLIERID*/)  //needed for basisFunction_OUliter=1
 				f32_mat_multirows_extract_set_by_scalar(Xnewterm,Npad,Knewterm,Xt_zeroBackup, yInfo.rowsMissing, yInfo.nMissing, 0.0f);
 
+			    #if DEBUG_MODE == 1
+					MEM.verify_header(&MEM);
+				#endif
 
 				if (!GROUP_MatxMat) {
 					update_XtX_from_Xnewterm(Xt_mars, Xnewterm, MODEL.curr.XtX, MODEL.prop.XtX, &NewCol);
@@ -823,6 +856,9 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 					 
 				}
 	 
+			    #if DEBUG_MODE == 1
+					MEM.verify_header(&MEM);
+			    #endif
 
 				if(acceptTheProposal) 
 				{
@@ -992,6 +1028,10 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
  
 				if (!bStoreCurrentSample) continue;
 				
+				#if DEBUG_MODE == 1
+					MEM.verify_header(&MEM);
+				#endif
+
 				/**********************************************/
 				//
 				//      Start to compute final results
@@ -1031,6 +1071,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 						TKNOT_PTR  KNOT   = basis->KNOT;
 
 						result->xNProb[nKnot] += 1L;
+
 						//Counting probability of being breakpoints				
 						for (I32 i = 0; i < nKnot; i++) result->xProb[ KNOT[i]-1 ] += 1L;
 
@@ -1074,12 +1115,12 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				/********************************************/
 				if(extra.computeSeasonAmp) 
 				{
-					F32PTR           MEMBUF1 = Xnewterm + 3*Npad;
-					F32PTR           MEMBUF2 = MODEL.prop.beta_mean; //re-used here as a temp mem buf.
+					F32PTR       MEMBUF1 = Xnewterm + 3*Npad;
+					F32PTR       MEMBUF2 = MODEL.prop.beta_mean; //re-used here as a temp mem buf.
 
 					BEAST2_BASIS_PTR basis    = &MODEL.b[MODEL.sid];
-					I32             knotNum  = basis->nKnot;
-					TKNOT_PTR       knotList = basis->KNOT;
+					I32              knotNum  = basis->nKnot;
+					TKNOT_PTR        knotList = basis->KNOT;
 					
 					//Summng up the per-segment harmonic magnitudes  	
 					F32PTR       beta            = BETA;
@@ -1155,8 +1196,8 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 					I32             knotNum  = basis->nKnot;
 					TKNOT_PTR       knotList = basis->KNOT;
 
-					F32PTR TREND = Xnewterm + Npad * MODEL.tid;     //trend signal
-					F32PTR SLP   = Xnewterm + 3 * Npad;				//temp mem
+					F32PTR TREND = Xnewterm + Npad * MODEL.tid;      //trend signal, already filled with real values
+					F32PTR SLP   = Xnewterm + Npad * MODEL.NUMBASIS; //slop: to be computed
 
 																	// Compute the rate of change in trend based on beta. 
 					f32_diff_back(TREND, SLP, N);
@@ -1220,14 +1261,13 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				/*************************************************/
 				if (extra.computeCredible)	{ 	
 
-					// when  *RND.rnd16++ <= ciParam.subsampleFraction_x_INT16MAX, samples are included;					
-					if (extra.fastCIComputation &&  !(*RND.rnd16++  < ciParam.subsampleFraction_x_INT16MAX)  ){
+					// when  *RND.rnd16++ <= ciParam.subsampleFraction_x_INT16MAX, the current sample not included.
+					// otherwise, no need to insert it into the ci strips. So, just skip to the next iteration					
+					if ( !extra.fastCIComputation ||   *RND.rnd16++  < ciParam.subsampleFraction_x_INT16MAX  ) {
 						//if (*rnd32++ < subsampleFraction*4.294967296000000e+09)
-				        // The current sample not included. No need to insert it into the ci strips.
-						// So, just skip to the next iteration	
-					} else {
-						// New row of data for slope, seasonal, and trend components: MEMBUF1=slope over time	 					    
-						for (int i = 0; i < MODEL.NUMBASIS; i++) 
+	    
+						// New row of data for  seasonal, trend, outelier, and slope
+						for (int i = 0; i <  NumCIVars; i++) 
 							InsertNewRowToUpdateCI(&ciParam, &ci[i]);						
 					}					
 
@@ -1304,7 +1344,8 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 						}
 
 
-						if (extra.computeTrendOrder) 	i32_to_f32_scaleby_inplace(resultChain.torder, N, inv_sample);						
+						if (extra.computeTrendOrder) 	i32_to_f32_scaleby_inplace(resultChain.torder, N, inv_sample);	
+
 						if (extra.computeTrendSlope) {
 							//FOR MRBEAST
 							for (int i = 0; i < q; i++) {
@@ -1313,6 +1354,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 							i32_to_f32_scaleby_inplace(resultChain.tslpSgnPosPr, N*q, inv_sample);
 							i32_to_f32_scaleby_inplace(resultChain.tslpSgnZeroPr, N*q, inv_sample);
 						}
+
 						if (extra.computeCredible) {
 							//FOR MRBEAST
 							for (int i = 0; i < q; i++) {
@@ -1320,6 +1362,15 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 								f32_scale_inplace(yInfo.sd[i], yInfo.mean[i], resultChain.tCI + N*q +  N * i, N);
 								//r_ippsMulC_32f_I(,    resultChain.tCI+(2*N)*i, N + N),
 								//r_ippsSubC_32f_I(-yInfo.mean[i], ); //ippsAddC_32f_I(yInfo.mean, result.tCI, N + N);
+							}	
+
+							if (extra.computeTrendSlope) {
+								for (int i = 0; i < q; i++) {
+									f32_mul_val_inplace(yInfo.sd[i],  resultChain.tslpCI + N * i, N);
+									f32_mul_val_inplace(yInfo.sd[i],  resultChain.tslpCI + N * q + N * i, N);
+									//r_ippsMulC_32f_I(,    resultChain.tCI+(2*N)*i, N + N),
+									//r_ippsSubC_32f_I(-yInfo.mean[i], ); //ippsAddC_32f_I(yInfo.mean, result.tCI, N + N);
+								}						
 							}							
 						}
 						
@@ -1447,6 +1498,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 					if (extra.computeTrendOrder)   _N(torder);
 					if (extra.computeTrendSlope)   _N(tslp), _N(tslpSD),_N(tslpSgnPosPr), _N(tslpSgnZeroPr);
 					if (extra.computeCredible)     _2Nq(tCI);
+					if (extra.computeCredible && extra.computeTrendSlope ) _2Nq(tslpCI);
 				}
 
 				if (MODEL.oid >= 0) {

@@ -11,7 +11,7 @@
 
 #define QUOTE_IT(x) #x
 
-#ifdef MSVC_COMPILER
+#ifdef COMPILER_MSVC
 
 	#if R_INTERFACE==1
 		#define DllExport   __declspec( dllexport ) 
@@ -53,7 +53,7 @@
 		#pragma comment( lib , LIB_R(Rlapack.lib) )
 	#endif
 
-#elif defined(CLANG_COMPILER)|| defined(GCC_COMPILER) ||defined(SOLARIS_COMPILER)
+#elif defined(COMPILER_CLANG)|| defined(COMPILER_GCC) ||defined(COMPILER_SOLARIS)
  //GNU ==1 ##############################
 	#define  DllExport   
 #endif
@@ -95,7 +95,7 @@
 #endif
 
 
-#if (MYMAT_LIBRARY ==1) && defined(MSVC_COMPILER) && 0
+#if (MYMAT_LIBRARY ==1) && defined(COMPILER_MSVC) && 0
 	#pragma comment(lib , LIB_MyLIB(blas_oneAPI.lib))
 
      /* 
@@ -235,14 +235,14 @@ sure that NO_IMPORT_ARRAY is #defined before #including that file.
 
 
 // This must appear after the inclusion of R.h
-#ifdef CLANG_COMPILER
+#ifdef COMPILER_CLANG
 	#undef sign    // In R, 'sign' is  defined as Rf_sign
 	#undef warning // In R 'warning' is defined as Rf_warning; warnng is also a C++ keyword
 #endif
 
 
 // This must appear after the inclusion of Python.h to avoid redefining _GNU_SOURCE
-#if defined(CLANG_COMPILER)|| defined(GCC_COMPILER) ||defined(SOLARIS_COMPILER)
+#if defined(COMPILER_CLANG)|| defined(COMPILER_GCC) ||defined(COMPILER_SOLARIS)
 	//GNU ==1 ############################## 
 	#ifndef _GNU_SOURCE
 		#define _GNU_SOURCE 1

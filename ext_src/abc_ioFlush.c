@@ -4,7 +4,7 @@
 #include "abc_001_config.h"
 #include "abc_datatype.h"
 
- #if M_INTERFACE ==1 &&  !defined(MSVC_COMPILER)
+ #if M_INTERFACE ==1 &&  !defined(COMPILER_MSVC)
 
 	#include "inttypes.h"
 	#include "mex.h"
@@ -12,7 +12,7 @@
     //isoFlush is  an undocumented C++ function that resides in libmwservices.dll
 	#if defined(WIN_OS)
 		extern Bool ioFlush(void)  asm("?ioFlush@@YA_NXZ");
-	#elif defined(MAC_OS)
+	#elif defined(OS_MAC)
       // Linux		
 		extern Bool ioFlush(void)  asm("__Z7ioFlushv");
 	#else 

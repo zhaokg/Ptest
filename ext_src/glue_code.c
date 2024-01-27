@@ -33,7 +33,7 @@
 
 #include "globalvars.h"
 
-#if defined(WIN64_OS) 
+#if defined(OS_WIN64) 
 //extern void DllExport WinMainDemoST(BEAST_OPTIONS_PTR  option);
 //extern void DllExport WinMainDemoTrend(BEAST_OPTIONS_PTR  option);
 #endif
@@ -182,7 +182,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 
   		   int8_t *thread_stat = malloc(sizeof(int8_t) * NUM_THREADS);
 			for (I32 i = 0; i < NUM_THREADS; i++) {
-             #if defined(LINUX_OS) || defined (WIN32_OS) || defined (WIN64_OS) 
+             #if defined(LINUX_OS) || defined (WIN32_OS) || defined (OS_WIN64) 
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET( i%NUM_CORES, &cpuset);
@@ -413,7 +413,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 
   		   int8_t *thread_stat = malloc(sizeof(int8_t) * NUM_THREADS);
 			for (I32 i = 0; i < NUM_THREADS; i++) {
-             #if defined(LINUX_OS) || defined (WIN32_OS) || defined (WIN64_OS) 
+             #if defined(LINUX_OS) || defined (WIN32_OS) || defined (OS_WIN64) 
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET( i%NUM_CORES, &cpuset);
@@ -522,7 +522,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 	}
 	else if (__IS_STRING_EQUAL(algorithm, beastv4Demo)) 	{
 
-		#ifdef WIN64_OS
+		#ifdef OS_WIN64
 			#if P_INTERFACE ==1
 					// Covert the second arg into a Numpy Array. the pointer returend
 					// is a new ref that MUST be dec-refed at the end
@@ -649,7 +649,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 	}
 	else if (__IS_STRING_EQUAL(algorithm, cpu)) {
 	   ANS = NULL;
-       #if defined(WIN64_OS) || defined(WIN32_OS)
+       #if defined(OS_WIN64) || defined(WIN32_OS)
 		  int GetCPUInfo(void);
 		  GetCPUInfo();
         #endif
@@ -903,7 +903,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 #include "Rembedded.h"
 
 //	R_FlushConsole(): a R functin to flush the print
-#if defined(MSVC_COMPILER)
+#if defined(COMPILER_MSVC)
 SEXP DllExport rexFunction1(SEXP rList, SEXP dummy) {
 #else
 SEXP DllExport rexFunction(SEXP rList, SEXP dummy) {
@@ -924,10 +924,10 @@ SEXP DllExport rexFunction(SEXP rList, SEXP dummy) {
 }
 
 #define CALLDEF(name, n) {#name, (DL_FUNC) &name, n}
-#if (defined(WIN64_OS) || defined(WIN32_OS)) 
+#if (defined(OS_WIN64) || defined(WIN32_OS)) 
 	SEXP TetrisSetTimer(SEXP action, SEXP seconds, SEXP envior);
 	static const R_CallMethodDef CallEntries[] = {
-		#if defined(MSVC_COMPILER)
+		#if defined(COMPILER_MSVC)
 			CALLDEF(rexFunction1,    2),
 		#else
 			CALLDEF(rexFunction,    2),

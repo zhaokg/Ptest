@@ -444,7 +444,7 @@ static void __chkIntFn(void *dummy) {R_CheckUserInterrupt();}
 I32  CheckInterrupt()         {	return (R_ToplevelExec(__chkIntFn, NULL) == FALSE);}
 void ConsumeInterruptSignal() { return ; }
  
-#if defined(WIN64_OS)  && 0
+#if defined(OS_WIN64)  && 0
 // R doesn't allow calling no-API entry points: get_R_HOME
 	#define WIN32_LEAN_AND_MEAN
 	#include "windows.h"

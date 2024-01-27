@@ -341,7 +341,7 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 	}//flag==merge
 	case MOVE: //MOVE
 	{
-		newIdx = RANDINT(1, (U16)nKnot, *(PRND->rnd16)++);  //(*rnd32++) % tKnotNum + 1; // (int)ceilfunc((*rnd32++) *tKnotNum);	
+		newIdx      = RANDINT(1, nKnot, *(PRND->rnd16)++);  //(*rnd32++) % tKnotNum + 1; // (int)ceilfunc((*rnd32++) *tKnotNum);	
 
 		I32 oldKnot = knotList[newIdx - 1];
 		I32 r1      = newIdx==1     ?  knotList[INDEX_FakeStart]: knotList[(newIdx - 1) - 1];
@@ -355,7 +355,11 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 		// oldKNot, r1 and r2 should be sigend (though knotList are unsigned); otherwise
 		// oldKnot-maxMoveSize could be a negative number and aliased to a super large postiive number
 		//, which will cause big r1 or r2. Another possible solution is to use signed intergers for knotList
+		// Jan 27-2004: Change knotList from u32 (unsigned) to signed (i32) because KNOT[INDEX_FakeStart]
+		// may be negative. (this shouldn't be a problem bcz int r1 = (uint) -2 is still -2
 		/*??????????????????????????????????*/
+		 
+
 		if (r2 == r1) {
 			new->newKnot = oldKnot;
 		} else if (r2 > r1) {
@@ -364,6 +368,17 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 			RANDINT_SKIPONE(new->newKnot, r1, oldKnot, r2, *(PRND->rnd32)++);
 			// r1,..., oldKnot-1,oldKnot(skipped),oldKnot+1,...,r2
 		} else {
+			r_printf("ERROR: r1 < r2; there must be something wrong! More info follows:\n");
+			r_printf("r1=%d r2=%d minSepDist=%d, maxMoveStepSize=%d \n", r1, r1, minSepDist, MCMC_maxMoveStepSize);
+			r_printf("INDEX_FakeStart=%d  INDEX_FakeEnd=%d newIdx=%d  oldknot=%d \n", INDEX_FakeStart, INDEX_FakeEnd, newIdx, oldKnot);
+			r_printf("KnotList (nKnot=%d): \n", nKnot);
+			for (int i = INDEX_FakeStart; i <= nKnot; i++) {
+				r_printf("  [%d, %d] ", i, knotList[i]);
+				if ((i - INDEX_FakeStart + 1) % 10 == 0) {
+					r_printf("\n");
+				}
+			}
+			r_printf("\n"); 
 			r_error("ERROR: r1 < r2; there must be something wrong!\n");
 			return ;
 		}
@@ -425,7 +440,7 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 	   //Added to handle a global model without any changepoint or order-resampling
 		new->numSeg  = 0;
 
-		new->newKnot = -9999;
+		new->newKnot   = -9999;
 		new->SEG[0].R1 = 0x0fffffff;
 		new->SEG[0].R2 = 0x0fffffff;
 		new->SEG[1].R1 = 0x0fffffff;

@@ -233,7 +233,7 @@ def plot(o, index=0,\
             cp, cpCI, ncp, ncpPr, cpPr, cpChange, Prob, Prob1 = get_scp(x, ncpStat);
             plot_y(h, ytitle, has, clr, x, t, t2t, Y, CI, ncp, cp);
         if (var == 't'):
-            Y, SD, CI, Slp, SlpSD, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
+            Y, SD, CI, Slp, SlpCI, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
             cp, cpCI, ncp, ncpPr, cpPr, cpChange, Prob, Prob1 = get_tcp(x, ncpStat);
             plot_y(h, ytitle, has, clr, x, t, t2t, Y, CI, ncp, cp);
         if (var == 'scp'):
@@ -241,7 +241,7 @@ def plot(o, index=0,\
             cp, cpCI, ncp, ncpPr, cpPr, cpChange, Prob, Prob1 = get_scp(x, ncpStat);
             plot_prob(h, ytitle, has, clr, x, t, t2t, Prob1, Prob, ncp, cp);
         if (var == 'tcp'):
-            Y, SD, CI, Slp, SlpSD, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
+            Y, SD, CI, Slp, SlpCI, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
             cp, cpCI, ncp, ncpPr, cpPr, cpChange, Prob, Prob1 = get_tcp(x, ncpStat);
             plot_prob(h, ytitle, has, clr, x, t, t2t, Prob1, Prob, ncp, cp);
         if (var == 'sorder'):
@@ -249,17 +249,17 @@ def plot(o, index=0,\
             cp, cpCI, ncp, ncpPr, cpPr, cpChange, Prob, Prob1 = get_scp(x, ncpStat);
             plot_order(h, ytitle, has, clr, x, t, t2t, Order, ncp, cp);
         if (var == 'torder'):
-            Y, SD, CI, Slp, SlpSD, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
+            Y, SD, CI, Slp, SlpCI, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
             cp, cpCI, ncp, ncpPr, cpPr, cpChange, Prob, Prob1 = get_tcp(x, ncpStat);
             plot_order(h, ytitle, has, clr, x, t, t2t, Order, ncp, cp);
         if (var == 'samp'):
             Y, SD, CI, Amp, AmpSD, Order = get_S(x, hasAmp, hasSOrder);
             plot_amp(h, ytitle, has, clr, x, t, t2t, Amp, AmpSD);
         if (var == 'tslp'):
-            Y, SD, CI, Slp, SlpSD, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
-            plot_slp(h, ytitle, has, clr, x, t, t2t, Slp, SlpSD)
+            Y, SD, CI, Slp, SlpCI, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
+            plot_slp(h, ytitle, has, clr, x, t, t2t, Slp, SlpCI)
         if (var == 'slpsgn'):
-            Y, SD, CI, Slp, SlpSD, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
+            Y, SD, CI, Slp, SlpCI, SlpSignPos, SlpSignZero, Order = get_T(x, hasSlp, hasTOrder);
             plot_slpsgn(h, ytitle, has, clr, x, t, t2t, SlpSignPos, SlpSignZero)
         if (var == 'o'):
             Y, SD, CI = get_O(x);
@@ -349,31 +349,32 @@ def get_Yts(x, hasSeason, hasOutlier, hasData):
 
 #                                                                                                                                                    %
 def get_T(x, hasSlp, hasTOrder):
-    Y = x.trend.Y;
-    tmp = Y + x.trend.SD;
-    SD = c( [Y - x.trend.SD, flip(tmp)] )
+    Y   = x.trend.Y;
+    SD  = c( [Y - x.trend.SD, flip(Y + x.trend.SD)] )
     if isfield(x.trend, 'CI') and not isempty(x.trend.CI):
-        tmp = x.trend.CI[:,1]
-        CI  = c( [x.trend.CI[:, 0], flip(tmp) ])
+        CI  = c( [x.trend.CI[:, 0], flip(x.trend.CI[:,1]) ])
     else:
         CI = SD
     if (hasSlp):
-        Slp   = x.trend.slp;
-        tmp   = Slp + x.trend.slpSD;
-        SlpSD = c( [Slp - x.trend.slpSD, flip(tmp) ] )
-        SlpSignPos = x.trend.slpSgnPosPr;
+        Slp         = x.trend.slp;
+        if isfield(x.trend, 'slpCI') and not isempty(x.trend.slpCI):
+            SlpCI    = c( [x.trend.slpCI[:, 0], flip(x.trend.slpCI[:,1]) ])
+        else:
+            SlpSD = c( [Slp - x.trend.slpSD, flip(Slp + x.trend.slpSD) ] )
+            SlpCI = SlpSD 
+        SlpSignPos  = x.trend.slpSgnPosPr;
         SlpSignZero = x.trend.slpSgnZeroPr;
     else:
-        Slp = [];
-        SlpSD = [];
-        SlpSignPos = [];
+        Slp         = [];
+        SlpCI       = [];
+        SlpSignPos  = [];
         SlpSignZero = [];
 
     if (hasTOrder):
         Order = x.trend.order;
     else:
         Order = [];
-    return (Y, SD, CI, Slp, SlpSD, SlpSignPos, SlpSignZero, Order)
+    return (Y, SD, CI, Slp, SlpCI, SlpSignPos, SlpSignZero, Order)
 
 #                                                                                                                                                    %
 def get_tcp(x, ncpStat):
@@ -404,21 +405,18 @@ def get_tcp(x, ncpStat):
 
 def get_S(x, hasAmp, hasSOrder):
     Y = x.season.Y;
-    tmp = Y + x.season.SD;
-    SD = c( [Y - x.season.SD, flip(tmp)])
+    SD = c( [Y - x.season.SD, flip(Y + x.season.SD)])
 
     if isfield(x.season, 'CI') and not isempty(x.season.CI):
-        tmp = x.season.CI[:, 1];
-        CI = c( [x.season.CI[:, 0],  flip(tmp)] )
+        CI = c( [x.season.CI[:, 0],  flip(x.season.CI[:, 1])] )
     else:
         CI = SD
 
     if hasAmp:
-        Amp = x.season.amp;
-        tmp   = Amp + x.season.ampSD;
-        AmpSD = c( [Amp - x.season.ampSD,  flip(tmp) ])
+        Amp   = x.season.amp;
+        AmpSD = c( [Amp - x.season.ampSD,  flip(Amp + x.season.ampSD) ])
     else:
-        Amp = [];
+        Amp   = [];
         AmpSD = [];
 
     if hasSOrder:
@@ -542,9 +540,9 @@ def plot_amp(h, ytitle, has, clr, x, t, t2t, Amp, AmpSD):
     h.plot(t, Amp, color=clr);
 
 #                                                                                                                                                              %
-def plot_slp(h, ytitle, has, clr, x, t, t2t, Slp, SlpSD):
+def plot_slp(h, ytitle, has, clr, x, t, t2t, Slp, SlpCI):
     alpha = 0.5;
-    h.fill(t2t, SlpSD, color=clr, Linestyle='None', alpha=alpha)
+    h.fill(t2t, SlpCI, color=clr, Linestyle='None', alpha=alpha)
     h.plot(t, Slp, color=clr)
 
 #                                                                                                                                                              %
