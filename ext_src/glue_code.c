@@ -8,7 +8,8 @@
 #include <time.h>
 #include <stdio.h>
  
-#ifndef ARM64_OS
+//#ifndef cpu_ARM64
+#if !defined(cpu_ARM64) && !defined(cpu_POWERPC)
 	#include <immintrin.h> //https://stackoverflow.com/questions/56049110/including-the-correct-intrinsic-header
     #include "abc_math_avx.h"
 #endif
@@ -182,7 +183,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 
   		   int8_t *thread_stat = malloc(sizeof(int8_t) * NUM_THREADS);
 			for (I32 i = 0; i < NUM_THREADS; i++) {
-             #if defined(LINUX_OS) || defined (WIN32_OS) || defined (OS_WIN64) 
+             #if defined(OS_LINUX) || defined (OS_WIN32) || defined (OS_WIN64) 
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET( i%NUM_CORES, &cpuset);
@@ -191,14 +192,14 @@ void * mainFunction(void *prhs[], int nrhs) {
 				thread_stat[i]=pthread_create( &thread_id[i], &attr, beast2_main_corev4_mthrd, (void*)NULL);
 				//https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread
 				//sched_setaffinity(thread_id[i], sizeof(cpuset), &cpuset)
-			 #elif defined(MAC_OS)
+			 #elif defined(OS_MAC)
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET(i % NUM_CORES, &cpuset);
 				//https://stackoverflow.com/questions/25472441/pthread-affinity-before-create-threads			
 				thread_stat[i] = pthread_create(&thread_id[i], &attr, beast2_main_corev4_mthrd, (void*)NULL);
 				pthread_setaffinity_np(thread_id[i], sizeof(cpu_set_t), &cpuset);
-		     #elif defined (SOLARIS_OS)
+		     #elif defined (OS_SOLARIS)
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET(i % NUM_CORES, &cpuset);
@@ -413,7 +414,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 
   		   int8_t *thread_stat = malloc(sizeof(int8_t) * NUM_THREADS);
 			for (I32 i = 0; i < NUM_THREADS; i++) {
-             #if defined(LINUX_OS) || defined (WIN32_OS) || defined (OS_WIN64) 
+             #if defined(OS_LINUX) || defined (OS_WIN32) || defined (OS_WIN64) 
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET( i%NUM_CORES, &cpuset);
@@ -422,14 +423,14 @@ void * mainFunction(void *prhs[], int nrhs) {
 				thread_stat[i]=pthread_create( &thread_id[i], &attr, beast2_main_core_bic_mthrd, (void*)whichCritia);
 				//https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread
 				//sched_setaffinity(thread_id[i], sizeof(cpuset), &cpuset)
-			 #elif defined(MAC_OS)
+			 #elif defined(OS_MAC)
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET(i % NUM_CORES, &cpuset);
 				//https://stackoverflow.com/questions/25472441/pthread-affinity-before-create-threads			
 				thread_stat[i] = pthread_create(&thread_id[i], &attr, beast2_main_corev4_mthrd, (void*)NULL);
 				pthread_setaffinity_np(thread_id[i], sizeof(cpu_set_t), &cpuset);
-		     #elif defined (SOLARIS_OS)
+		     #elif defined (OS_SOLARIS)
 				cpu_set_t cpuset;
 				CPU_ZERO(&cpuset);
 				CPU_SET(i % NUM_CORES, &cpuset);
@@ -649,7 +650,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 	}
 	else if (__IS_STRING_EQUAL(algorithm, cpu)) {
 	   ANS = NULL;
-       #if defined(OS_WIN64) || defined(WIN32_OS)
+       #if defined(OS_WIN64) || defined(OS_WIN32)
 		  int GetCPUInfo(void);
 		  GetCPUInfo();
         #endif
@@ -902,7 +903,6 @@ void * mainFunction(void *prhs[], int nrhs) {
 #include <R_ext/libextern.h>
 #include "Rembedded.h"
 
-//	R_FlushConsole(): a R functin to flush the print
 #if defined(COMPILER_MSVC)
 SEXP DllExport rexFunction1(SEXP rList, SEXP dummy) {
 #else
@@ -924,7 +924,7 @@ SEXP DllExport rexFunction(SEXP rList, SEXP dummy) {
 }
 
 #define CALLDEF(name, n) {#name, (DL_FUNC) &name, n}
-#if (defined(OS_WIN64) || defined(WIN32_OS)) 
+#if (defined(OS_WIN64) || defined(OS_WIN32)) 
 	SEXP TetrisSetTimer(SEXP action, SEXP seconds, SEXP envior);
 	static const R_CallMethodDef CallEntries[] = {
 		#if defined(COMPILER_MSVC)

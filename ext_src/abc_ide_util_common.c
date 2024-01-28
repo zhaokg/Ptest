@@ -9,9 +9,6 @@
 #include "abc_vec.h"
 #include "abc_sort.h"
  
-// https:// stackoverflow.com/questions/26271154/how-can-i-make-a-mex-function-printf-while-its-running
-extern void matlab_IOflush(void);
-
 
 // C++ solution to define a keyword as a function name
 // #pragma warning(suppress: 4483)
@@ -97,7 +94,7 @@ void printProgress(F32 pct, I32 width, char * buf, I32 firstTimeRun) {
 	{
 		r_printf("\r\n");
 		r_printf("%s", buf);		
-		matlab_IOflush();
+		StdouFlush();
 		//mexEvalString("drawnow");
 		//mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
 		//mexEvalString("pause(0.0000001);drawnow");
@@ -110,7 +107,7 @@ void printProgress(F32 pct, I32 width, char * buf, I32 firstTimeRun) {
 
 		r_printf(back);
 		r_printf("%s\r\n", buf);
-		matlab_IOflush();
+		StdouFlush();
 		//mexEvalString("drawnow");
 		//mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
 		//mexEvalString("pause(0.0000001);drawnow");
@@ -182,7 +179,7 @@ void printProgress2(F32 pct, F64 time, I32 width, char * buf, I32 firstTimeRun)
 		r_printf("%s", buf);
 		//mexEvalString("drawnow");
 		//mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
-		matlab_IOflush();
+		StdouFlush();
 	}
 	else {
 		char * back = buf + width + 5;
@@ -193,7 +190,7 @@ void printProgress2(F32 pct, F64 time, I32 width, char * buf, I32 firstTimeRun)
 		r_printf("%s\r\n", buf);
 		//mexEvalString("drawnow");
 		//mexCallMATLAB(0, NULL, 0, NULL, "drawnow");
-		matlab_IOflush();
+		StdouFlush();
 	}
 #endif	
 }

@@ -9,7 +9,6 @@
 
 //char t[] = "\033[0;35m";
 // fflush(stdout);   //: c function: fflush(stdout)--flush the line buffer to see immediate outputs
-// R_FlushConsole(); 
 // Rf_GetOption
 
 
@@ -20,6 +19,13 @@ int  JDN_to_DateNum(int jdn) {
 	return jdn - 2440588;
 }
 
+
+
+void StdouFlush(void) {
+// https://stackoverflow.com/questions/13327305/making-rcout-output-appear-on-the-r-console-immediately
+//	R_FlushConsole(): a R functin to flush the print
+	R_FlushConsole();
+}
 
 SEXP getListElement(SEXP list, const char* str) {
 

@@ -226,12 +226,12 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 	{
 	case BIRTH:
 	{
-		I32    Npad16  = info->Npad16;		
+		I32    Npad16  = info ->Npad16;		
 		U64PTR goodVec = basis->goodvec; // Aliased is used here, goodvec must be 8-byte algined
 		U64PTR tmpGoodVec;
 		I32    tmpGoodNum;
 		
-		if ( *(PRND->rnd08)++ < 255* PROB_SAMPLE_EXTREME_VECTOR ) {				             
+		if ( *(PRND->rnd08)++ < 255 * PROB_SAMPLE_EXTREME_VECTOR ) {				             
 
 			//  When samples=0, extremPosVec should be all 1s'; it was pre-set when creating the initla model before entering the mcmc loop.			
 			I32 samples = info->samples[0];
@@ -379,7 +379,8 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 				}
 			}
 			r_printf("\n"); 
-			r_error("ERROR: r1 < r2; there must be something wrong!\n");
+			StdouFlush();
+			r_error("ERROR: r1 < r2; there must be something wrong!\n");			
 			return ;
 		}
 
