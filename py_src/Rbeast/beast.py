@@ -406,7 +406,11 @@ at zhao.1423@osu.edu.
         #spec.loader.exec_module(module)         
         #class xxx:
         #   pass
-        #module.setClassObjects(xxx)      
-        o = cb.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra)      
+        #module.setClassObjects(xxx) 
+        if 'cputype' in kwargs.keys():
+            cputype = kwargs.get('cputype')
+            o = cb.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra,cputype)      
+        else:
+            o = cb.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra)      
       return (o)
 
