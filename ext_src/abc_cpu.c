@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "abc_000_warning.h"
@@ -7,6 +6,7 @@
 #include "abc_ide_util.h" // r_printf
 #include "abc_cpu.h"
 
+#include <stdio.h>
 
 //https:// github.com/Mysticial/FeatureDetector
 //https:// stackoverflow.com/questions/6121792/how-to-check-if-a-cpu-supports-the-sse3-instruction-set/22521619#22521619

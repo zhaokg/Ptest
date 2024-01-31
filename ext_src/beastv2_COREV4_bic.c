@@ -5,7 +5,6 @@
 #include "intrin.h"                //_rdstc
 #endif
 
-#include <stdio.h>	               //fprintf fopen FILE
 #include <string.h>	               //memset memcpy
 #include <time.h>
 #include <math.h>
@@ -21,6 +20,8 @@
 #include "abc_rand.h"
 #include "abc_vec.h"   // for f32_add_v_v2_vec_in_place, f32_diff_back,i32_increment_bycon_inplace i32_to_f32_scaelby_inplace, f32_sx_sxx_toavstd_inplace 
 #include "abc_math.h"  // for fastexp, fastsqrt only
+
+#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name ‘_IO_cookie_io_functions_t’
 
 #include "globalvars.h"  
 
@@ -569,7 +570,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 			// samplesInserted must be reset to zero at the start of each chain
 			/*************************************************************/
 			if (extra.computeCredible) { 
-				for (int i = 0; i < MODEL.NUMBASIS; i++) {
+				for (int i = 0; i < NumCIVars; i++) {
 					ci[i].samplesInserted = 0;
 				} 
 			} 

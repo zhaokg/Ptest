@@ -993,7 +993,9 @@ static PyObject * BarObject_new(PyTypeObject* type, PyObject* args, PyObject* kw
        Py_INCREF(Py_None);
     }   
 
-    r_printf("New called...%#x  inst_dict %#x \n", self, self->inst_dict);
+    // abc_ide_util_python.c:996 : 14 : warning : format ‘ % x’ expects argument of type ‘unsigned int’, but argument 3 has type ‘PyObject *
+    //r_printf("New called...%#x  inst_dict %#x \n", self, self->inst_dict);
+    r_printf("New called...%p  inst_dict %p \n", self, self->inst_dict);
     
     return self;
 }

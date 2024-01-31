@@ -3,7 +3,6 @@
 #include "abc_001_config.h"
 
 #include <math.h>
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -15,6 +14,9 @@
 #include "abc_date.h"
 #include "beastv2_func.h"    
 #include "beastv2_io.h"
+
+#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name ‘_IO_cookie_io_functions_t’
+
  
 #define CondErrMsgRet0(cond, ...)   if(cond) { r_error(__VA_ARGS__); return 0;}
 #define CondErrActionRet0(cond, Action, ...)   if(cond) { (Action) ;r_error(__VA_ARGS__); return 0;}
