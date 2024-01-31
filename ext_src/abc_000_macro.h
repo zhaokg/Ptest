@@ -140,16 +140,10 @@
 #if defined(__linux__) 
 	//https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive
 	#define OS_LINUX
-    #ifndef _GNU_SOURCE
-		#define _GNU_SOURCE // for including CPU_ZERO in sched.h
-    #endif
 #endif
 
 #if (defined(unix) || defined(__unix__) || defined(__unix) ) && !defined(__APPLE__)
-	#define OS_UNIX
-	#ifndef _GNU_SOURCE
-		#define _GNU_SOURCE // for including CPU_ZERO in sched.h
-	#endif
+	#define OS_UNIX	
 #endif
 
 #if defined(sun) && defined(__sun) && defined(__SVR4) 

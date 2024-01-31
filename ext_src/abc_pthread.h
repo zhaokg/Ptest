@@ -198,9 +198,9 @@ static INLINE int  pthread_create(pthread_t* tid, const pthread_attr_t* attr, vo
         //https://stackoverflow.com/questions/7296963/gnu-source-and-use-gnu/7297011#7297011
         //https://stackoverflow.com/questions/24034631/error-message-undefined-reference-for-cpu-zero/24034698
 	    #ifndef _GNU_SOURCE
-		    #define _GNU_SOURCE
+		    #define _GNU_SOURCE  // for including CPU_ZERO in sched.h
 	    #endif
-        #include <sched.h>  ////cpu_set_t , CPU_SET
+        #include <sched.h>       //cpu_set_t , CPU_SET
 	    #include <pthread.h>
 
 #elif    defined(OS_MAC) 
@@ -274,12 +274,7 @@ static INLINE int  pthread_create(pthread_t* tid, const pthread_attr_t* attr, vo
         }
 
 #elif  defined(OS_SOLARIS)
-    //you have to define_GNU_SOURCE before anything else
-    //https://stackoverflow.com/questions/1407786/how-to-set-cpu-affinity-of-a-particular-pthread
-    //https://stackoverflow.com/questions/7296963/gnu-source-and-use-gnu/7297011#7297011
-    //https://stackoverflow.com/questions/24034631/error-message-undefined-reference-for-cpu-zero/24034698
-  
-    #include <sched.h>  ////cpu_set_t , CPU_SET
+    #include <sched.h>   // Seems that CPU_ZERO not defined for OS_SOLARIS
     #include <pthread.h>
 
     #include <sys/types.h> //https://github.com/atom-zju/NUMA-aware-hpc-kernels/blob/e4dee686acf4a3dae49a363edf22ac3966a68d10/mosbench/micro/bench.c
@@ -288,7 +283,7 @@ static INLINE int  pthread_create(pthread_t* tid, const pthread_attr_t* attr, vo
      
     typedef  int cpu_set_t;
     static inline void   CPU_ZERO(cpu_set_t* cs) { *cs = 0; }
-   static inline void   CPU_SET(int num, cpu_set_t* cs) { num = num % GetNumCores(); *cs = num; }
+    static inline void   CPU_SET(int num, cpu_set_t* cs) { num = num % GetNumCores(); *cs = num; }
 
     static int sched_getaffinity(pthread_t pid, size_t cpu_size, cpu_set_t* cpu_set) {
        //https://github.com/tpapagian/mosbench/blob/c250c395fab356ab83413db43bf9844cb4f63d4f/micro/bench.c

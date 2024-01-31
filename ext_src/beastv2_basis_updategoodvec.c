@@ -62,8 +62,8 @@ static void DSVT_UpdateGoodVecForNewTerm(BEAST2_BASIS_PTR basis, NEWTERM_PTR new
 
 
 #define InsertNewElem(dst,n,newIdx, newValue, T)                       \
-         for(rI32 i=(n); i>=(newIdx);i--) *((T*)dst+i)=*((T*)dst+i-1); \
-           *((T*)dst+newIdx-1)=newValue;
+         for(I32 i=(n); i>=(newIdx);i--) *((T*)dst+i)=*((T*)dst+i-1); \
+         *((T*)dst+newIdx-1)=newValue;
 #define RepeatElem(dst,n,newIdx, T)                 for(I32 i=(n); i>=(newIdx); i--) *((T*)dst+i)=*((T*)dst+i-1); 
 #define ReplaceElem(dst,n,newIdx, newValue, T)      *((T*)dst+newIdx-1)=newValue;
 #define DeleteElem(dst,n,newIdx, T)                 memcpy((T*)dst+newIdx-1,(T*)dst+newIdx+1-1,sizeof(T)*(n-(newIdx)));

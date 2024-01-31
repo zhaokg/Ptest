@@ -22,12 +22,12 @@
     //https://stackoverflow.com/questions/7296963/gnu-source-and-use-gnu/7297011#7297011
     //https://stackoverflow.com/questions/24034631/error-message-undefined-reference-for-cpu-zero/24034698
     #ifndef _GNU_SOURCE
-        #define _GNU_SOURCE
+        #define _GNU_SOURCE  // for including CPU_ZERO in sched.h
     #endif
-    #include <sched.h>  ////cpu_set_t , CPU_SET
+    #include <sched.h>       //cpu_set_t , CPU_SET
     #include <pthread.h>
 #elif defined(OS_SOLARIS)
-    #include <sched.h>  ////cpu_set_t , CPU_SET
+    #include <sched.h>       //cpu_set_t , CPU_SET
     #include <pthread.h>
 #endif
 

@@ -180,6 +180,9 @@
 //https://stackoverflow.com/questions/32899621/numpy-capi-error-with-import-array-when-compiling-multiple-modules
 //https://docs.scipy.org/doc/numpy-1.10.1/reference/c-api.array.html#miscellaneous
 
+
+#define  NPY_NO_DEPRECATED_API   NPY_1_7_API_VERSION  //suppress the warning "Using deprecated NumPy API, disable it with"
+
 /*
 Suppose I have two files coolmodule.c and coolhelper.c which need to be compiled and linked into a
 single extension module. Suppose coolmodule.c contains the required initcool module initialization 
@@ -204,12 +207,14 @@ sure that NO_IMPORT_ARRAY is #defined before #including that file.
 		#define PY_ARRAY_UNIQUE_SYMBOL NumpyAPIList
 		#include "numpy/arrayobject.h"
 	#endif
-    //#pragma comment(lib , LIB_Python(python37_msvc.lib) ) 
+   
 
   /*********************/
+  // #pragma comment(lib , LIB_Python(python37_msvc.lib) ) 
+  //
   // No need to set up the lib explicitly 
   // (1) pynconfig.h has a pragma line to add python.lib
-  //  pragma comment(lib,"python37.lib")  //: #pragma comment(lib , LIB_MATLAB(libmx.lib) )
+  //  pragma comment(lib,"python37.lib")   
   // (2) Numpy usss the import_array to load the (np.core._multiarray_umath._ARRAY_API) variable
   //    to fill the api arrays
 
