@@ -143,6 +143,7 @@ static INLINE void _CalcDevExtremPos(PROP_DATA_PTR info ) {
 	__CalcExtremKnotPos_ST_BirthOnly(model->extremePosVec, model->deviation, info->N, threshold);
 }
 
+
 static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PTR newcol, PROP_DATA_PTR info)
 {	
 	I32					goodNum = basis->goodNum;
@@ -368,7 +369,9 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 			RANDINT_SKIPONE(new->newKnot, r1, oldKnot, r2, *(PRND->rnd32)++);
 			// r1,..., oldKnot-1,oldKnot(skipped),oldKnot+1,...,r2
 		} else {
-			r_printf("ERROR: r1 < r2; there must be something wrong! More info follows:\n");
+			/*
+			r_printf("ERROR: r1 < r2; this should never happen and there must be something wrong!\n");
+			r_printf("More info for diagnostic purpuse:\n");
 			r_printf("r1=%d r2=%d minSepDist=%d, maxMoveStepSize=%d \n", r1, r2, minSepDist, MCMC_maxMoveStepSize);
 			r_printf("INDEX_FakeStart=%d  INDEX_FakeEnd=%d newIdx=%d  oldknot=%d \n", INDEX_FakeStart, INDEX_FakeEnd, newIdx, oldKnot);
 			r_printf("KnotList (nKnot=%d): \n", nKnot);
@@ -380,7 +383,8 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 			}
 			r_printf("\n"); 
 			StdouFlush();
-			r_error("ERROR: r1 < r2; there must be something wrong!\n");			
+			*/
+			r_error("ERROR: r1 < r2; this should never happen and there must be something wrong!\n");			
 			return ;
 		}
 

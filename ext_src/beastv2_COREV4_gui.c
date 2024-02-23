@@ -32,22 +32,26 @@
 #include "beastv2_xxyy_allocmem.h" 
 #include "beastv2_io.h" 
 
+//#include <unistd.h> // char* getcwd(char* buf, size_t size);
+
 #define LOCAL(...) do{ __VA_ARGS__ } while(0);
 //extern MemPointers* mem;
 //time_t start, end; 
+
+#define  DEBUG_MODE  0
+
 /*---------WINDOW-------------------------*/
 #ifdef OS_WIN64	
 #include "abc_win32_demo.h"
 #endif
 /*---------WINDOW-------------------------*/
 
-#define  DEBUG_MODE  0
+
 
 /*---------WINDOW-------------------------*/
-void beast2_main_corev4_gui(void)
-{
+void beast2_main_corev4_gui(void) {
 #ifdef OS_WIN64	
-	/*---------WINDOW-------------------------*/
+/*---------WINDOW-------------------------*/
 
 	// A struct to track allocated pointers   
 	// Do not use 'const MemPointers MEM' bcz Clang will asssume other fields as zeros (e.g., alloc, and alloc0).
@@ -208,7 +212,7 @@ void beast2_main_corev4_gui(void)
 		F32 frac = 0.0; I32 firstTimeRun = 1;
 		/*---------WINDOW-------------------------*/
 		// mexPrint is not just thread-sate but danagerous to use in any new threads
-		// printProgress(frac, extra.consoleWidth, Xnewterm, firstTimeRun);
+		// printProgress1(frac, extra.consoleWidth, Xnewterm, firstTimeRun);
 		/*---------WINDOW-------------------------*/
 	}
 
@@ -242,6 +246,7 @@ void beast2_main_corev4_gui(void)
 
 	NUM_OF_PROCESSED_GOOD_PIXELS  = 0; //this is a global variable.
 	NUM_OF_PROCESSED_PIXELS       = 0;  //this is also a global variable.
+
 	for (U32 pixelIndex = 1; pixelIndex <= NUM_PIXELS; pixelIndex++)
 	{
 		// Fecth a new time-series: set up Y, nMissing,  n, rowsMissing		
@@ -369,12 +374,12 @@ void beast2_main_corev4_gui(void)
 		/****************************************************************************/
 		for ( U32 chainNumber =0;  chainNumber < MCMC_CHAINNUM; chainNumber++)
 		{
-					/*---------WINDOW-------------------------*/
-					//A timer to compute elapsing time interval
-					LARGE_INTEGER tStart, tEnd, tFrequency;
-					QueryPerformanceCounter(&tStart);
-					QueryPerformanceFrequency(&tFrequency);
-					/*---------WINDOW-------------------------*/
+		      /*---------WINDOW-------------------------*/
+		       //A timer to compute elapsing time interval
+		       LARGE_INTEGER tStart, tEnd, tFrequency;
+	               QueryPerformanceCounter(&tStart);
+		       QueryPerformanceFrequency(&tFrequency);
+		      /*---------WINDOW-------------------------*/
 			const I32  N      = opt->io.N; 
 			//const I32  Npad   = (N + 7) / 8 * 8; 
 			const I32  Npad   = N;//Correct for the inconsitency of X and Y in gemm and gemv
@@ -721,7 +726,7 @@ void beast2_main_corev4_gui(void)
 						   precFunc.chol_addCol(MODEL.curr.XtX, MODEL.curr.cholXtX, MODEL.curr.precXtXDiag, MODEL.curr.K, 1L, MODEL.curr.K);
 						   precFunc.ComputeMargLik(&MODEL.curr, &MODEL, &yInfo, &hyperPar);
 
-						   #if !(defined(R_RELEASE) || defined(M_RELEASE))
+						   #if !(defined(R_RELEASE) || defined(M_RELEASE) || defined(P_RELEASE) )
 						   r_printf("prec: %.4f| marg_lik_prop: %.4f | marg_like_curr: %.4f \n", MODEL.precVec[0], MODEL.prop.marg_lik, MODEL.curr.marg_lik);
 						   #endif
 
@@ -761,13 +766,20 @@ void beast2_main_corev4_gui(void)
 					else						acceptTheProposal = *(RND.rnd32)++ < expValue * 4.294967296e+09;
 					 
 				}
-	 
-			    #if DEBUG_MODE == 1
-					MEM.verify_header(&MEM);
-			    #endif
+		 
+				#if DEBUG_MODE == 1
+					if (basisIdx == 0) ++(flagS[NEW.jumpType]);
+					else 		   ++(flagT[NEW.jumpType]);
+                                        MEM.verify_header(&MEM);
+				#endif
 
-				if(acceptTheProposal) 
+				if(acceptTheProposal)
 				{
+					#if DEBUG_MODE == 1
+						if (basisIdx == 0) ++(accS[NEW.jumpType]);
+						else 		   ++(accT[NEW.jumpType]);
+					#endif
+
 					//Recover the orignal vaules for those rows corresponding to missing Y values
 					if (yInfo.nMissing > 0 && Knewterm > 0 /*&& basis->type != OUTLIERID*/)  //needed for basisFunction_OUliter=1						
 						f32_mat_multirows_set_by_submat(Xnewterm, Npad, Knewterm, Xt_zeroBackup, yInfo.rowsMissing, yInfo.nMissing);
@@ -782,6 +794,7 @@ void beast2_main_corev4_gui(void)
 					//Find the good positions of the proposed MOVE
 					//Then update the knotLists and order
 					/****************************************************/
+ 
 
 					if (basis->type == OUTLIERID) {
 						basis->UpdateGoodVec_KnotList(basis, &NEW, Npad16);
@@ -790,6 +803,7 @@ void beast2_main_corev4_gui(void)
 						basis->UpdateGoodVec_KnotList(basis, &NEW, Npad16);
 						basis->KNOT[-1] = 1; 	                      	basis->KNOT[basis->nKnot] = N + 1L;
 					}					
+
 
 					basis->CalcBasisKsKeK_TermType(basis);
 					UpdateBasisKbase(MODEL.b, MODEL.NUMBASIS, basis-MODEL.b);//basisIdx=basis-b Re-compute the K indices of the bases after the basisID 
@@ -839,7 +853,7 @@ void beast2_main_corev4_gui(void)
 						MR_EvaluateModel(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.precVec, &stream);
 						//r_printf("MRite%d |%f|%f|diff:%f -prec %f\n", ite, MODEL.curr.marg_lik, MODEL.prop.marg_lik, MODEL.prop.marg_lik - MODEL.curr.marg_lik, MODEL.precVec[0]);
 					 
-	                    /*
+	                                   /****
 						I32 K = MODEL.prop.K;
 						for (int i = 0; i < MODEL.prop.K; ++i) {
 						 
@@ -853,15 +867,12 @@ void beast2_main_corev4_gui(void)
 						
 							r_printf("ite----%d\n",ite);
 							int a = 1;
-							*/ 
+					   ****/ 
 					}
 
 					#endif
 
-				    #ifdef __DEBUG__
-						if (basisIdx == 0) ++(accS[NEW.jumpType]);
-						else 		       ++(accT[NEW.jumpType]);
-					#endif
+
 
 				} //(*rnd32++ < exp(marg_lik_prop - basis->marg_lik))
 				
@@ -976,7 +987,7 @@ void beast2_main_corev4_gui(void)
 					} while (  IsNaN(MODEL.curr.marg_lik) && ntries < 20 );
 
 					if ( IsNaN(MODEL.curr.marg_lik) ) {
-						#if !(defined(R_RELEASE) || defined(M_RELEASE)) 
+						#if !(defined(R_RELEASE) || defined(M_RELEASE) ||  defined(P_RELEASE)) 
 						r_printf("skip3 | prec: %.4f| marg_lik_cur: %.4f \n",  MODEL.precVec[0], MODEL.curr.marg_lik);
 						#endif
 						skipCurrentPixel = 3;
@@ -1054,7 +1065,7 @@ void beast2_main_corev4_gui(void)
 				// mexPrint is not just thread-sate but danagerous to use in any new threads
 				//if (extra.printProgressBar && NUM_PIXELS == 1 && sample % 1000 == 0) {
 				//	F32 frac = (F32)(chainNumber * MCMC_SAMPLES + sample) / (MCMC_SAMPLES * MCMC_CHAINNUM);
-				//	printProgress(frac, extra.consoleWidth, Xnewterm, 0);
+				//	printProgress1(frac, extra.consoleWidth, Xnewterm, 0);
 				//}
 				/*---------WINDOW-------------------------*/
 
@@ -1608,28 +1619,31 @@ void beast2_main_corev4_gui(void)
 			    #undef _okn_1
 			}
 
+
 			// Jump out of the chainumber loop
 			if (skipCurrentPixel) {
-				q_warning("\nWARNING(#%d):The max number of bad iterations exceeded. Can't decompose the current time series\n", skipCurrentPixel);
-				break;
+			/*---------WINDOW-------------------------*/
+			     //q_warning("\nWARNING(#%d):The max number of bad iterations exceeded. Can't decompose the current time series\n", skipCurrentPixel);
+			/*---------WINDOW-------------------------*/
+			     break;
 			}
 
 
-					/*---------WINDOW-------------------------*/
-					EnterCriticalSection(&gData.cs);
+			/*---------WINDOW-------------------------*/
+			EnterCriticalSection(&gData.cs);
 
-					gData.curChainNumber = chainNumber;
+			gData.curChainNumber = chainNumber;
 
-					if (opt->io.meta.hasSeasonCmpnt) {
-						gData.sN = *resultChain.sncp;
-					} else {
-						gData.sN = 0;
-					}
-					gData.tN = *resultChain.tncp;
-					PostMessage(gData.hwnd, WM_USER + 2, 0, 0);
+			if (opt->io.meta.hasSeasonCmpnt) {
+				gData.sN = *resultChain.sncp;
+			} else {
+				gData.sN = 0;
+			}
+			gData.tN = *resultChain.tncp;
+			PostMessage(gData.hwnd, WM_USER + 2, 0, 0);
 
-					LeaveCriticalSection(&gData.cs);
-					/*---------WINDOW-------------------------*/
+			LeaveCriticalSection(&gData.cs);
+			/*---------WINDOW-------------------------*/
 		}
 		/*********************************/
 		// WHILE(chainNumber<chainNumber)
@@ -2031,24 +2045,21 @@ void beast2_main_corev4_gui(void)
 		  
 
 		//if (!skipCurrentPixel)	NUM_OF_PROCESSED_GOOD_PIXELS++; //avoid the branch
-		NUM_OF_PROCESSED_GOOD_PIXELS += !skipCurrentPixel;  //this is a global variable.
-		NUM_OF_PROCESSED_PIXELS++;							//this is also a global variable.
+		NUM_OF_PROCESSED_GOOD_PIXELS += !skipCurrentPixel;              //this is a global variable.
+		NUM_OF_PROCESSED_PIXELS++;					//this is also a global variable.
 
 
-
-
-		/*---------WINDOW-------------------------*/
-		// mexPrint is not just thread-sate but danagerous to use in any new threads
 		F64 elaspedTime = GetElaspedTimeFromBreakPoint();
 		if (NUM_OF_PROCESSED_GOOD_PIXELS > 0 && NUM_PIXELS > 1 && (pixelIndex % 50 == 0 || elaspedTime > 1)) 		{
 			F64 estTimeForCompletion = GetElapsedSecondsSinceStart()/NUM_OF_PROCESSED_GOOD_PIXELS * (NUM_PIXELS - pixelIndex);
+		/*---------WINDOW-------------------------*/
+		        // mexPrint is not just thread-sate but danagerous to use in any new threads
 			//printProgress2((F32)pixelIndex / NUM_PIXELS, estTimeForCompletion, extra.consoleWidth, Xnewterm, 0);
+		/*---------WINDOW-------------------------*/
 			if (elaspedTime > 1) SetBreakPointForStartedTimer();
 		}
-		/*---------WINDOW-------------------------*/
 
-		// mexPrint is not just thread-sate but danagerous to use in any new threads
-		#ifdef __DEBUG__
+		#if DEBUG_MODE == 1
 		r_printf("TREND: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n", 
 			      accT[0], flagT[0] , accT[1], flagT[1], accT[2], flagT[2], accT[3], flagT[3], accT[4], flagT[4]);
 		r_printf("SEASN: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n",
@@ -2076,9 +2087,10 @@ void beast2_main_corev4_gui(void)
 	while (gData.status != DONE)
 		SleepConditionVariableCS(&gData.cv, &gData.cs, INFINITE);
 	LeaveCriticalSection(&gData.cs);
-#endif
-	return;
+#endif //#ifdef OS_WIN64	
 	/*---------WINDOW-------------------------*/
+
+	return;
 
 } /* End of beastST() */
 

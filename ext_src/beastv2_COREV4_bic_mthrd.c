@@ -169,7 +169,7 @@ static void BEAST2_EvaluateModel_BIC(	BEAST2_MODELDATA* curmodel, BEAST2_BASIS_P
 	//cblas_dtrmv(const CBLAS_LAYOUT Layout, const CBLAS_UPLO uplo, const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const MKL_INT n, const double *a, const MKL_INT lda, double *x, const MKL_INT incx);
 	r_cblas_strmv(CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, K, cholXtX, K, GlobalMEMBuf_1st, 1);
 	F32 alpha2_star = pyInfo->YtY - DOT(K, GlobalMEMBuf_1st, GlobalMEMBuf_1st);
-	 */
+	*/
 	F32 alpha2_star      = (yInfo->YtY_plus_alpha2Q[0] - DOT(K, XtY, beta_mean)) * 0.5;
 
 	//half_log_det_post; = sum(log(1. / diag(U)))
@@ -186,13 +186,13 @@ static void BEAST2_EvaluateModel_BIC(	BEAST2_MODELDATA* curmodel, BEAST2_BASIS_P
 	F32 sig2 = curmodel->alpha2Q_star[0] / yInfo->alpha1_star;
 
 	if (whichCriteria==1)        //bic
-		curmodel->marg_lik = yInfo->n*logf(sig2) + K*logf( (float) yInfo->n);
+		curmodel->marg_lik = yInfo->n*logf(sig2) + K*logf(yInfo->n);
 	else if (whichCriteria == 2) //aic
 		curmodel->marg_lik = yInfo->n * logf(sig2) + K * 2;
 	else if (whichCriteria == 3) //aicc
 		curmodel->marg_lik = yInfo->n * logf(sig2) + K * 2 + 2.*(K*K+K)/(yInfo->n-K-1);
 	else if (whichCriteria == 4) //HQIC
-		curmodel->marg_lik = yInfo->n * logf(sig2) + K * 2* logf( logf(yInfo->n)+0.0001f);
+		curmodel->marg_lik = yInfo->n * logf(sig2) + K * 2* logf( logf(yInfo->n)+0.0001);
 	return;
 }
 
@@ -244,6 +244,8 @@ static  void ComputeMargLik_prec01_BIC(BEAST2_MODELDATA_PTR data, BEAST2_MODEL_P
 		data->marg_lik = yInfo->n * logf(sig2) + K * 2 * logf(logf(yInfo->n) + 0.0001);
 	return;
 }
+
+//#include <unistd.h> // char* getcwd(char* buf, size_t size);
 
 #define LOCAL(...) do{ __VA_ARGS__ } while(0);
 //extern MemPointers* mem;
@@ -334,8 +336,8 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		
 		int numCIVars      =  0;
 		if (hasSeasonCmpnt) {
-			ci[numCIVars].result     = resultChain.sCI;		         //season		
-		    ci[numCIVars].newDataRow = Xnewterm + XnewtermOffset;	 //season		
+			ci[numCIVars].result = resultChain.sCI;		         //season		
+			ci[numCIVars].newDataRow = Xnewterm + XnewtermOffset;	 //season		
 			numCIVars++;
 			XnewtermOffset += Npad * q;   //FOR MRBEAST
 		}
@@ -368,11 +370,12 @@ int beast2_main_core_bic_mthrd(void* dummy)
 	const CORESULT coreResults[MAX_NUM_BASIS];
 	SetupPointersForCoreResults(coreResults, MODEL.b, MODEL.NUMBASIS, &resultChain);
 		 
+
 	// Added for BIC/AIC
 	opt->prior.alpha1 = 0.;
 	opt->prior.alpha2 = 0.;
 
-	const BEAST2_HyperPar  hyperPar = {.alpha_1=opt->prior.alpha1,.alpha_2=opt->prior.alpha2,.del_1=opt->prior.delta1,  .del_2=opt->prior.delta2};
+	const BEAST2_HyperPar  hyperPar = { .alpha_1=opt->prior.alpha1,.alpha_2=opt->prior.alpha2,.del_1=opt->prior.delta1,  .del_2=opt->prior.delta2};
 
 	/****************************************************************************/
 	//		THE OUTERMOST LOOP: Loop through all the time series one by one
@@ -389,15 +392,14 @@ int beast2_main_core_bic_mthrd(void* dummy)
 	if (extra.printProgressBar) {
 		F32 frac = 0.0; I32 firstTimeRun = 1;
         /***********MULTITHREAD*******************/
-		//printProgress(frac,     extra.consoleWidth, Xnewterm, firstTimeRun);
+		//printProgress1(frac,     extra.consoleWidth, Xnewterm, firstTimeRun);
 		//printProgress2(frac, 0, extra.consoleWidth, Xnewterm, firstTimeRun);
 	/***********MULTITHREAD*******************/
 	}
 
-	//#define __DEBUG__
-	#undef  __DEBUG__ 
+ 
 
-	#ifdef __DEBUG__
+	#if DEBUG_MODE == 1
 		// Allocate a mem block and memset it to zero
 		I32    N          = opt->io.N;
 		I32    Npad       = (N + 7) / 8 * 8; Npad =  N;//Correct for the inconsitency of X and Y in gemm and gemv
@@ -416,11 +418,11 @@ int beast2_main_core_bic_mthrd(void* dummy)
 	const U32  MCMC_THINNING = opt->mcmc.thinningFactor;
 	const U32  MCMC_BURNIN   = opt->mcmc.burnin;
 	const U32  MCMC_CHAINNUM = opt->mcmc.chainNumber;
-	const U16  SEASON_BTYPE  = opt->prior.seasonBasisFuncType;
-	const U16  GROUP_MatxMat = (MODEL.sid <0 || opt->prior.seasonBasisFuncType != 3 )
-						       && (MODEL.vid < 0 || opt->prior.trendBasisFuncType != 3)
-							   && (MODEL.tid<0  || opt->prior.trendBasisFuncType!=2)
-		                       && ( MODEL.oid<0 || opt->prior.outlierBasisFuncType!=2);
+	const U16  SEASON_BTYPE = opt->prior.seasonBasisFuncType;
+	const U16  GROUP_MatxMat = (MODEL.sid < 0 || opt->prior.seasonBasisFuncType != 3)
+		&& (MODEL.vid < 0 || opt->prior.trendBasisFuncType != 3)
+		&& (MODEL.tid < 0 || opt->prior.trendBasisFuncType != 2)
+		&& (MODEL.oid < 0 || opt->prior.outlierBasisFuncType != 2);
 
 	/***********MULTITHREAD*******************/
 	//The next two global variables will be set in the main thread
@@ -440,15 +442,15 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		pthread_mutex_unlock(&mutex);
 		/***********MULTITHREAD*******************/
 		// Fecth a new time-series: set up Y, nMissing,  n, rowsMissing		
-		F32PTR MEMBUF           = Xnewterm; // Xnewterm is a temp mem buf.
-		BEAST2_fetch_timeSeries(&yInfo, pixelIndex,  MEMBUF, &(opt->io));
+		F32PTR MEMBUF = Xnewterm; // Xnewterm is a temp mem buf.
+		BEAST2_fetch_timeSeries(&yInfo, pixelIndex, MEMBUF, &(opt->io));
 
 
 		F32PTR  Xtmp             = Xt_mars;
 		U08     skipCurrentPixel = BEAST2_preprocess_timeSeries(&yInfo, MODEL.b, Xtmp, opt);		
 	
 
-		#ifdef __DEBUG__
+		#if DEBUG_MODE == 1
 			I32 accS[5] = { 0, 0, 0, 0, 0 },  accT[5] = { 0, 0, 0, 0, 0 };
 			I32 flagS[5] = { 0, 0, 0, 0, 0 }, flagT[5] = { 0, 0, 0, 0, 0 };
 			for (int i = 0; i < yInfo.nMissing; i++) { flagSat[yInfo.rowsMissing[i]] = getNaN();}
@@ -627,7 +629,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 					MEM.verify_header(&MEM);
 				#endif
 
-				#ifdef __DEBUG__
+				#if DEBUG_MODE == 1
 					I32 basisIdx = basis - MODEL.b;		
 					flagSat[NEW.newKnot - 1] += basisIdx == 0 && (NEW.jumpType == BIRTH || NEW.jumpType == MOVE);					 
 					if (basisIdx == 0) ++(flagS[NEW.jumpType]);
@@ -873,16 +875,18 @@ int beast2_main_core_bic_mthrd(void* dummy)
 					else						acceptTheProposal = *(RND.rnd32)++ < expValue * 4.294967296e+09;
 					 
 				}
-	 
-			    #if DEBUG_MODE == 1
-					MEM.verify_header(&MEM);
-			    #endif
+		 
+				#if DEBUG_MODE == 1
+					if (basisIdx == 0) ++(flagS[NEW.jumpType]);
+					else 		   ++(flagT[NEW.jumpType]);
+                                        MEM.verify_header(&MEM);
+				#endif
 
-				if(acceptTheProposal) 
+				if(acceptTheProposal)
 				{
-					#ifdef __DEBUG__
+					#if DEBUG_MODE == 1
 						if (basisIdx == 0) ++(accS[NEW.jumpType]);
-						else 		       ++(accT[NEW.jumpType]);
+						else 		   ++(accT[NEW.jumpType]);
 					#endif
 
 					//Recover the orignal vaules for those rows corresponding to missing Y values
@@ -899,6 +903,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 					//Find the good positions of the proposed MOVE
 					//Then update the knotLists and order
 					/****************************************************/
+ 
 
 					if (basis->type == OUTLIERID) {
 						basis->UpdateGoodVec_KnotList(basis, &NEW, Npad16);
@@ -907,6 +912,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 						basis->UpdateGoodVec_KnotList(basis, &NEW, Npad16);
 						basis->KNOT[-1] = 1; 	                      	basis->KNOT[basis->nKnot] = N + 1L;
 					}					
+
 
 					basis->CalcBasisKsKeK_TermType(basis);
 					UpdateBasisKbase(MODEL.b, MODEL.NUMBASIS, basis-MODEL.b);//basisIdx=basis-b Re-compute the K indices of the bases after the basisID 
@@ -956,7 +962,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 						MR_EvaluateModel(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.precVec, &stream);
 						//r_printf("MRite%d |%f|%f|diff:%f -prec %f\n", ite, MODEL.curr.marg_lik, MODEL.prop.marg_lik, MODEL.prop.marg_lik - MODEL.curr.marg_lik, MODEL.precVec[0]);
 					 
-	                    /*
+	                                   /****
 						I32 K = MODEL.prop.K;
 						for (int i = 0; i < MODEL.prop.K; ++i) {
 						 
@@ -970,10 +976,11 @@ int beast2_main_core_bic_mthrd(void* dummy)
 						
 							r_printf("ite----%d\n",ite);
 							int a = 1;
-							*/ 
+					   ****/ 
 					}
 
 					#endif
+
 
 
 				} //(*rnd32++ < exp(marg_lik_prop - basis->marg_lik))
@@ -1047,6 +1054,10 @@ int beast2_main_core_bic_mthrd(void* dummy)
  
 				if (!bStoreCurrentSample) continue;
 				
+				#if DEBUG_MODE == 1
+					MEM.verify_header(&MEM);
+				#endif
+
 				/**********************************************/
 				//
 				//      Start to compute final results
@@ -1057,7 +1068,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 				/***********MULTITHREAD*******************/
 				//if (extra.printProgressBar && NUM_PIXELS == 1 && sample % 1000 == 0) {
 				//	F32 frac = (F32)(chainNumber * MCMC_SAMPLES + sample) / (MCMC_SAMPLES * MCMC_CHAINNUM);
-				//	printProgress(frac, extra.consoleWidth, Xnewterm, 0);
+				//	printProgress1(frac, extra.consoleWidth, Xnewterm, 0);
 				//}
 				/***********MULTITHREAD*******************/	
 
@@ -1557,14 +1568,15 @@ int beast2_main_core_bic_mthrd(void* dummy)
 			    #undef _okn_1
 			}
 
-			/***********MULTITHREAD*******************/
+
 			// Jump out of the chainumber loop
 			if (skipCurrentPixel) {
-				//q_warning("WARNING(#%d):The max number of bad iterations exceeded. "
-				//	     "Can't decompose the current time series\n", skipCurrentPixel);
-				break;
-			}
 			/***********MULTITHREAD*******************/
+			     q_warning("\nWARNING(#%d):The max number of bad iterations exceeded. Can't decompose the current time series\n", skipCurrentPixel);
+			     break;
+			/***********MULTITHREAD*******************/
+			}
+
 		}
 		/*********************************/
 		// WHILE(chainNumber<chainNumber)
@@ -1968,11 +1980,9 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		/***********MULTITHREAD*******************/
 		pthread_mutex_lock(&mutex);
 		//if (!skipCurrentPixel)	NUM_OF_PROCESSED_GOOD_PIXELS++; //avoid the branch
-		NUM_OF_PROCESSED_GOOD_PIXELS += !skipCurrentPixel;  //this is a global variable.
-		NUM_OF_PROCESSED_PIXELS++;							//this is also a global variable.
-		pthread_mutex_unlock(&mutex);
+		NUM_OF_PROCESSED_GOOD_PIXELS += !skipCurrentPixel;              //this is a global variable.
+		NUM_OF_PROCESSED_PIXELS++;					//this is also a global variable.
 		/***********MULTITHREAD*******************/
-
 
 
 		/***********MULTITHREAD*******************/
@@ -1995,6 +2005,14 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		/***********MULTITHREAD*******************/
 		
 		
+
+		#if DEBUG_MODE == 1
+		r_printf("TREND: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n", 
+			      accT[0], flagT[0] , accT[1], flagT[1], accT[2], flagT[2], accT[3], flagT[3], accT[4], flagT[4]);
+		r_printf("SEASN: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n",
+			      accS[0], flagS[0], accS[1], flagS[1], accS[2], flagS[2], accS[3], flagS[3], accS[4], flagS[4]);
+		#endif
+
 		/***********MULTITHREAD*******************/
 		/*
 		pthread_mutex_lock(&mutex);
@@ -2009,13 +2027,6 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		}
 
 		/***********MULTITHREAD*******************/
-
-		#ifdef __DEBUG__
-		r_printf("TREND: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n", 
-			      accT[0], flagT[0] , accT[1], flagT[1], accT[2], flagT[2], accT[3], flagT[3], accT[4], flagT[4]);
-		r_printf("SEASN: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n",
-			      accS[0], flagS[0], accS[1], flagS[1], accS[2], flagS[2], accS[3], flagS[3], accS[4], flagS[4]);
-		#endif
 
 	} //for (U32 pixelIndex = 1; pixelIndex <= TOTALNUMPIXELS; pixelIndex++)
 

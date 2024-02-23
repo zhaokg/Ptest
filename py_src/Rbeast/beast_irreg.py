@@ -345,7 +345,7 @@ at zhao.1423@osu.edu.
       prior.trendRightMargin  = tseg_rightmargin  
       if hasOutlier:
             prior.outlierMaxKnotNum = ocp_max	  
-      prior.K_MAX            = 500
+      prior.K_MAX            = 0
       prior.precValue        = precValue
       prior.precPriorType    = precPriorType
 	  

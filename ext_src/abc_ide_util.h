@@ -45,7 +45,7 @@ extern "C" {
 	void RemoveAttribute(VOID_PTR listVar, const char* field);
 
 	extern  I32   GetConsoleWidth(void);
-	extern  void  printProgress(F32 pct, I32 width, char* buf, I32 firstTimeRun);
+	extern  void  printProgress1(F32 pct, I32 width, char* buf, I32 firstTimeRun);
 	extern  void  printProgress2(F32 pct, F64 time, I32 width, char* buf, I32 firstTimeRun);
 
 	I32 GetCharArray(void* ptr, char* dst, int n);
