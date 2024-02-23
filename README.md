@@ -165,7 +165,7 @@ Despite being published originally for ecological and enviornmental applications
 |Political Science|*Reuning, K., Whitesell, A. and Hannah, A.L., 2022. [Facebook algorithm changes may have amplified local republican parties](https://journals.sagepub.com/doi/full/10.1177/20531680221103809). Research & Politics, 9(2), p.20531680221103809.*|
 |Geography|*Lyu, R., Pang, J., Zhang, J. and Zhang, J., 2024. The impacts of disturbances on mountain ecosystem services: Insights from BEAST and Bayesian network. Applied Geography, 162, p.103143.*|
 |Watershed Hydrology|*Sakizadeh, M., Milewski, A. and Sattari, M.T., 2023. Analysis of Long-Term Trend of Stream Flow and Interaction Effect of Land Use and Land Cover on Water Yield by SWAT Model and Statistical Learning in Part of Urmia Lake Basin, Northwest of Iran. Water, 15(4), p.690.*|
-|Oceanography|*Oehlert, A.M., Hunter, H., Riopelle, C. and Purkis, S.J., 2023. Perturbation to North Atlantic Ocean‐Climate Dynamics Tripled Whitings Mud Production in the Bahamas. Journal of Geophysical Research: Oceans, 128(11), p.e2023JC020021.*|
+|Oceanography|*Oehlert, A.M., Hunter, H., Riopelle, C. and Purkis, S.J., 2023. Perturbation to North Atlantic Ocean-Climate Dynamics Tripled Whitings Mud Production in the Bahamas. Journal of Geophysical Research: Oceans, 128(11), p.e2023JC020021.*|
 | Hydraulic Engineering | *Xu, X., Yang, J., Ma, C., Qu, X., Chen, J. and Cheng, L., 2022. Segmented modeling method of dam displacement based on BEAST time series decomposition. Measurement, 202, p.111811.* |
 |Social Media|*Barrie, C., Ketchley, N., Siegel, A. and Bagdouri, M., 2023. Measuring Media Freedom.*|
 |Political Economy|*Benchimol, J. and Palumbo, L., 2023. Sanctions and Russian Online Prices.*|
