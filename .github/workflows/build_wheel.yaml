@@ -44,25 +44,25 @@ jobs:
              python-version: '3.7'
  
       - run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
       - run: copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp39-* 
              
       - run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:    cp310-*
               
       - run: copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp311-*    
@@ -96,25 +96,25 @@ jobs:
              python-version: '3.7'
  
       - run: cp  pyproject_np1.17.3_miw3738.toml  pyproject.toml
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*  
    
       - run: cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp39-* 
              
       - run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:    cp310-*
               
       - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp311-*     
@@ -152,19 +152,19 @@ jobs:
           platforms: arm64    #all
    
       - run: cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp38-*  cp39-* 
              
       - run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:    cp310-*
               
       - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp311-*     
@@ -197,7 +197,7 @@ jobs:
              python-version: '3.9'
                   
       - run: cp pyproject_np1.25.0_musl_39310311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*     
@@ -230,31 +230,31 @@ jobs:
              python-version: '3.9'
                   
       - run: cp pyproject_np1.17.3_miw3738.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:  x86_64    #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp37-*   cp38-*  
   
       - run: cp pyproject_np1.19.3_miw39.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:  x86_64    #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp39-*  
              
       - run: cp pyproject_np1.21.0_ma3839.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:  arm64    #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp38-*    cp39-*              
              
       - run: cp pyproject_np1.21.3_miwma310.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   x86_64 arm64    #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp310-*  
  
       - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.1
+      - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:  x86_64 arm64    #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp311-*  
