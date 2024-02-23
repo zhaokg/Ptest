@@ -277,6 +277,6 @@ jobs:
 
       - uses: pypa/gh-action-pypi-publish@v1.5.0
         with:
-          user: zhaokg
+          user: __token__  # zhaokg
           #repository_url: https://test.pypi.org/legacy/
           password: ${{ secrets.PYPI_PASSWORD }} 
