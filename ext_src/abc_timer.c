@@ -3,7 +3,7 @@
 
 // Need to be placed before time.h
 #if ( defined(COMPILER_CLANG)||defined(COMPILER_GCC)||defined(COMPILER_SOLARIS) ) && !(defined(__APPLE__)||defined(__MACH__))
- //stackoverflow.com/questions/40515557/compilation-error-on-clock-gettime-and-clock-monotonic
+ // stackoverflow.com/questions/40515557/compilation-error-on-clock-gettime-and-clock-monotonic
 
 	#ifndef  _GNU_SOURCE
 		#define _GNU_SOURCE

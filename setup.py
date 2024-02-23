@@ -29,9 +29,11 @@ class get_numpy_include(object):
         return get_include()
 
 
-
+# https://stackoverflow.com/questions/49640513/unicodedecodeerror-charmap-codec-cant-decode-byte-0x9d-in-position-x-charac
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    return open(os.path.join(os.path.dirname(__file__), fname),encoding='utf8').read()
+    #return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 
 def is_platform_windows():
     return sys.platform == "win32" or sys.platform == "cygwin"
