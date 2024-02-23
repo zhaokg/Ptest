@@ -1,5 +1,22 @@
 #include "abc_000_warning.h"
+
+
+// Need to be placed before time.h
+#if ( defined(COMPILER_CLANG)||defined(COMPILER_GCC)||defined(COMPILER_SOLARIS) ) && !(defined(__APPLE__)||defined(__MACH__))
+https://stackoverflow.com/questions/40515557/compilation-error-on-clock-gettime-and-clock-monotonic
+
+	#ifndef  _GNU_SOURCE
+		#define _GNU_SOURCE
+	#endif
+
+	#ifndef  _POSIX_C_SOURCE
+       #define _POSIX_C_SOURCE 199309L
+	#endif
+
+#endif
+
 #include "abc_timer.h"
+
 
  
 static F64 conversionFactor;

@@ -1006,7 +1006,8 @@ static int BarObject_init(BarObject* self, PyObject* args, PyObject* kwds) {
 
     // !PyArg_ParseTupleAndKeywords(args, kwds, "|OOi", kwlist, &first, &last,   &self->number))
 
-    r_printf("Init called... %#x\n", self);
+    //r_printf("Init called... %#x\n", self);
+    r_printf("Init called... %p\n", self);
     return 0;
 }
 
