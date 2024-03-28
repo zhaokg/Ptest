@@ -47,7 +47,15 @@ jobs:
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp311-*    
-             #CIBW_ARCHS_MACOS:        x86_64 arm64             
+             #CIBW_ARCHS_MACOS:        x86_64 arm64   
+
+      - run: copy pyproject_np1.26.0_musl_312.toml pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.5
+        env:             
+             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp312-*    
+
+             
               
       - uses: actions/upload-artifact@v3
         with:
