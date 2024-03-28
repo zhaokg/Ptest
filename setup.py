@@ -91,7 +91,8 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],    
     #setup_requires      = ['numpy'],           # Deprecated in favor of pyproject.toml
-    install_requires     =  ['numpy>=1.17.3', 'matplotlib>=2.2.0'], # ['numpy>=1.10', 'matplotlib>=2.2.0'],
+    #install_requires     =  ['numpy>=1.17.3', 'matplotlib>=2.2.0'], # ['numpy>=1.10', 'matplotlib>=2.2.0'],
+    install_requires     =  ['numpy>=1.17.3'],                       # remove the depedence on matlplotlib; give a warning if matplot is missing
     #entry_points        ={  'console_scripts': ['mycommand=exampleproject.data:main1'] },    
     packages             = packages,    
     package_dir          = {"Rbeast": "py_src/Rbeast","Rbeast.data": "py_src/Rbeast/data", '': '.'},      

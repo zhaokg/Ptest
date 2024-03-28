@@ -1,8 +1,45 @@
-import matplotlib.pyplot as plt
-from    matplotlib       import __version__  as version
 from   .extractbeast     import extract as extractbeast
 from numpy               import ndarray, min, max,ndarray,flip, isnan, round, sum, arange
 from numpy               import concatenate as c, array as np_array, where as np_where, sqrt as np_sqrt
+
+import importlib.util
+import sys
+################################################################
+# Check if the matplotlib is installed or not: If yes, load it
+################################################################
+
+def check_module(name):
+# https://stackoverflow.com/questions/1051254/check-if-python-package-is-installed
+  if name in sys.modules:
+    return True
+  else:
+    spec = importlib.util.find_spec(name)
+    if spec is not None:
+      return True
+     #If you choose to perform the actual import ...
+     #module = importlib.util.module_from_spec(spec)
+     #sys.modules[name] = module
+     #spec.loader.exec_module(module)
+     #print(f"{name!r} has been imported")      
+    else:
+      return False
+
+if check_module('matplotlib'):
+    import matplotlib.pyplot as plt
+    from    matplotlib       import __version__  as version
+
+
+  
+# https://stackoverflow.com/questions/990422/how-to-get-a-reference-to-current-modules-attributes-in-python
+#As previously mentioned, globals gives you a dictionary as opposed to dir() which gives you a list of the names 
+# defined in the module. The way I # typically see this done is like this:
+# import sys
+# dir(sys.modules[__name__])  
+
+def is_matlot_loaded():   
+   return 'plt' in globals()
+
+
 
 import warnings
 
@@ -112,6 +149,9 @@ def plot(o, index=0,\
     def warning(msg):
         warnings.warn(msg)
 
+    if not is_matlot_loaded():
+        error("matplotlib is needed for plotting but not installed! Install it before using this function!")
+        return None
     #indexDefautValue    = 0;
     #varsDefautValue     = ["st", "s", "scp", "sorder", "t", "tcp", "torder", "slpsgn", "o", "ocp", "error"]
     #ncpStatDefaultValue = 'median'
