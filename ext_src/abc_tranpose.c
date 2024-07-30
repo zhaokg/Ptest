@@ -646,7 +646,7 @@ void i32_permuate_nd(I32PTR mat, int *dims, int* order, int ndim) {
 		new_index[i] = i;
 	}
 		
-	i32_QuickSortA(new_groupstart, new_index, 0, new_ndim - 1);
+	i32a_introSort_index(new_groupstart, 0, new_ndim - 1,  new_index);
 	int new_order[20];
 	int new_orgdims[20];
 	for (int i = 0; i < new_ndim; i++) {

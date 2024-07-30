@@ -50,9 +50,9 @@ void simple_linear_regression_nan(F32PTR Y, F32PTR X, int N, F32PTR Yfit, F32PTR
 
 typedef struct {
    I32 N;
-   I32 Nlda; // the leading dimensio of the X
+   I32 Nlda;  // the leading dimensio of the X
 
-   I16 k1;   // k1_old=k1_new;
+   I16 k1;     // k1_old=k1_new;
    I16 k2_old, k2_new;
    I16 Knewterm;
    I16 KOLD,  KNEW;
@@ -60,9 +60,6 @@ typedef struct {
 } NEWCOLINFO, * _restrict NEWCOLINFO_PTR;
 
 
-extern void update_XtX_from_Xnewterm(F32PTR X, F32PTR Xnewterm, F32PTR XtX, F32PTR XtXnew, NEWCOLINFO* new);
-
-extern void update_XtY_from_Xnewterm(F32PTR Y, F32PTR Xnewterm, F32PTR XtY, F32PTR XtYnew, NEWCOLINFO* new, I32 q);
 
 
 

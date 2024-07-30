@@ -6,7 +6,7 @@
 #include "abc_common.h"
 #include "abc_date.h"
 
-#include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name ‘_IO_cookie_io_functions_t’
+#include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
 
 //char t[] = "\033[0;35m";
 // fflush(stdout);   //: c function: fflush(stdout)--flush the line buffer to see immediate outputs

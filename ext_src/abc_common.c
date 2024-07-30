@@ -363,7 +363,7 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 	if (numCpt == 0) { return numCpt; }
 	 
 
-	f32_QuickSortD(cpfromProb_Val, cpfromProb_Pos, 0, numCpt - 1);
+	f32d_introSort_index(cpfromProb_Val,  0, numCpt - 1, cpfromProb_Pos);
 
 	numCpt = min(numCpt, maxCptNumber);
 	r_cblas_scopy(numCpt, (F32PTR)cpfromProb_Pos, 1, (F32PTR) cpt, 1);
@@ -378,7 +378,7 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 	}
 	INDEX		= INDEX - numCpt;
 	CPT_float	= CPT_float - numCpt;	
-	f32_QuickSortA(CPT_float, INDEX, 0, numCpt - 1);
+	f32a_introSort_index(CPT_float, 0, numCpt - 1, INDEX);
 
 	//Compute confidence intervals for indentified changepoints
 	for (I32 i = 0; i < numCpt; i++)
@@ -449,6 +449,7 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 
 	return numCpt;
 }
+
  I32 FindChangepointv1(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR cptCI, I32 N, I32 minSepDist, I32 maxCptNumber)
 {
 	if (maxCptNumber == 0)	{ return maxCptNumber; }
@@ -546,7 +547,7 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 
 	if (numCpt == 0) { return numCpt; }
 	
-	f32_QuickSortD(cpfromSumP_Val, cpfromProb_Pos, 0, numCpt - 1);
+	f32d_introSort_index(cpfromSumP_Val, 0, numCpt - 1, cpfromProb_Pos);
 	numCpt  = min(numCpt, maxCptNumber);
 
 	f32_copy( (F32PTR)cpfromProb_Pos, (F32PTR)cpt, numCpt);	
@@ -560,7 +561,8 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 		cpt_f32[i]             = (F32)cpt[i];
 		INDEX_timeToProbAmp[i] = i;
 	}
-	f32_QuickSortA(cpt_f32, INDEX_timeToProbAmp, 0, numCpt - 1);
+
+	f32a_introSort_index(cpt_f32,  0, numCpt - 1, INDEX_timeToProbAmp);
 	// Now, cpt_f32 contains the cpts ranked in the order of time
 	// INDEX saves the indices mapping to the list ranked in magnitdue
 
@@ -569,7 +571,6 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 	f32_fill_val(-9999.f, cptCI, 2*numCpt);
 		
 	F32PTR tmpSeg  = (F32*) mem + 3 * N;
-	I32PTR nullSeg = (I32*) mem + 4 * N;  
 	for (I32 i = 0; i < numCpt; i++)
 	{
 		I32 startIdx, endIdx,len;
@@ -580,7 +581,7 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 		len = endIdx-startIdx + 1;		
 
 		f32_copy(prob+startIdx, tmpSeg, len);		
-		f32_QuickSortA(tmpSeg, nullSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
+		f32a_introSort(tmpSeg, 0, len - 1);  // nullSeg is just provided as an input but the result is not used
 		cptCI[i] = confidenceInterval(tmpSeg, len, 'L');
 
     	//-------------------------------------------------------------------
@@ -592,7 +593,7 @@ static I32 find_changepoint_v0(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cp
 	    len      = endIdx - startIdx + 1;
 
 		f32_copy(prob + startIdx, tmpSeg, len);		
-		f32_QuickSortD(tmpSeg, nullSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
+		f32d_introSort(tmpSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
 		cptCI[numCpt + i] = confidenceInterval(tmpSeg, len, 'R');
  	}
 	
@@ -670,7 +671,7 @@ static I32 FindChangepoint_minseg_is_1(F32PTR prob, F32PTR mem, F32 threshold, I
  
 	if (numCpt == 0) { return numCpt; }
 
-	f32_QuickSortD(cpfromSumP_Val, cpfromProb_Pos, 0, numCpt - 1);
+	f32d_introSort_index(cpfromSumP_Val, 0, numCpt - 1, cpfromProb_Pos);
 	numCpt = min(numCpt, maxCptNumber);
 
 	f32_copy((F32PTR)cpfromProb_Pos, (F32PTR)cpt, numCpt);
@@ -684,7 +685,7 @@ static I32 FindChangepoint_minseg_is_1(F32PTR prob, F32PTR mem, F32 threshold, I
 		cpt_f32[i]             = (F32)cpt[i];
 		INDEX_timeToProbAmp[i] = i;
 	}
-	f32_QuickSortA(cpt_f32, INDEX_timeToProbAmp, 0, numCpt - 1);
+	f32a_introSort_index(cpt_f32, 0, numCpt - 1, INDEX_timeToProbAmp);
 	// Now, cpt_f32 contains the cpts ranked in the order of time
 	// INDEX saves the indices mapping to the list ranked in magnitdue
 
@@ -871,7 +872,7 @@ I32 FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR c
 			}
 			else {
 				// there are at least 2 cpts in the top list
-				f32_QuickSortD(topTenPeaksPrb, topTenPeaksLoc, 0, numTopTenCpt - 1);
+				f32d_introSort_index(topTenPeaksPrb, 0, numTopTenCpt - 1, topTenPeaksLoc);
 				if (topTenPeaksPrb[0] > 1.5 * topTenPeaksPrb[1]) {
 					// if the best peak is far beter than the the seond best peak
 					cpfromProb_Pos[i] = topTenPeaksLoc[0];
@@ -902,7 +903,7 @@ I32 FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR c
 
 	if (numCpt == 0) { return numCpt; }
 
-	f32_QuickSortD(cpfromSumP_Val, cpfromProb_Pos, 0, numCpt - 1);
+	f32d_introSort_index(cpfromSumP_Val, 0, numCpt - 1, cpfromProb_Pos);
 	numCpt = min(numCpt, maxCptNumber);
 
 	f32_copy((F32PTR)cpfromProb_Pos, (F32PTR)cpt, numCpt);
@@ -916,7 +917,7 @@ I32 FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR c
 		cpt_f32[i]             = (F32)cpt[i];
 		INDEX_timeToProbAmp[i] = i;
 	}
-	f32_QuickSortA(cpt_f32, INDEX_timeToProbAmp, 0, numCpt - 1);
+	f32a_introSort_index(cpt_f32, 0, numCpt - 1, INDEX_timeToProbAmp);
 	// Now, cpt_f32 contains the cpts ranked in the order of time
 	// INDEX saves the indices mapping to the list ranked in magnitdue
 
@@ -925,7 +926,6 @@ I32 FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR c
 	f32_fill_val(-9999.f, cptCI, 2 * numCpt);
 
 	F32PTR tmpSeg = (F32*)mem + 3 * N;
-	I32PTR nullSeg = (I32*)mem + 4 * N;
 	for (I32 i = 0; i < numCpt; i++) 	{
 
 		I32 startIdx, endIdx, len;
@@ -936,8 +936,8 @@ I32 FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR c
 		startIdx = (startIdx + endIdx) / 2;
 		len = endIdx - startIdx + 1;
 
-		f32_copy(prob + startIdx, tmpSeg, len);
-		f32_QuickSortA(tmpSeg, nullSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
+		f32_copy(prob + startIdx, tmpSeg, len);		
+		f32a_introSort(tmpSeg, 0, len - 1);             // nullSeg is just provided as an input but the result is not used
 		cptCI[i] = confidenceInterval(tmpSeg, len, 'L');		
 		//-------------------------------------------------------------------
 
@@ -948,7 +948,7 @@ I32 FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR c
 		len = endIdx - startIdx + 1;
 
 		f32_copy(prob + startIdx, tmpSeg, len);
-		f32_QuickSortD(tmpSeg, nullSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
+		f32d_introSort(tmpSeg, 0, len - 1);       // nullSeg is just provided as an input but the result is not used
 		cptCI[numCpt + i] = confidenceInterval(tmpSeg, len, 'R');
 		//-------------------------------------------------------------------
 	}
@@ -1137,7 +1137,7 @@ I32 FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32
 				cpfromProb_Val[i] = topTenPeaksPrb[0];
 			} else {
 				// there are at least 2 cpts in the top list
-				f32_QuickSortD(topTenPeaksPrb, topTenPeaksLoc, 0, numTopTenCpt - 1);
+				f32d_introSort_index(topTenPeaksPrb, 0, numTopTenCpt - 1, topTenPeaksLoc);
 				if (topTenPeaksPrb[0] > 1.5 * topTenPeaksPrb[1]) {
 					// if the best peak is far beter than the the seond best peak
 					cpfromProb_Pos[i] = topTenPeaksLoc[0];
@@ -1169,7 +1169,7 @@ I32 FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32
 
 	if (numCpt == 0) { return numCpt; }
 
-	f32_QuickSortD(cpfromSumP_Val, cpfromProb_Pos, 0, numCpt - 1);
+	f32d_introSort_index(cpfromSumP_Val, 0, numCpt - 1, cpfromProb_Pos);
 	numCpt = min(numCpt, maxCptNumber);
 
 	f32_copy((F32PTR)cpfromProb_Pos, (F32PTR)cpt, numCpt);
@@ -1185,7 +1185,7 @@ I32 FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32
 		cpt_f32[i]             = (F32)cpt[i];
 		INDEX_timeToProbAmp[i] = i;
 	}
-	f32_QuickSortA(cpt_f32, INDEX_timeToProbAmp, 0, numCpt - 1);
+	f32a_introSort_index(cpt_f32, 0, numCpt - 1, INDEX_timeToProbAmp);
 	// Now, cpt_f32 contains the cpts ranked in the order of time
 	// INDEX saves the indices mapping to the list ranked in magnitdue
 
@@ -1194,7 +1194,6 @@ I32 FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32
 	f32_fill_val(-9999.f, cptCI, 2 * numCpt);
 
 	F32PTR tmpSeg = (F32*)mem + 3 * N;
-	I32PTR nullSeg = (I32*)mem + 4 * N;
 	for (I32 i = 0; i < numCpt; i++) {
 
 		I32 startIdx, endIdx, len;
@@ -1206,7 +1205,7 @@ I32 FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32
 		len = endIdx - startIdx + 1;
 
 		f32_copy(prob + startIdx, tmpSeg, len);
-		f32_QuickSortA(tmpSeg, nullSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
+		f32a_introSort(tmpSeg, 0, len - 1);     // nullSeg is just provided as an input but the result is not used
 		cptCI[i] = confidenceInterval(tmpSeg, len, 'L');
 		//-------------------------------------------------------------------
 
@@ -1217,7 +1216,7 @@ I32 FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32
 		len      = endIdx - startIdx + 1;
 
 		f32_copy(prob + startIdx, tmpSeg, len);
-		f32_QuickSortD(tmpSeg, nullSeg, 0, len - 1); // nullSeg is just provided as an input but the result is not used
+		f32d_introSort(tmpSeg, 0, len - 1);  // nullSeg is just provided as an input but the result is not used
 		cptCI[numCpt + i] = confidenceInterval(tmpSeg, len, 'R');
 		//-------------------------------------------------------------------
 	}

@@ -53,7 +53,7 @@ modules = Extension(
             "Rbeast.Rbeast",
             sources       = filenames,
             include_dirs  = [get_numpy_include(), "ext_src/"],      # [ np.get_include(), "ext_src/"],
-            define_macros = [('P_RELEASE','1'),('RRR_INTERFACE','0')],
+            define_macros = [('P_RELEASE','1'),('R_INTERFACE','0')],
             libraries     = extralibs
         )
         
@@ -66,7 +66,7 @@ packages = find_namespace_packages(where='./py_src', exclude=['build','tests','e
 #print(packages)
 setup(
     name             = "Rbeast",   
-    version          = '0.1.19',
+    version          = '0.1.20',
     description      = "Bayesian changepoint detection and time series decomposition",
     author           = "Kaiguang Zhao",
     author_email     = 'zhao.1423@osu.edu',

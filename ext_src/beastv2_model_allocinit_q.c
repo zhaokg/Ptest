@@ -32,8 +32,8 @@ extern void PreCaclModelNumber(I32 minOrder, I32 maxOrder, I32 maxNumseg, I32 N,
 void  ReInit_PrecValues(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR opt) {
 // Called before running a new time series to make sure the existant values of precVec have no NAN
 	I32 hasNaNsInfs = 0;
-	for (int i = 0; i < MODEL.nPrec; i++) {
-			if (IsNaN(MODEL.precVec[i]) || IsInf(MODEL.precVec[i])) {
+	for (int i = 0; i < MODEL.precState.nPrecGrp; i++) {
+			if (IsNaN(MODEL.precState.precVec[i]) || IsInf(MODEL.precState.precVec[i])) {
 				hasNaNsInfs = 1L;
 				break;
 			}				
@@ -41,8 +41,8 @@ void  ReInit_PrecValues(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR opt) {
 
 	if (hasNaNsInfs) {
 			F32 precValue = opt->prior.precValue;
-			r_ippsSet_32f(precValue,       MODEL.precVec,    MODEL.nPrec);
-			r_ippsSet_32f(logf(precValue), MODEL.logPrecVec, MODEL.nPrec);
+			r_ippsSet_32f(precValue,       MODEL.precState.precVec,    MODEL.precState.nPrecGrp);
+			r_ippsSet_32f(logf(precValue), MODEL.precState.logPrecVec, MODEL.precState.nPrecGrp);
 	}
  
 }
@@ -76,7 +76,7 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 		// 0: Use a constant precison value
 		// 1: Use a uniform precision value for all terms
 
-		MODEL.nPrec       = 1L;    // this number is needed to set "RNDGAMMA_END = RNDGAMMA + MAX_RAND_NUM - MODEL.nPrec-1L"
+		MODEL.precState.nPrecGrp       = 1L;    // this number is needed to set "RNDGAMMA_END = RNDGAMMA + MAX_RAND_NUM - MODEL.precState.nPrecGrp-1L"
 		nPrecGrp          = 0;
 		nPrecXtXDiag      = 0;
 
@@ -89,8 +89,8 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 	else if (precType == ComponentWise) {
 		//2: Use varying precisions values for different terms and orders
 	
-		//// MODEL.nPrec equals MODEL.NUMBASIS, which is fixed throughout the program
-		MODEL.nPrec      = MODEL.NUMBASIS;     // this number is needed to set "RNDGAMMA_END = RNDGAMMA + MAX_RAND_NUM - MODEL.nPrec-1L"
+		//// MODEL.precState.nPrecGrp equals MODEL.NUMBASIS, which is fixed throughout the program
+		MODEL.precState.nPrecGrp      = MODEL.NUMBASIS;     // this number is needed to set "RNDGAMMA_END = RNDGAMMA + MAX_RAND_NUM - MODEL.precState.nPrecGrp-1L"
 		nPrecGrp         = MODEL.NUMBASIS;
 		nPrecXtXDiag     = opt->prior.K_MAX;
 	
@@ -115,8 +115,8 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 			b->offsetPrec = cumsum;
 			cumsum		 += b->nPrec;
 		}
-		MODEL.nPrec      = cumsum;
-		nPrecGrp         = MODEL.nPrec;
+		MODEL.precState.nPrecGrp   = cumsum;
+		nPrecGrp         = MODEL.precState.nPrecGrp;
 		nPrecXtXDiag     = opt->prior.K_MAX;		
 	}
 	/*
@@ -142,16 +142,16 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 				cumsum +=2 ;
 			}			
 		}
-		MODEL.nPrec = cumsum;
+		MODEL.precState.nPrecGrp = cumsum;
 
-		MODEL.precVec    = MyALLOC(*MEM, MODEL.nPrec*2, F32, 0);
-		MODEL.logPrecVec = MODEL.precVec + MODEL.nPrec;
+		MODEL.precState.precVec    = MyALLOC(*MEM, MODEL.precState.nPrecGrp*2, F32, 0);
+		MODEL.precState.logPrecVec = MODEL.precState.precVec + MODEL.precState.nPrecGrp;
 		// Initial precision values in this vector is only used for the first chain of the first pixel
 		// and all the other subsquent chains or pixels will be using whatever existing values are left 
 		// from the previous background. This may have some unintended consequences.
 		F32 precValue = opt->prior.precValue;
-		r_ippsSet_32f(precValue,       MODEL.precVec, MODEL.nPrec);
-		r_ippsSet_32f(logf(precValue), MODEL.logPrecVec, MODEL.nPrec);
+		r_ippsSet_32f(precValue,       MODEL.precState.precVec, MODEL.precState.nPrecGrp);
+		r_ippsSet_32f(logf(precValue), MODEL.precState.logPrecVec, MODEL.precState.nPrecGrp);
 
 		MODEL.curr.nTermsPerPrecGrp  = 1;
 		MODEL.prop.nTermsPerPrecGrp = 2;
@@ -162,8 +162,8 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 	}
 	*/
 
-	nodes[nid++] = (MemNode){ &MODEL.precVec,				sizeof(F32) * MODEL.nPrec,  .align = 4 };
-	nodes[nid++] = (MemNode){ &MODEL.logPrecVec,			sizeof(F32) * MODEL.nPrec,  .align = 4 };
+	nodes[nid++] = (MemNode){ &MODEL.precState.precVec,	   sizeof(F32) * MODEL.precState.nPrecGrp,  .align = 4 };
+	nodes[nid++] = (MemNode){ &MODEL.precState.logPrecVec, sizeof(F32) * MODEL.precState.nPrecGrp,  .align = 4 };
 
 	nodes[nid++] = (MemNode){ &MODEL.curr.precXtXDiag ,		sizeof(F32) * nPrecXtXDiag,  .align = 4 }; //NULL for  ConstPrec and UniformPrec
 	nodes[nid++] = (MemNode){ &MODEL.prop.precXtXDiag ,		sizeof(F32) * nPrecXtXDiag,  .align = 4 }; //NULL for  ConstPrec and UniformPrec
@@ -182,8 +182,8 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 	if (nPrecXtXDiag == 0) {
 		//MODE.precXtXDiag and precXtXDiag_prop will be used in chol_addCol: To make a a consistent API for chol_addCol,
 		// they are pointed to model.prec when prec is a  scalar.
-		MODEL.curr.precXtXDiag = MODEL.precVec;
-		MODEL.prop.precXtXDiag = MODEL.precVec;
+		MODEL.curr.precXtXDiag = MODEL.precState.precVec;
+		MODEL.prop.precXtXDiag = MODEL.precState.precVec;
 	}
 
 	// Initial precision values in this vector is only used for the first chain of the first pixel
@@ -193,8 +193,8 @@ static void Alloc_Init_Sig2PrecPrior(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR 
 	// But the above handling is buggy if the previous pixel exited abnormally, potentially leaving NANs due to bad sig2 values
 	// That is why a new function ReInit_precvalues is created and will be called if the existing prec has NAN values 
 	F32 precValue = opt->prior.precValue;
-	r_ippsSet_32f(precValue,       MODEL.precVec,    MODEL.nPrec);
-	r_ippsSet_32f(logf(precValue), MODEL.logPrecVec, MODEL.nPrec);
+	r_ippsSet_32f(precValue,       MODEL.precState.precVec,    MODEL.precState.nPrecGrp);
+	r_ippsSet_32f(logf(precValue), MODEL.precState.logPrecVec, MODEL.precState.nPrecGrp);
 
 
 	// sig2 is intialized only once here. This default value is used only for the the first chain

@@ -10,8 +10,9 @@
 #include "abc_math.h"  //sum_log_diag_v2
 #include "abc_vec.h"  //sum_log_diag_v2
 #include "beastv2_func.h"
+#include "beastv2_prior_precfunc.h"
 
-#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name ‘_IO_cookie_io_functions_t’
+#include <stdio.h>	       //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
 
 /*
 F32  GetPercentileNcp_old(F32PTR prob, I32 N, F32 pctile) {
@@ -75,9 +76,8 @@ void SetupPointersForCoreResults(CORESULT* coreResults, BEAST2_BASIS_PTR b, I32 
 	}
 }
 
-void BEAST2_EvaluateModel(
-	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
-	BEAST2_YINFO_PTR  yInfo,    BEAST2_HyperPar *hyperPar, F32PTR precVec, VOID_PTR stream )
+void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
+	      BEAST2_YINFO_PTR  yInfo,    BEAST2_HyperPar *hyperPar, PRECSTATE_PTR precState, PREC_FUNCS * precFunc )
 {
 	//TO RUN THIS FUNCTION, MUST FIRST RUN CONVERTBAIS so to GET NUMBERS OF BASIS TERMS	
 	
@@ -174,9 +174,13 @@ void BEAST2_EvaluateModel(
 		r_LAPACKE_spotrs(LAPACK_COL_MAJOR, 'U', K, 1, cholXtX, K, beta_mean, K);	
 	*/
 	
-	chol_addCol_skipleadingzeros_prec_invdiag(XtX, cholXtX, precVec, K, 1, K);
-	solve_U_as_LU_invdiag_sqrmat(cholXtX, XtY, beta_mean, K);
-	//////////////////////////////////////////////////////////////////
+   
+	/////////////////////////////////////////////////////////
+	//                Get PrecXttDiag
+	///////////////////////////////////////////////////////// 
+	// [0:ConstPrec, 1:UniformPrec, 2:ComponentWise], 3:OrderWise		 
+	precFunc->SetPrecXtXDiag(curmodel->precXtXDiag, b, NUMBASIS, precState);
+	precFunc->chol_addCol(XtX, cholXtX, curmodel->precXtXDiag, K, 1, K);
 
 
 	//Compute beta = beta_mean + Rsig2 * randn(p, 1);
@@ -209,19 +213,10 @@ void BEAST2_EvaluateModel(
 	r_cblas_strmv(CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, K, cholXtX, K, GlobalMEMBuf_1st, 1);
 	F32 alpha2_star = pyInfo->YtY - DOT(K, GlobalMEMBuf_1st, GlobalMEMBuf_1st);
 	 */
-	F32 alpha2_star = (yInfo->YtY_plus_alpha2Q[0] - DOT(K,  XtY,  beta_mean)) * 0.5;
+	 
 
-	//half_log_det_post; = sum(log(1. / diag(U)))
-	F32 half_log_det_post = sum_log_diagv2(cholXtX, K);
-	
-	//half_log_det_prior = -0.5 * (k_SN * log(prec(1)) + length(k_const_terms) * log(prec(2)) + length(linear_terms) * log(prec(3)));		
-	F32 half_log_det_prior	= -.5f * K*logf(precVec[0]);
-
-	//log_ML    = half_log_det_post - half_log_det_prior - (n / 2 + b) * log(a + a_star / 2);
-	F32 marg_lik = half_log_det_post - half_log_det_prior - yInfo->alpha1_star * logf(alpha2_star);
-
-	curmodel->alpha2Q_star[0] = alpha2_star;
-	curmodel->marg_lik        = marg_lik;
+	precFunc->SetNtermsPerPrecGrp(curmodel->nTermsPerPrecGrp, b, NUMBASIS, precState);
+	precFunc->ComputeMargLik(curmodel, precState, yInfo, hyperPar);
 
 	return;
 }
@@ -266,12 +261,12 @@ I32  GetInfoBandList(BEAST2_BASESEG* info, BEAST2_MODEL_PTR model, I32 Klastcol)
 				if (Klastcol >= (Kbase + b->ks[j])) {
 					info->R1 = b->KNOT[j - 1];
 					info->R2 = b->KNOT[j] - 1L;
-					info->K = min(Kbase + b->ke[j], Klastcol) - (Kbase + b->ks[j]) + 1;
+					info->K  = min(Kbase + b->ke[j], Klastcol) - (Kbase + b->ks[j]) + 1;
 					info++;
 					numBands++;
-				}
-				else {
-					QUITFLAG = 1;	break;
+				} else {
+					QUITFLAG = 1;	
+					break;
 				}
 			}
 
@@ -286,9 +281,9 @@ I32  GetInfoBandList(BEAST2_BASESEG* info, BEAST2_MODEL_PTR model, I32 Klastcol)
 					info->K  = min(Kbase + b->ke[j], Klastcol) - (Kbase + b->ks[j]) + 1;
 					info++;
 					numBands++;
-				}
-				else {
-					QUITFLAG = 1;	break;
+				}	else {
+					QUITFLAG = 1;	
+					break;
 				}
 			}
 		}
@@ -361,10 +356,10 @@ void MatxMat(BEAST2_BASESEG*infoX,I32 numBandsX, F32PTR X,BEAST2_BASESEG*infoY,I
 				I32 Nseg = r2 - r1 + 1;				
 				
 				r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, \
-					Kband, Kseg, Nseg, 1.0f, \
-					X + r1 - 1L, Npad,
-					Y + r1 - 1L, Npad, 0.f, \
-					XtY + Kbandcsum, Knew); //0.f, MEMBUF1, k1_new - 1);	
+					          Kband, Kseg, Nseg, 1.0f, \
+					          X + r1 - 1L, Npad,
+					          Y + r1 - 1L, Npad, 0.f, \
+					          XtY + Kbandcsum, Knew); //0.f, MEMBUF1, k1_new - 1);	
 			}
 			Kbandcsum += Kband;
 			X         += Kband * Npad;
@@ -416,6 +411,321 @@ void XtX_ByGroup(BEAST2_BASESEG* SEG, I32 numSeg,F32PTR X,F32PTR XtX,I32 N, I32 
 	
 }
  
+
+void Update_XtX_from_Xnewterm_ByGroup(F32PTR X, F32PTR Xnewterm, F32PTR XtX, F32PTR XtXnew, NEWTERM* NEW , BEAST2_MODEL_PTR model) {
+
+    const I32 k1       = NEW->newcols.k1;
+	const I32 k2_old   = NEW->newcols.k2_old;
+	const I32 k2_new   = NEW->newcols.k2_new;
+	const I32 N        = NEW->newcols.N;
+	const I32 Nlda     = NEW->newcols.Nlda;
+	const I32 Knewterm = NEW->newcols.Knewterm;
+	const I32 KOLD     = NEW->newcols.KOLD;
+	const I32 KNEW     = NEW->newcols.KNEW;
+
+	const I32  Npad    = N;//Correct for the inconsitency of X and Y in gemm and gemv
+	/*************************************************************************/
+	//               The FIRST component:	
+	/*************************************************************************/
+	// There'sY no first component if k1_old/k1_new=1 for SEASON	
+	for (I32 i = 1; i < k1; i++) SCPY(i, XtX + (i - 1L) * KOLD, XtXnew + (i - 1L) * KNEW);
+
+	/*************************************************************************/
+	//              The SECOND component
+	/*************************************************************************/
+	// No new cols/terms if flag=ChORDER && isInsert=0:the resampled basis has a higher order than the old basis
+	if (Knewterm != 0) {
+
+		FILL0(XtXnew + (k1 - 1) * KNEW, (KNEW - k1 + 1) * KNEW); // zero out the cols from k1-th to the end
+		if (k1 > 1) {
+			/*
+			I32 r1  = NEW.r1[0];
+			I32 r2  = NEW.r2[NEW.numSeg - 1];
+			I32 Nseg = r2 - r1 + 1;
+			r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, \
+				NEW.k1 - 1L, Knewterm, Nseg, 1.0f, \
+				Xt_mars  + r1-1L, Npad,
+				Xnewterm + r1-1L, Npad, 0.f, \
+				MODEL.prop.XtX + (NEW.k1 - 1L) * KNEW, KNEW); //0.f, MEMBUF1, k1_new - 1);
+			*/
+
+			// Xnewterm is pre-allocated with sufficent mem to ensure segInfo won't overflow in __GetMAXNumElemXnewTerm
+			BEAST2_BASESEG*  OLD_SEG    = (BEAST2_BASESEG*)(Xnewterm + Knewterm * Npad);
+			I32              OLD_numSeg = GetInfoBandList(OLD_SEG, model, k1 - 1);
+			MatxMat( OLD_SEG,  OLD_numSeg,  X,
+				     NEW->SEG, NEW->numSeg, Xnewterm,
+				     XtXnew + (k1 - 1L) * KNEW, N, KNEW);
+		}
+
+		/*
+		  r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans,
+		   Knewterm, Knewterm, Nseg, 1.0,
+		   Xnewterm + r1 - 1, Npad,
+		   Xnewterm + r1 - 1, Npad, 0.f,
+		   MODEL.prop.XtX + (NEW.k1-1) * KNEW + NEW.k1 - 1, KNEW);// MEMBUF2, K_newTerm);
+		*/
+		//XnewtermTXnewterm(&NEW, Xnewterm, MODEL.prop.XtX + (NEW.k1 - 1) * KNEW + NEW.k1 - 1, Npad, KNEW);
+		XtX_ByGroup(NEW->SEG, NEW->numSeg, Xnewterm, XtXnew + (k1 - 1) * KNEW + k1 - 1, N, KNEW);
+
+		/* //After obtaining Xnewterm'*Xnewterm, insert it into XtX_prop at appropriate locations
+			for (rI32 i = k1_new, j = 1; i <= k2_new; i++, j++) {
+				if (k1_new != 1) r_cblas_scopy(k1_new - 1, MEMBUF1 + (j - 1)*(k1_new - 1), 1, XtX_prop + (i - 1)*KNEW, 1);
+				r_cblas_scopy(j, MEMBUF2 + (j - 1)*K_newTerm, 1, XtX_prop + (i - 1)*KNEW + k1_new - 1, 1);}
+		*/
+	}
+	/*{
+	cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k1_new - 1, K_newTerm, N, 1, X_mars, N, X_mars_prop + (k1_new - 1)*N, N, 0, GlobalMEMBuf_1st, k1_new - 1);
+	for (int i = k1_new, j = 1; i <= k2_new; i++, j++)
+		 r_cblas_scopy(k1_new - 1, GlobalMEMBuf_1st + (j - 1)*(k1_new - 1), 1, XtX_prop + (i - 1)*KNEW, 1);
+	cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K_newTerm, K_newTerm, N, 1, X_mars_prop + (k1_new - 1)*N, N, X_mars_prop + (k1_new - 1)*N, N, 0, GlobalMEMBuf_1st, K_newTerm);
+	for (int i = k1_new, j = 1; i <= k2_new; i++, j++)
+		 r_cblas_scopy(j, GlobalMEMBuf_1st + (j - 1)*K_newTerm, 1, XtX_prop + (i - 1)*KNEW + k1_new - 1, 1);
+	}*/
+
+	/*************************************************************************/
+	//                  The THRID component: 
+	/*************************************************************************/
+	//There is no third componet if k2_old=KOLD 
+	if (k2_old != KOLD) {
+		/*for (rI32  j = 1; i <= KOLD; i++, j++) {r_cblas_scopy(K_newTerm,  MEMBUF1 + (j - 1)*K_newTerm, 1, XtX_prop + (k - 1)*KNEW + k1_new - 1, 1),					*/
+		for (I32 kold = k2_old + 1, knew = k2_new + 1; kold <= KOLD; kold++, knew++) {
+			F32PTR ColStart_old = XtX    + (kold - 1) * KOLD;
+			F32PTR ColStart_new = XtXnew + (knew - 1) * KNEW;
+			SCPY(k1 - 1,        ColStart_old,                    ColStart_new                   ); //the upper part of the third componet
+			SCPY(kold - k2_old, ColStart_old + (k2_old + 1) - 1, ColStart_new + (k2_new + 1) - 1); // the bottom part of the 3rd cmpnt
+		}
+
+		// If there is a MIDDLE part of the componet (i.e, Knewterm>0); this part 
+		// will be missing if flag is resmaplingOder and isInsert = 0.
+		if (Knewterm != 0) {
+			/*
+			  rI32 r1 = NEW.r1[0];
+			  rI32 r2 = NEW.r2[NEW.numSeg - 1];
+			  rI32 Nseg = r2 - r1 + 1;
+			  r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans,
+				  Knewterm, (KOLD - NEW.k2_old), Nseg, 1,
+				  Xnewterm + r1 - 1, Npad,
+				  Xt_mars + (NEW.k2_old + 1 - 1) * Npad + r1 - 1, Npad, 0,
+				  MODEL.prop.XtX + (NEW.k2_new+1L-1L) * KNEW + NEW.k1 - 1, KNEW );//MEMBUF1, K_newTerm);
+			 */
+			BEAST2_BASESEG* OLD_SEG    = (BEAST2_BASESEG*)(Xnewterm + Knewterm * Npad);
+			I32             OLD_numSeg = GetInfoBandList_post(OLD_SEG, model, k2_old + 1);
+			MatxMat(NEW->SEG, NEW->numSeg, Xnewterm,
+				    OLD_SEG, OLD_numSeg, X + k2_old * Npad,
+				    XtXnew + (k2_new + 1 - 1) * KNEW + k1 - 1, N, KNEW);
+		}
+
+	}
+
+}
+void Update_XtY_from_Xnewterm_ByGroup(F32PTR Y, F32PTR Xnewterm, F32PTR XtY, F32PTR XtYnew, NEWTERM* NEW , int q) {
+
+    const I32 k1       = NEW->newcols.k1;
+	const I32 k2_old   = NEW->newcols.k2_old;
+	const I32 k2_new   = NEW->newcols.k2_new;
+	const I32 N        = NEW->newcols.N;
+	const I32 Nlda     = NEW->newcols.Nlda;
+	const I32 Knewterm = NEW->newcols.Knewterm;
+	const I32 KOLD     = NEW->newcols.KOLD;
+	const I32 KNEW     = NEW->newcols.KNEW;
+
+	const I32  Npad    = N;//Correct for the inconsitency of X and Y in gemm and gemv
+	 
+	/*********************************************************************************/
+	//                 Compute XtY_prop from XtY
+	/********************************************************************************/
+	if (q == 1) {
+
+		// Skipped if k1_old=1 when dealing with SEASON
+		if (k1 > 1)          SCPY(k1 - 1,XtY, XtYnew);
+		// New components : XnewTemrm*Y
+		if (Knewterm > 0)  	 MatxVec(NEW->SEG, NEW->numSeg, Xnewterm, Y,  XtYnew + k1 - 1, N);
+		//this part will be skipped if k2_old=KOLD when dealing with TREND(Istrend==1)
+		if (k2_old != KOLD)  SCPY(KNEW - k2_new, XtY + (k2_old + 1L) - 1L, XtYnew + (k2_new + 1) - 1);
+
+	} else {
+		// FOR MrBEAST
+
+		// Skipped if k1_old=1 when dealing with SEASON
+		if (k1 > 1) {
+			for (I32 c = 0; c < q; ++c) {
+				SCPY(k1 - 1,XtY + KOLD * c, XtYnew + KNEW * c);
+			}
+		}
+		// New components : XnewTemrm*Y
+		if (Knewterm > 0) {
+			//MatxVec(NEW.SEG, NEW.numSeg, Xnewterm, yInfo.Y, MODEL.prop.XtY + NEW.k1 - 1, N);
+			r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, Knewterm, q, N, 1.f, Xnewterm, Npad, Y, N, 0.f, XtYnew + k1 - 1, KNEW);
+		}
+		//this part will be skipped if k2_old=KOLD when dealing with TREND(Istrend==1)
+		if (k2_old != KOLD) {
+			for (I32 c = 0; c < q; ++c) {
+				SCPY(KNEW -k2_new, XtY + (k2_old + 1L) - 1L + KOLD * c, XtYnew + (k2_new + 1) - 1 + KNEW * c);
+			}
+		}
+
+	} //if (q == 1) 
+
+}
+
+void Update_XtX_from_Xnewterm_NoGroup(F32PTR X, F32PTR Xnewterm, F32PTR XtX, F32PTR XtXnew, NEWTERM* NEW, BEAST2_MODEL* MODEL_not_used) {
+
+    const I32 k1       = NEW->newcols.k1;
+	const I32 k2_old   = NEW->newcols.k2_old;
+	const I32 k2_new   = NEW->newcols.k2_new;
+	const I32 N        = NEW->newcols.N;
+	const I32 Nlda     = NEW->newcols.Nlda;
+	const I32 Knewterm = NEW->newcols.Knewterm; // // k2_new - k1 + 1L;
+	const I32 KOLD     = NEW->newcols.KOLD;
+	const I32 KNEW     = NEW->newcols.KNEW;
+ 
+	/*************************************************************************/
+	//               The FIRST component:	
+	/*************************************************************************/
+	// There'sY no first component if k1_old/k1_new=1 for SEASON	
+	for (I32 i = 1; i < k1; i++) SCPY(i, XtX + (i - 1L) * KOLD, XtXnew + (i - 1L) * KNEW);
+
+	/*************************************************************************/
+	//              The SECOND component
+	/*************************************************************************/
+	// No new cols/terms if flag=ChORDER && isInsert=0:the resampled basis has a higher order than the old basis
+	if (Knewterm != 0) {
+
+		FILL0(XtXnew + (k1 - 1) * KNEW, (KNEW - k1 + 1) * KNEW); // zero out the cols from k1-th to the end
+		if (k1 > 1) {
+			r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k1 - 1, Knewterm, N, 1.0f,
+				X, Nlda,
+				Xnewterm, Nlda, 0.f,
+				XtXnew + (k1 - 1L) * KNEW, KNEW);
+		}
+
+
+		// Three alternative ways to compute Xnewterm'*XnewTerm. Note that the resulting matrix is symmetric
+
+		// THE FIRST WAY:
+		r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans,
+			Knewterm, Knewterm, N, 1.0,
+			Xnewterm, Nlda,
+			Xnewterm, Nlda, 0.f,
+			XtXnew + (k1 - 1) * KNEW + k1 - 1, KNEW);
+
+
+		//THE SECOND WAY: 
+		//sgemmt only updates the upper triangular part of the resulting matrix, which is supposed to be faster than sgemm, but it is NOT
+		//cblas_sgemmt(CblasColMajor, CblasUpper, CblasTrans, CblasNoTrans, K_newTerm, Npad, 1.0f, Xnewterm, Npad, Xnewterm, Npad, 0.f, GlobalMEMBuf_2nd, K_newTerm);
+
+		//THE THIRD WAY: 
+		//This is the fastest way when using Intel'sY MKL
+		/*
+		{  for (int i = 1; i <= K_newTerm; i++)
+		   for (int j = 1; j <= i; j++)
+		   GlobalMEMBuf_2nd[K_newTerm*(i - 1) + j - 1] = DOT(N, Xnewterm + (j - 1)*Npad, Xnewterm + (i - 1)*Npad);
+		} */
+
+		/*
+		//After obtaining Xnewterm'*Xnewterm, insert it into XtX_prop at appropriate locations
+		for (rI32 i = k1_new, j = 1; i <= k2_new; i++, j++) {
+			if (k1_new != 1) r_cblas_scopy(k1_new - 1, MEMBUF1 + (j - 1)*(k1_new - 1), 1, XtX_prop + (i - 1)*KNEW, 1);
+			r_cblas_scopy(j, MEMBUF2 + (j - 1)*K_newTerm, 1, XtX_prop + (i - 1)*KNEW + k1_new - 1, 1);
+		}*/
+	}
+	/*{
+	cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, k1_new - 1, K_newTerm, N, 1, X_mars, N, X_mars_prop + (k1_new - 1)*N, N, 0, GlobalMEMBuf_1st, k1_new - 1);
+	for (int i = k1_new, j = 1; i <= k2_new; i++, j++)
+	r_cblas_scopy(k1_new - 1, GlobalMEMBuf_1st + (j - 1)*(k1_new - 1), 1, XtX_prop + (i - 1)*KNEW, 1);
+	cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K_newTerm, K_newTerm, N, 1, X_mars_prop + (k1_new - 1)*N, N, X_mars_prop + (k1_new - 1)*N, N, 0, GlobalMEMBuf_1st, K_newTerm);
+	for (int i = k1_new, j = 1; i <= k2_new; i++, j++)
+	r_cblas_scopy(j, GlobalMEMBuf_1st + (j - 1)*K_newTerm, 1, XtX_prop + (i - 1)*KNEW + k1_new - 1, 1);
+	}*/
+
+	/*************************************************************************/
+	//                  The THRID component: 
+	/*************************************************************************/
+	//There is no third componet if k2_old=KOLD 
+	if (k2_old != KOLD) {
+		/*for (rI32  j = 1; i <= KOLD; i++, j++) {r_cblas_scopy(K_newTerm,  MEMBUF1 + (j - 1)*K_newTerm, 1, XtX_prop + (k - 1)*KNEW + k1_new - 1, 1),					*/
+		for (I32 kold = k2_old + 1, knew = k2_new + 1; kold <= KOLD; kold++, knew++) {
+			F32PTR ColStart_old = XtX + (kold - 1) * KOLD;
+			F32PTR ColStart_new = XtXnew + (knew - 1) * KNEW;
+			SCPY(k1 - 1,       ColStart_old, ColStart_new); //the upper part of the third componet
+			SCPY(kold - k2_old, ColStart_old + (k2_old + 1) - 1, ColStart_new + (k2_new + 1) - 1); // the bottom part of the 3rd cmpnt
+		}
+
+		// If there is a MIDDLE part of the componet (i.e, Knewterm>0); this part 
+		// will be missing if flag is resmaplingOder and isInsert = 0.
+		if (Knewterm != 0) {
+			r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans,
+				Knewterm, (KOLD - k2_old), N, 1.0,
+				Xnewterm, Nlda,
+				X + (k2_old + 1 - 1) * Nlda, Nlda, 0.0,
+				XtXnew + (k2_new + 1 - 1) * KNEW + k1 - 1, KNEW);
+		}
+
+	}
+
+			 
+}
+
+void Update_XtY_from_Xnewterm_NoGroup(F32PTR Y, F32PTR Xnewterm, F32PTR XtY, F32PTR XtYnew, NEWTERM* NEW, I32 q) {
+
+	// X and Xnewterm has a leading dimesnion of new.Nlada
+	// Y has a leading dimension of new.N
+
+    const I32 k1       = NEW->newcols.k1;
+	const I32 k2_old   = NEW->newcols.k2_old;
+	const I32 k2_new   = NEW->newcols.k2_new;
+	const I32 N        = NEW->newcols.N;
+	const I32 Nlda     = NEW->newcols.Nlda;
+	const I32 Knewterm = NEW->newcols.Knewterm; // // k2_new - k1 + 1L;
+	const I32 KOLD     = NEW->newcols.KOLD;
+	const I32 KNEW     = NEW->newcols.KNEW;
+
+/*********************************************************************************/
+//                 Compute XtY_prop from XtY
+/********************************************************************************/
+	if (q == 1) {
+		// Skipped if k1_old=1 when dealing with SEASON
+		if (k1 > 1)       SCPY(k1 - 1, XtY,XtYnew);
+		// New components : XnewTemrm*Y
+		if (Knewterm > 0) { 
+				r_cblas_sgemv(CblasColMajor, CblasTrans, N, Knewterm, 1.f,
+						Xnewterm,   Nlda,
+						Y,         1L, 0.f,
+					    XtYnew + k1 - 1, 1L);
+		}
+		//this part will be skipped if k2_old=KOLD when dealing with TREND(Istrend==1)
+		if (k2_old != KOLD) SCPY(KNEW - k2_new, XtY + (k2_old + 1L) - 1L, XtYnew + (k2_new + 1) - 1);
+
+	}
+	else {
+		// FOR MrBEAST
+
+		// Skipped if k1_old=1 when dealing with SEASON
+		if (k1 > 1) {
+			for (I32 c = 0; c < q; ++c) {
+				SCPY(k1 - 1, XtY + KOLD * c, XtYnew + KNEW * c);
+			}
+		}
+		// New components : XnewTemrm*Y
+		if (Knewterm > 0) {
+			//MatxVec(NEW.SEG, NEW.numSeg, Xnewterm, yInfo.Y, MODEL.prop.XtY + NEW.k1 - 1, N);
+			r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, 
+				Knewterm, q, N, 1.f, 
+				Xnewterm, Nlda,
+				Y,        N, 0.f,
+				XtYnew + k1 -1, KNEW);
+		}
+
+		//this part will be skipped if k2_old=KOLD when dealing with TREND(Istrend==1)
+		if (k2_old != KOLD) {
+			for (I32 c = 0; c < q; ++c) {
+				SCPY(KNEW - k2_new, XtY + (k2_old + 1L) - 1L + KOLD * c, XtYnew + (k2_new + 1) - 1 + KNEW * c);
+			}
+		}
+
+
+	}
+}
 //https: //stackoverflow.com/questions/3174850/what-is-the-correct-type-for-array-indexes-in-c#
 //https: //stackoverflow.com/questions/797318/how-to-split-a-string-literal-across-multiple-lines-in-c-objective-c
   
@@ -423,9 +733,8 @@ void XtX_ByGroup(BEAST2_BASESEG* SEG, I32 numSeg,F32PTR X,F32PTR XtX,I32 N, I32 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void MR_EvaluateModel(
-	BEAST2_MODELDATA *curmodel,  BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
-	BEAST2_YINFO_PTR yInfo,	 BEAST2_HyperPar *hyperPar, F32PTR precVec, VOID_PTR stream )
+void MR_EvaluateModel( BEAST2_MODELDATA *curmodel,  BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
+	BEAST2_YINFO_PTR yInfo,	 BEAST2_HyperPar *hyperPar, PRECSTATE_PTR precState, PREC_FUNCS  * precFunc)
 {
 	//TO RUN THIS FUNCTION, MUST FIRST RUN CONVERTBAIS so to GET NUMBERS OF BASIS TERMS	
 
@@ -531,16 +840,13 @@ void MR_EvaluateModel(
 		r_LAPACKE_spotrs(LAPACK_COL_MAJOR, 'U', K, 1, cholXtX, K, beta_mean, K);	
 	*/
 	
-	chol_addCol_skipleadingzeros_prec_invdiag(XtX, cholXtX, precVec, K, 1, K);
-	//BEAST: solve_U_as_LU_invdiag_sqrmat(cholXtX, XtY, beta_mean, K);
-	//MRBEAST--------start
-	solve_U_as_LU_invdiag_sqrmat_multicols(cholXtX, XtY, beta_mean, K, q);
-   	//MRBEAST--------end
-
-
-	//////////////////////////////////////////////////////////////////
-
-
+	/////////////////////////////////////////////////////////
+	//                Get PrecXttDiag
+	///////////////////////////////////////////////////////// 
+	// [0:ConstPrec, 1:UniformPrec, 2:ComponentWise], 3:OrderWise		 
+	precFunc->SetPrecXtXDiag(curmodel->precXtXDiag, b, NUMBASIS, precState);    //CHANGE: (1)nothing  or (2) MODEL.curr.precXtXDiag
+	precFunc->chol_addCol(XtX, cholXtX, curmodel->precXtXDiag, K, 1, K);
+		
 	//Compute beta = beta_mean + Rsig2 * randn(p, 1);
 	//Usig2 = (1 / sqrt(sig2)) * U; 		beta = beta_mean + linsolve(Usig2, randn(p, 1), opts);
 	//status = vdRngGaussian( method, stream, n, r, a, sigma );
@@ -564,29 +870,9 @@ void MR_EvaluateModel(
 	// Sample beta from beta_mean and cholXtX
 	/********************************************************/
 
+	precFunc->SetNtermsPerPrecGrp(curmodel->nTermsPerPrecGrp, b, NUMBASIS, precState);
+	precFunc->ComputeMargLik(curmodel, precState, yInfo, hyperPar);	 
 
-    //BEAST: F32 alpha2_star = (pyInfo->YtY_plus_alpha2Q[0] - DOT(K,  XtY,  beta_mean)) * 0.5;
-	
-	//MRBEAST--------start
-    r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, q, q, K, 1.f, beta_mean, K, XtY, K, 0.f, curmodel->alpha2Q_star, q);
-	r_ippsSub_32f(curmodel->alpha2Q_star, yInfo->YtY_plus_alpha2Q, curmodel->alpha2Q_star, q * q);
-	r_LAPACKE_spotrf(LAPACK_COL_MAJOR, 'U', q, curmodel->alpha2Q_star, q); // Choleskey decomposition; only the upper triagnle elements are used
-
-	F32 log_det_alphaQ = sum_log_diagv2(curmodel->alpha2Q_star, q);
-	//MRBEAST--------end
-
-	//half_log_det_post; = sum(log(1. / diag(U)))
-	F32 half_log_det_post = sum_log_diagv2(cholXtX, K);
-	
-	//half_log_det_prior = -0.5 * (k_SN * log(prec(1)) + length(k_const_terms) * log(prec(2)) + length(linear_terms) * log(prec(3)));		
-	F32 half_log_det_prior	= -.5f * K*logf(precVec[0]);
-
- 	//log_ML = half_log_det_post - half_log_det_prior - (n / 2 + b) * log(a + a_star / 2);
-	F32 marg_lik = q*(half_log_det_post - half_log_det_prior) - yInfo->alpha1_star * log_det_alphaQ*2.0f;
-
-    curmodel->marg_lik    = marg_lik;
-	//r_printf("Eval: det_post %f\n", f32_abs_sum(beta_mean,K*q));
-	//r_printf("Lik: det_post %f\n", f32_sum_matrixdiag(cholXtX, K));
  	return;
 
 	//MRBEAST--

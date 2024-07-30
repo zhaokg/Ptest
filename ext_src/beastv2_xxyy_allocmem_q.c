@@ -33,7 +33,7 @@ static I32 __GetNumElem_of_XnewTerm(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR o
 	for (int i = 0; i < MODEL.NUMBASIS; i++) { 
 		MAX_TOTAL_SEGNUM += (MODEL.b[i].prior.maxKnotNum + 1);
 	}
-	I32 MAX_NUMELEM_SEGINFO = MAX_TOTAL_SEGNUM * (sizeof(BEAST2_BASESEG)/4);
+	I32 MAX_NUMELEM_SEGINFO = (MAX_TOTAL_SEGNUM * sizeof(BEAST2_BASESEG) +3) /4;
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 

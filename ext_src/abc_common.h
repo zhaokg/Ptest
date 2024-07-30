@@ -10,8 +10,6 @@ char* word_wrap(char* str, int LINE_LENGTH);
 char* word_wrap_indented(char* str, int LINE_LENGTH, int nspace);
 
 extern void    ToUpper(char* s);
-extern void    f32_QuickSortD(F32PTR arr, I32PTR  index, I32 low, I32 high);
-extern void    f32_QuickSortA(F32PTR arr, I32PTR  index, I32 low, I32 high);
 extern I32	   strcicmp(char const * _restrict a, char const * _restrict b);
 extern I32     strcicmp_nfirst(char const* _restrict a, char const* _restrict b, int nfirst);
 extern I32     strmatch(char const* _restrict full, char const* _restrict part);

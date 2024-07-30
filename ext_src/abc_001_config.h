@@ -150,7 +150,7 @@
    #endif
 
 // For R only, This must appear before R.h: on the Redhat linux, if not,  report /usr/include/stdio.h:316:6: error: 
-// unknown type name ‘_IO_cookie_io_functions_t’ because R.h includes "stdio.h".
+// unknown type name '_IO_cookie_io_functions_t' because R.h includes "stdio.h".
 
 #if defined(COMPILER_CLANG)|| defined(COMPILER_GCC) ||defined(COMPILER_SOLARIS)
 	#ifndef _GNU_SOURCE

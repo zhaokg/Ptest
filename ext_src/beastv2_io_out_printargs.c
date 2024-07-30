@@ -71,7 +71,7 @@ void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 
 	#define Print1(fmtstr,hasComponent,...) if(hasComponent)  r_printf(fmtstr, ##__VA_ARGS__);
 	#define Print2(fmtstr,hasComponent,...) if(hasComponent)  r_printf(fmtstr __VA_OPT__(,)  __VA_ARGS__);
-	#define Print(fmtstr,hasComponent,...) {if(hasComponent) r_printf(fmtstr,  __VA_ARGS__);}
+	#define Print(fmtstr,hasComponent,...)  {if(hasComponent) r_printf(fmtstr,  __VA_ARGS__);          }
 
 	Print("%s", hasAny, "\n");	
 	Print("%sINFO%s: To supress printing the parameers in beast(),      set print.options = 0 \n", hasAny, em1, em2);
@@ -233,7 +233,7 @@ void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 	//Print("   prior%cdelta1           = %f\n", hasAny,      filler, prior->delta1);
 	//Print("   prior%cdelta2           = %f\n", hasAny,      filler, prior->delta2);	
 	
-	if (prior->precPriorType == ConstPrec)
+	if (prior->precPriorType == ConstPrec)    
 	Print("prior%cprecPriorType     = '%s'\n", hasAny, filler, "constant")
 	else if (prior->precPriorType == UniformPrec)
 	Print("prior%cprecPriorType     = '%s'\n", hasAny, filler, "uniform")

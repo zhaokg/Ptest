@@ -76,6 +76,15 @@ static void OO(BEAST2_BASIS_PTR basis, I32 N_not_used, BEAST2_RNDSTREAM* PRAND_n
 	basis->nKnot = 0;     //basis->sY.ORDER[0] = (unsigned char)(minSeasonOrder - 1) + (unsigned char)ceilfunc((*rnd++)* (maxSeasonOrder - minSeasonOrder + 1));
 	//basis->Kbase = 0; // It must be re-calcuated in UpdateKbase
 
+	// These are not used at all and made to provide consistenst API 
+	// (e.g., around UpdateGoodVec_KnotList in beast_core)
+	int fakeStart = 1;
+	int fakeEnd   = N_not_used + 1L;
+	basis->KNOT[INDEX_FakeStart] = fakeStart;
+	basis->KNOT[INDEX_FakeEnd]   = fakeEnd;
+	basis->KNOT[-1]              = 1L;
+	basis->KNOT[basis->nKnot]    = N_not_used + 1L;
+
 	// Get Ks andKe for individula segments of each components AND the total number of terms K
 	basis->CalcBasisKsKeK_TermType(basis);
 }

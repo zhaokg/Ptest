@@ -33,6 +33,7 @@ def beast(Y,                     \
           hasOutlier     = False,
           ocp_max        = 10,
           gui            = False,
+          mcmc_dump      = False,
           **kwargs
           ):
       """
@@ -151,6 +152,11 @@ method:
          (3)'aic': approximation of posterior probability using the Akaike information criterion (aic)
          (4)'aicc': approximation of posterior probability using the corrected Akaike information criterion (aicc)
          (5)'hic': approximation of  posterior probability using the Hannan–Quinn information criterion  (hic)
+         (6)'bic0.25':  approximation using the Bayesian information criterion adopted from Kim et al. (2016) <doi: 
+              10.1016/j.jspi.2015.09.008>; bic0.25=n*ln(SSE)+0.25k*ln(n) with less complexity penelaty than the standard BIC.
+         (7)'bic0.50': the same as above except that the penalty factor is 0.50.
+         (8)'bic1.5':  the same as above except that the penalty factor is 1.5.
+         (9)'bic2':    the same as above except that the penalty factor is 2.0.
 deseasonalize: 
          boolean; if true, the input time series will be first de-seasonalized before applying
          beast by removing a global seasonal component
@@ -180,6 +186,8 @@ hasOutlier:
 ocp_max:
         integer; needed only if hasOutlier=True to specify the maximum number of outliers (i.e., 
         outlier-type changepoints) allowed in the time series
+mcmc_dump:
+         boolean; if true, dump the sampled models in the MCMC chains
 gui: 
         boolean; if true, show a gui to demostrate the MCMC sampling; runs only 
         on Windows not Linux or MacOS

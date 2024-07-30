@@ -322,7 +322,7 @@
 
 //https: //stackoverflow.com/questions/39821164/how-do-you-define-a-multiline-macro-in-c
 //https: //www.geeksforgeeks.org/multiline-macros-in-c/
-#if defined(COMPILER_GCC)  
+#if defined(COMPILER_GCC) 
 
 //https: //github.com/BioMedIA/MIRTK/issues/230
 	#define  DISABLE_MANY_WARNINGS   \
@@ -379,7 +379,7 @@
 	ENABLE_WARNING(pragmas, pragmas, NOT_USED) \
 	ENABLE_WARNING(unknown-pragmas,unknown-pragmas, NOT_USED) 
 
-#elif defined(COMPILER_CLANG)  
+#elif defined(COMPILER_CLANG)    || 1
 //https://stackoverflow.com/questions/14261534/temporarily-overwrite-a-macro-in-c-preprocessor
 //https://clang.llvm.org/doxygen/classclang_1_1Preprocessor.html#a04dec9fbfa220dfea433bcbeffa270c3
 //https://gcc.gnu.org/onlinedocs/gcc-5.4.0/gcc/Push_002fPop-Macro-Pragmas.html
@@ -406,7 +406,8 @@
     DISABLE_WARNING(uninitialized, uninitialized, NOT_USED)\
     DISABLE_WARNING(pedantic, pedantic, NOT_USED) \
     DISABLE_WARNING(typedef-redefinition, typedef-redefinition, NOT_USED) \
-    DISABLE_WARNING(div-by-zero,div-by-zero, NOT_USED)
+    DISABLE_WARNING(div-by-zero,div-by-zero, NOT_USED) \
+	DISABLE_WARNING(unused-but-set-variable, unused-but-set-variable, NOT_USED) 
 
 	/*DISABLE_WARNING(restrict, restrict, NOT_USED)\*/
 	/*ENABLE_WARNING(restrict, restrict, NOT_USED)\*/
@@ -424,6 +425,7 @@
 	//https://clang.llvm.org/docs/DiagnosticsReference.html#wpragmas
 	//https://clang.llvm.org/docs/DiagnosticsReference.html#wrestrict-expansion
 	#define  ENABLE_MANY_WARNINGS  \
+    ENABLE_WARNING(unused-but-set-variable, unused-but-set-variable, NOT_USED) \
     ENABLE_WARNING(div-by-zero,div-by-zero, NOT_USED) \
     ENABLE_WARNING(typedef-redefinition, typedef-redefinition, NOT_USED)\
     ENABLE_WARNING(pedantic, pedantic, NOT_USED)\

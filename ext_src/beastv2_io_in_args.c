@@ -15,7 +15,7 @@
 #include "beastv2_func.h"    
 #include "beastv2_io.h"
 
-#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name ‘_IO_cookie_io_functions_t’
+#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
 
  
 #define CondErrMsgRet0(cond, ...)   if(cond) { r_error(__VA_ARGS__); return 0;}
@@ -894,7 +894,7 @@ static int  GetArg_2nd_Prior__(VOIDPTR prhs[], int nrhs, BEAST2_PRIOR_PTR prior,
 	if (m.outlierSigFactor)  o.outlierSigFactor = 2.5;            o.outlierSigFactor = max(o.outlierSigFactor, 1.5);
 
 	if (m.sig2 )             o.sig2      = 0.2f;				  o.sig2             = max(o.sig2,      0.01);
-	if (m.precValue)         o.precValue = 1.5f;				  o.precValue        = max(o.precValue, 0.01);
+	if (m.precValue)         o.precValue = 1.5f;				  o.precValue        = max(o.precValue, 1e-32);
 	if (m.alpha1)		     o.alpha1	 = 0.00000001f;
 	if (m.alpha2)		     o.alpha2	 = 0.00000001f;
 	if (m.delta1)		     o.delta1	 = 0.00000001f;
@@ -912,7 +912,7 @@ static int  GetArg_2nd_Prior__(VOIDPTR prhs[], int nrhs, BEAST2_PRIOR_PTR prior,
 	if (m.trendBasisFuncType) {
 		if      (o.precPriorType == UniformPrec)		o.trendBasisFuncType = 0;
 		else if (o.precPriorType == ConstPrec)          o.trendBasisFuncType = 0;
-		else if (o.precPriorType == ComponentWise)      o.seasonBasisFuncType = 1;
+		else if (o.precPriorType == ComponentWise)      o.trendBasisFuncType = 1;
 		else if (o.precPriorType == OrderWise)          o.trendBasisFuncType = 1;
 	}	 
 	if (m.outlierBasisFuncType) {
@@ -1026,6 +1026,8 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 
 		I08  printOptions;
 		I08  printProgressBar;
+
+		I08 dumpMCMCSamples;
 	} m = {0,};
 
 
@@ -1040,14 +1042,15 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 		}
 		else {
 			VOIDPTR tmp;
-			o.whichOutputDimIsTime = (tmp = GetField123Check(S, "whichOutputDimIsTime",2)) ?	GetScalar(tmp) : (m.whichOutputDimIsTime = 1);
+			o.whichOutputDimIsTime = (tmp = GetField123Check(S, "whichOutputDimIsTime",2)) ? GetScalar(tmp) : (m.whichOutputDimIsTime = 1);
 			o.removeSingletonDims  = (tmp = GetField123Check(S, "removeSingletonDims", 8)) ? GetScalar(tmp) : (m.removeSingletonDims = 1);			
-			o.numThreadsPerCPU     = (tmp = GetField123Check(S, "numThreadsPerCPU", 4)) ? GetScalar(tmp) : (m.numThreadsPerCPU = 1);
-			o.numParThreads        = (tmp = GetField123Check(S, "numParThreads", 4)) ?			GetScalar(tmp) : (m.numParThreads = 1);
-			o.numCPUCoresToUse     = (tmp = GetField123Check(S, "numCPUCoresToUse", 4)) ?		GetScalar(tmp) : (m.numCPUCoresToUse = 1);
-			o.consoleWidth         = (tmp = GetField123Check(S, "consoleWidth",2)) ?			GetScalar(tmp) : (m.consoleWidth = 1);
-			o.dumpInputData        = (tmp = GetField123Check(S, "dumpInputData",2)) ? GetScalar(tmp) : (m.dumpInputData = 1);
-			o.smoothCpOccPrCurve   = (tmp = GetField123Check(S, "smoothCpOccPrCurve",2)) ? GetScalar(tmp) : (m.smoothCpOccPrCurve = 1);
+			o.numThreadsPerCPU     = (tmp = GetField123Check(S, "numThreadsPerCPU", 4))    ? GetScalar(tmp) : (m.numThreadsPerCPU = 1);
+			o.numParThreads        = (tmp = GetField123Check(S, "numParThreads", 4))       ? GetScalar(tmp) : (m.numParThreads = 1);
+			o.numCPUCoresToUse     = (tmp = GetField123Check(S, "numCPUCoresToUse", 4))    ? GetScalar(tmp) : (m.numCPUCoresToUse = 1);
+			o.consoleWidth         = (tmp = GetField123Check(S, "consoleWidth",2))         ? GetScalar(tmp) : (m.consoleWidth = 1);
+			o.dumpInputData        = (tmp = GetField123Check(S, "dumpInputData",5))        ? GetScalar(tmp) : (m.dumpInputData = 1);
+			o.smoothCpOccPrCurve   = (tmp = GetField123Check(S, "smoothCpOccPrCurve",2))   ? GetScalar(tmp) : (m.smoothCpOccPrCurve = 1);
+			o.dumpMCMCSamples      = (tmp = GetField123Check(S, "dumpMCMCSamples", 7))     ? GetScalar(tmp) : (m.dumpMCMCSamples = 1);
 			#define _1(x)       o.x = (tmp=GetFieldCheck(S,#x))? GetScalar(tmp): (m.x=1)
 			#define _2(x,y)     _1(x);_1(y)
 			#define _3(x,y,z)   _1(x);_2(y,z)
@@ -1061,6 +1064,8 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 			_2(computeSeasonAmp,     computeTrendSlope);
 			_4(tallyPosNegSeasonJump, tallyPosNegTrendJump, tallyIncDecTrendJump, tallyPosNegOutliers);
 			_1(useMeanOrRndBeta);
+
+ 
 				 
 		} // if (!IsStruct(S)) : S is a struct
 	} // if (nrhs >= 5)
@@ -1104,7 +1109,7 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 	if (o.tallyPosNegOutliers)   o.computeOutlierChngpt = 1;
 
 	if (m.useMeanOrRndBeta)      o.useMeanOrRndBeta = 0;
-
+	if (m.dumpMCMCSamples)       o.dumpMCMCSamples   = 0;
 
 	
 	return 1;
@@ -1151,7 +1156,8 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 		opt->prior.seasonMaxOrder           = 0;		
 	}
 	if (hasSVDCmpnt) { 
-		opt->extra.computeSeasonAmp = 0; //TODO: remove this restriction 
+		opt->extra.computeSeasonAmp      = 0; //TODO: remove this restriction 
+		opt->extra.tallyPosNegSeasonJump = 0;
 	}
 	if (!hasOutlierCmpnt) {
 		opt->extra.computeOutlierChngpt = 0;
@@ -1218,8 +1224,7 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 		int KMAX = 7500;
 		PRIOR->K_MAX = min(PRIOR->K_MAX, KMAX);
 	}
-	
- 
+
 
 	// The initial model is generated in "basis_genrandombasis". We cacluat the number of terms for it
 	// so KMAX must be larger than it
@@ -1260,6 +1265,10 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 	if (opt->prior.precPriorType == ComponentWise && opt->prior.numBasis == 1) {
 		opt->prior.precPriorType = UniformPrec;
 		//q_warning("WARNING: prior$precPriorType is changed from 'componentwise' to 'uniform' because the model specified only has a trend component.\n");
+	}
+
+	if (opt->io.numOfPixels > 1) {
+		opt->extra.dumpMCMCSamples = 0;
 	}
 	return 1;
 }

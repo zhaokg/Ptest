@@ -98,17 +98,24 @@ static void OO_AllocInitBasis(BEAST2_BASIS_PTR basis, I32 N, I32 K_MAX, MemPoint
 	// bytes are zeroed out
 	
 	MemNode nodes[] = {
-		{&basis->KNOT,    sizeof(TKNOT) * MAX_KNOTNUM,        .align = 64 },
-		{&basis->ORDER,   sizeof(TORDER) * MAX_NUM_SEG*0,     .align = 2 },  // There is no ORDER needed for the outlier component
-		{&basis->ks,      sizeof(I16) * (1+MAX_NUM_SEG),      .align = 2 },
-		{&basis->ke,      sizeof(I16) * (1+MAX_NUM_SEG) ,     .align = 2 },
-		{&basis->goodvec, sizeof(U08) * Npad16         ,      .align = 8 }, // must be 8-aligned because the i08_sum_binvec
-		{&basis->termType, sizeof(U08) * K_MAX*0       ,      .align = 1 },
+		{&basis->KNOT,    sizeof(TKNOT)  * (1+1+1+MAX_KNOTNUM+1),        .align = 64 },
+		{&basis->ORDER,   sizeof(TORDER) * MAX_NUM_SEG*0,         .align = 2 },  // There is no ORDER needed for the outlier component
+		{&basis->ks,      sizeof(I16)    * (1+MAX_NUM_SEG),       .align = 2 },
+		{&basis->ke,      sizeof(I16)    * (1+MAX_NUM_SEG) ,      .align = 2 },
+		{&basis->goodvec, sizeof(U08)    * Npad16         ,       .align = 8 }, // must be 8-aligned because the i08_sum_binvec
+		{&basis->termType, sizeof(U08)   * K_MAX*0       ,       . align = 1 },
 		{NULL,}
 	};
  
 	MEM->alloclist(MEM, nodes, AggregatedMemAlloc, NULL);
-	 
+	
+	//THIS IS NOT DIRECTLY USED IN THE ALGORITHM. MADE TO PRROVID Consistent API
+	//The first changepont is fixed at the ts start, and move the pointer one step foward,
+    //  so the fixed br has a index of -1. there is one extra chngpt fixed at N+1, so the skip lenghth here is MAX_KNOTNUM+1
+	basis->KNOT += 3L;  // the fake first ID will be assigned later in GenarateRandomBasis
+	// Three Extra Bytes" [fakestart, fakeend, firstStart]
+
+
 	//The outlier cmpnt is optional, so it can be empty. One extra element (i.e., 1+max_num_seg) is allocated
 	// for saving the starts (ks[-1]=1, ke[-1]=0), which is needed to insert new terms into an empty
 	// outlier component. nBytes  = sizeof(I16) * (1L + MAX_NUM_SEG) * 2;

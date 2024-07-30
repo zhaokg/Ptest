@@ -144,7 +144,7 @@ static INLINE void _CalcDevExtremPos(PROP_DATA_PTR info ) {
 }
 
 
-static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PTR newcol, PROP_DATA_PTR info)
+static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new,  PROP_DATA_PTR info)
 {	
 	I32					goodNum = basis->goodNum;
 	I16					nKnot   = basis->nKnot;
@@ -483,7 +483,7 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 	}
 
 	/*******************************************/
-	//Get k1_old, k2_old, k1_new and k2_new		
+	// Get k1_old, k2_old, k1_new and k2_new		
 	/*******************************************/
 	//I16 k1_old, k2_old;	//The range of terms to be removed from Xt_mars		   			
 	//I16 k1_new, k2_new; //The range of terms to be added to Xt_mars_prop			
@@ -497,14 +497,14 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 			//The range of terms to be removed from Xt_mars		   
 			// No new term will be added or removed for NoChangeFixGlobal
 			// so new->KnewTerm=0;
-			newcol->k1     = basis->K+1;
-			newcol->k2_old = basis->K;
+			new->newcols.k1     = basis->K+1;
+			new->newcols.k2_old = basis->K;
 			//The range of terms to be added to Xt_mars_prop		
 			//new->k2_new = new->k1_new + new->Knewterm - 1L;
 		}	else {
 			//The range of terms to be removed from Xt_mars		   
-			newcol->k1     = KS_old[(newIdx)-1];
-			newcol->k2_old = KE_old[(endIdx)-1];
+			new->newcols.k1     = KS_old[(newIdx)-1];
+			new->newcols.k2_old = KE_old[(endIdx)-1];
 			//The range of terms to be added to Xt_mars_prop		
 			//new->k2_new = new->k1_new + new->Knewterm - 1L;
 		}
@@ -517,14 +517,14 @@ static void DSVT_Propose( BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PT
 		
 		if (new->newOrder <= new->oldOrder) { // if (newOrder < oldOrder): remove one or two existing terms
 			//NEW.numSeg = 0;	NEW.r[0] = -999;
-			newcol->k2_old  = KE_old[newIdx - 1];
-			newcol->k1      = basis->type == SEASONID ? /*season*/(newcol->k2_old - 1) :/*trend*/ newcol->k2_old;
+			new->newcols.k2_old  = KE_old[newIdx - 1];
+			new->newcols.k1      = basis->type == SEASONID ? /*season*/(new->newcols.k2_old - 1) : /*trend*/ new->newcols.k2_old;
 			//new->k2_new = new->k1_old - 1;
 			//Knewterm = k2_new - k1_new + 1; //Equal to 0, meaning no new terms will be added
 		}
 		else {// (NEW. newOrder > oldOrder): Add new terms					
-			newcol->k2_old = KE_old[newIdx - 1];    //the term immediately preceding the start of the next segment
-			newcol->k1     = newcol->k2_old + 1;       //the term immediately following the end of the selected segment
+			new->newcols.k2_old = KE_old[newIdx - 1];          //the term immediately preceding the start of the next segment
+			new->newcols.k1     = new->newcols.k2_old + 1;     //the term immediately following the end of the selected segment
 
 			//new->k2_new = basis->type == SEASONID ? (new->k1_new + 1) : new->k1_new;
 			//Knewterm    = k2_new - k1_new + 1; //Knewterm is either 1 or 2, depending on the new term being a trend or season cmpnt
@@ -785,7 +785,7 @@ static int __OO_NewIdx_MoveDeath(BEAST2_BASIS_PTR basis, PROP_DATA_PTR info) {
 	return minIdx + 1;
 }
 
-static void OO_Propose_01_old(	BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PTR newcol,PROP_DATA_PTR info)
+static void OO_Propose_01_old(	BEAST2_BASIS_PTR basis, NEWTERM_PTR new, PROP_DATA_PTR info)
 {	
 	I32  goodNum = basis->goodNum; // not used in this function
 	I16  nKnot = basis->nKnot;
@@ -909,22 +909,22 @@ static void OO_Propose_01_old(	BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLIN
 	if (flag == BIRTH) {
 		//The range of terms to be removed from Xt_mars		
 		I32 nKnot = basis->nKnot;
-		newcol->k2_old = KE_old[nKnot - 1];
-		newcol->k1     = newcol->k2_old + 1;
+		new->newcols.k2_old = KE_old[nKnot - 1];
+		new->newcols.k1     = new->newcols.k2_old + 1;
 	}
 	else if (flag == DEATH) {
-		newcol->k2_old = KE_old[newIdx - 1];
-		newcol->k1     = KS_old[newIdx - 1];
+		new->newcols.k2_old = KE_old[newIdx - 1];
+		new->newcols.k1     = KS_old[newIdx - 1];
 	}
 	else if (flag == MOVE) {
-		newcol->k2_old = KE_old[newIdx - 1];
-		newcol->k1     = KS_old[newIdx - 1];
+		new->newcols.k2_old = KE_old[newIdx - 1];
+		new->newcols.k1     = KS_old[newIdx - 1];
 	}
 
 	new->jumpType = flag;
 }
 
-static void OO_Propose_01(	BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_PTR newcol, PROP_DATA_PTR info)
+static void OO_Propose_01(	BEAST2_BASIS_PTR basis, NEWTERM_PTR new,  PROP_DATA_PTR info)
 {	
 	I32  goodNum = basis->goodNum; // not used in this function
 	I16  nKnot = basis->nKnot;
@@ -1062,16 +1062,16 @@ static void OO_Propose_01(	BEAST2_BASIS_PTR basis, NEWTERM_PTR new, NEWCOLINFO_P
 	if (flag == BIRTH) {
 		//The range of terms to be removed from Xt_mars		
 		I32 nKnot = basis->nKnot;
-		newcol->k2_old = KE_old[nKnot - 1];
-		newcol->k1     = newcol->k2_old + 1;
+		new->newcols.k2_old = KE_old[nKnot - 1];
+		new->newcols.k1     = new->newcols.k2_old + 1;
 	}
 	else if (flag == DEATH) {
-		newcol->k2_old  = KE_old[newIdx - 1];
-		newcol->k1      = KS_old[newIdx - 1];
+		new->newcols.k2_old  = KE_old[newIdx - 1];
+		new->newcols.k1      = KS_old[newIdx - 1];
 	}
 	else if (flag == MOVE) {
-		newcol->k2_old = KE_old[newIdx - 1];
-		newcol->k1     = KS_old[newIdx - 1];
+		new->newcols.k2_old = KE_old[newIdx - 1];
+		new->newcols.k1     = KS_old[newIdx - 1];
 	}
 
 	new->jumpType = flag;

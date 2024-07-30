@@ -8,6 +8,7 @@
 #include "abc_date.h"  // for fastsqrt only
 #include "abc_ide_util.h"  //printf
 #include "abc_common.h" //normalize quicksort
+#include "abc_sort.h"
 #include "abc_blas_lapack_lib.h"
 
 #if defined(PI)
@@ -191,7 +192,7 @@ I32  tsAggegrationPrepare_Old(F32PTR oldTime, I32 Nold, F32 dT, I32PTR *SortedTi
 	/************************************************/
 	I32PTR  SORTED_IDX = malloc(sizeof(I32)*Nold);	
 	for (I32 i = 0; i < Nold; i++) SORTED_IDX[i] = i;
-	f32_QuickSortA(oldTime, SORTED_IDX, 0, Nold - 1);	
+	f32a_introSort_index(oldTime,  0, Nold - 1, SORTED_IDX);
 	*SortedTimeIdx = SORTED_IDX;
 	/************************************************/
 

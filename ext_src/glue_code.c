@@ -151,7 +151,9 @@ void * mainFunction(void *prhs[], int nrhs) {
 		if (option.io.numOfPixels ==1) {
 			beast2_main_corev4();
 			BEAST2_DeallocateTimeSeriesIO(&(option.io));
-			r_printf("\n");
+			if (option.extra.printProgressBar) {
+				r_printf("\n");
+			}			
 		} else {
 			/**********************************/
 			I32 NUM_THREADS			= option.extra.numParThreads;  // I32 NUM_CORES_TOUSE= option.extra.numCPUCoresToUse;;			
@@ -306,8 +308,10 @@ void * mainFunction(void *prhs[], int nrhs) {
 		//prhs[o] is "disp"
 		IDEPrintObject(prhs[1]);
 	}
-	if   (    __IS_STRING_EQUAL(algorithm, beast_bic) || __IS_STRING_EQUAL(algorithm, beast_aicc)
-		   || __IS_STRING_EQUAL(algorithm, beast_aic) || __IS_STRING_EQUAL(algorithm, beast_hic) )  	{
+	else if   (    __IS_STRING_EQUAL(algorithm, beast_bic) || __IS_STRING_EQUAL(algorithm, beast_aicc)
+		   || __IS_STRING_EQUAL(algorithm, beast_aic) || __IS_STRING_EQUAL(algorithm, beast_hic)
+		   || __IS_STRING_EQUAL(algorithm, beast_bic2) || __IS_STRING_EQUAL(algorithm, beast_bic1.5)
+		   || __IS_STRING_EQUAL(algorithm, beast_bic0.5) || __IS_STRING_EQUAL(algorithm, beast_bic0.25) )  	{
 		/*
 		// Initialize mutex and condition variable objects
 		pthread_mutex_init(&MUTEX_WRITE, NULL);
@@ -321,18 +325,15 @@ void * mainFunction(void *prhs[], int nrhs) {
 		*/
 
 		int whichCritia = 0;
-		if (__IS_STRING_EQUAL(algorithm, beast_bic)) {
-			whichCritia = 1;
-		}
-		else if (__IS_STRING_EQUAL(algorithm, beast_aic)) {
-			whichCritia = 2;
-		}
-		else if (__IS_STRING_EQUAL(algorithm, beast_aicc)) {
-			whichCritia = 3;
-		}
-		else if (__IS_STRING_EQUAL(algorithm, beast_hic)) {
-			whichCritia = 4;
-		}
+		if      (__IS_STRING_EQUAL(algorithm, beast_bic))   whichCritia = 1;
+		else if (__IS_STRING_EQUAL(algorithm, beast_aic)) 	whichCritia = 2;
+		else if (__IS_STRING_EQUAL(algorithm, beast_aicc)) 	whichCritia = 3;
+		else if (__IS_STRING_EQUAL(algorithm, beast_hic)) 	whichCritia = 4;
+		else if (__IS_STRING_EQUAL(algorithm, beast_bic0.25)) 	whichCritia = 25;
+		else if (__IS_STRING_EQUAL(algorithm, beast_bic0.5)) 	whichCritia = 50;
+		else if (__IS_STRING_EQUAL(algorithm, beast_bic1.5)) 	whichCritia = 150;
+		else if (__IS_STRING_EQUAL(algorithm, beast_bic2)) 	 whichCritia = 200;
+		
 
 		/**********************************/
 	    //stackoverflow.com/questions/10828294/c-and-c-partial-initialization-of-automatic-structure
@@ -382,7 +383,9 @@ void * mainFunction(void *prhs[], int nrhs) {
 		if (option.io.numOfPixels ==1) {
 			beast2_main_corev4_bic(whichCritia);
 			BEAST2_DeallocateTimeSeriesIO(&(option.io));
-			r_printf("\n");
+			if (option.extra.printProgressBar) {
+				r_printf("\n");
+			}
 		} else {
 			/**********************************/
 			I32 NUM_THREADS			= option.extra.numParThreads;  // I32 NUM_CORES_TOUSE= option.extra.numCPUCoresToUse;;			
@@ -542,6 +545,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 		
 	
 			option.extra.computeCredible = TRUE;
+		    option.extra.dumpMCMCSamples = FALSE;
 			ANS = PROTECT(BEAST2_Output_AllocMEM(&option)); nptr++;
 			
 			void DllExport BEAST2_WinMain(VOID_PTR  option);
@@ -1131,7 +1135,7 @@ SEXP DllExport sbm2(SEXP Y, SEXP opt)
 	GLOBAL_OPTIONS = (BEAST_OPTIONS_PTR)&beastOption;
 	GLOBAL_RESULT = (BEAST_RESULT_PTR)&result;
 	sbm();
-		UNPROTECT(1);
+	UNPROTECT(1);
 	return ANS;
 }
 #endif
