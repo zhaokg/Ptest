@@ -1,4 +1,4 @@
-name: Build
+name: Build_macOS
 #on: [push, pull_request]
 on: [workflow_dispatch] # manual tigger
 
