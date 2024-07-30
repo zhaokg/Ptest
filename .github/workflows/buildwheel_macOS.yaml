@@ -28,12 +28,17 @@ jobs:
         with:
              python-version: '3.9'
                   
-      - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
+      - run: cp pyproject_np1.21.0_ma3839.toml pyproject.toml 
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
-             CIBW_ARCHS:  x86_64 arm64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp311-*  
-  
+             CIBW_ARCHS:  arm64    #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp38-*    cp39-*              
+             
+      - run: cp pyproject_np1.21.3_miwma310.toml pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.5
+        env:             
+             CIBW_ARCHS:   x86_64 arm64    #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp310-*  
            
              
       - uses: actions/upload-artifact@v3
