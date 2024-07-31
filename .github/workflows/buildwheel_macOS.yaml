@@ -1,0 +1,42 @@
+name: Build_macOS
+#on: [push, pull_request]
+on: [workflow_dispatch] # manual tigger
+
+
+jobs:
+
+############################################################################
+#    Build Wheels for MacOS
+############################################################################   
+  build_wheels_mac:
+    name: Make ${{ matrix.os }} wheels  
+    runs-on: ${{ matrix.os }}
+    env:
+      arch:   x86_64  #  aarch64 x86_64
+      CIBW_SKIP:   '*-musllinux_aarch64' 
+    strategy:
+      fail-fast: true
+      max-parallel: 5
+      matrix:
+        os:      [macos-latest]    
+
+    steps:  
+  
+      - uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+             python-version: '3.9'
+                  
+      - run: cp pyproject_np1.19.3_miw39.toml pyproject.toml 
+      - uses: pypa/cibuildwheel@v2.16.5
+        env:             
+             CIBW_ARCHS:  x86_64    #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp39-*  
+             
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl		            
+          
+             
+ 

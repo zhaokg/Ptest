@@ -52,7 +52,7 @@ jobs:
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp311-*     
               
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
           
