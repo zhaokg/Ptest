@@ -12,10 +12,11 @@
 #include "abc_common.h"    //strcicmp
 #include "abc_ts_func.h"
 #include "abc_date.h"
+#include "globalvars.h"
 #include "beastv2_func.h"    
 #include "beastv2_io.h"
 
-#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
+#include <stdio.h>	          //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
 
  
 #define CondErrMsgRet0(cond, ...)   if(cond) { r_error(__VA_ARGS__); return 0;}
@@ -1004,9 +1005,8 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 		I08   removeSingletonDims;
 		I08   dumpInputData;
 
-		I08   ncpStatMethod;
 		I08  smoothCpOccPrCurve;
-		I08  useMeanOrRndBeta;
+		I08  useRndBeta;
 		I08  computeCredible;
 		I08  fastCIComputation;
 		I08  computeSeasonOrder;
@@ -1024,8 +1024,6 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 		I08 tallyIncDecTrendJump;
 		I08 tallyPosNegOutliers;
 
-		I08  printOptions;
-		I08  printProgressBar;
 
 		I08 dumpMCMCSamples;
 	} m = {0,};
@@ -1055,15 +1053,14 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 			#define _2(x,y)     _1(x);_1(y)
 			#define _3(x,y,z)   _1(x);_2(y,z)
 			#define _4(x,y,z,w) _2(x,y);_2(z,w)
-			
-			_2(printProgressBar, printOptions);
+
 			_2(computeCredible,  fastCIComputation);
 
 			_2(computeSeasonOrder,   computeTrendOrder);
 			_3(computeSeasonChngpt,  computeTrendChngpt, computeOutlierChngpt);
 			_2(computeSeasonAmp,     computeTrendSlope);
 			_4(tallyPosNegSeasonJump, tallyPosNegTrendJump, tallyIncDecTrendJump, tallyPosNegOutliers);
-			_1(useMeanOrRndBeta);
+			_1(useRndBeta);
 
  
 				 
@@ -1082,8 +1079,7 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 	if (m.numParThreads)         o.numParThreads		= 0;
 	if (m.numCPUCoresToUse)      o.numCPUCoresToUse	= 0;	
 	if (m.consoleWidth||o.consoleWidth<=0)  o.consoleWidth= GetConsoleWidth(); 	o.consoleWidth = max(o.consoleWidth, 40);
-	if (m.printProgressBar)      o.printProgressBar	= 1;
-	if (m.printOptions)          o.printOptions		= 1;
+
 
 	if (m.computeCredible)       o.computeCredible		= 0L;
 	if (m.fastCIComputation)     o.fastCIComputation	= 1L;
@@ -1108,8 +1104,8 @@ static int  GetArg_4th_EXTRA__(VOIDPTR prhs[], int nrhs, BEAST2_EXTRA_PTR extra,
 	if (o.tallyIncDecTrendJump)  o.computeTrendChngpt	= 1,	o.computeTrendSlope = 1;
 	if (o.tallyPosNegOutliers)   o.computeOutlierChngpt = 1;
 
-	if (m.useMeanOrRndBeta)      o.useMeanOrRndBeta = 0;
-	if (m.dumpMCMCSamples)       o.dumpMCMCSamples   = 0;
+	if (m.useRndBeta)      o.useRndBeta        = 0;
+	if (m.dumpMCMCSamples) o.dumpMCMCSamples   = 0;
 
 	
 	return 1;
@@ -1270,12 +1266,12 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 	if (opt->io.numOfPixels > 1) {
 		opt->extra.dumpMCMCSamples = 0;
 	}
+
+	opt->extra.printProgress = GLOBAL_PRNT_PROGRESS;
 	return 1;
 }
 
 int BEAST2_GetArgs(VOIDPTR prhs[], int nrhs, A(OPTIONS_PTR) opt) {
-
-  
 
 	int  failed = !GetArg_0th_Data(prhs, nrhs, &opt->io)                 ||
 		          !GetArg_1st_MetaData(prhs, nrhs, &opt->io)		      || 				  
@@ -1283,8 +1279,10 @@ int BEAST2_GetArgs(VOIDPTR prhs[], int nrhs, A(OPTIONS_PTR) opt) {
 			      !GetArg_3rd_MCMC___(prhs, nrhs, &opt->mcmc,  opt)       ||
 			      !GetArg_4th_EXTRA__(prhs, nrhs, &opt->extra, opt->io.meta.whichDimIsTime,opt->io.ndim) ;
 	int success = !failed;	
-	if (success) 	success=PostCheckArgs(opt); 	
-	if (success) 	BEAST2_print_options(opt);	
+	if (success)  success=PostCheckArgs(opt); 	
+	if (success && GLOBAL_PRNT_PARAMETER) {
+		BEAST2_print_options(opt);
+	}	
 
 	return success;
 }

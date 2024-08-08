@@ -208,6 +208,8 @@ You can also put the common two last lines into an extension-local header file a
 sure that NO_IMPORT_ARRAY is #defined before #including that file.
 */
 
+// We will not use the standard method any longer and instead use the explicit loading
+#ifdef  USE_STANDARD_METHOD_IMPORT_NUMPY
 	#ifdef  IMPORT_NUMPY
 	   #define PY_ARRAY_UNIQUE_SYMBOL NumpyAPIList
 	   #include "numpy/arrayobject.h"
@@ -217,15 +219,12 @@ sure that NO_IMPORT_ARRAY is #defined before #including that file.
 		#include "numpy/arrayobject.h"
 	#endif
    
+#endif
 
-  /*********************/
   // #pragma comment(lib , LIB_Python(python37_msvc.lib) ) 
-  //
   // No need to set up the lib explicitly 
-  // (1) pynconfig.h has a pragma line to add python.lib
-  //  pragma comment(lib,"python37.lib")   
-  // (2) Numpy usss the import_array to load the (np.core._multiarray_umath._ARRAY_API) variable
-  //    to fill the api arrays
+  // (1) pynconfig.h has a pragma line to add python.lib:  pragma comment(lib,"python37.lib")   
+  // (2) Numpy usss the import_array to load the (np.core._multiarray_umath._ARRAY_API) variable  to fill the api arrays
 
 #endif
 

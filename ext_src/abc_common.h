@@ -17,8 +17,8 @@ extern F32     DeterminePeriod(F32PTR Y, I32 N);
 extern I32     FindChangepoint(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR cptCI, I32 N, I32 minSepDist, I32 maxCptNumber);
 extern I32     FindChangepoint_LeftRightMargins(F32PTR prob, F32PTR mem, F32 threshold, I32PTR cpt, F32PTR cptCI, I32 N, I32 minSepDist, I32 maxCptNumber, I32 leftMargin, I32 rightMargin);
 
-extern void SetupRoutines_AutoByCPU(Bool quiet);
-extern void SetupRoutines_UserChoice(int avxOption);
+extern int  GetNativeCPUType(void);
+extern void SetupRoutines_ByCPU(int cputype);
 
 //SUM: IppStatus ippsSum_32f(const Ipp64f* pSrc, int len, Ipp64f* pSum); 
 //r_ippsSum_32f(ptr, N, &mValue, ippAlgHintAccurate);

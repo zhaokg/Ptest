@@ -21,6 +21,14 @@ volatile I32    NUM_OF_PROCESSED_GOOD_PIXELS;
  
 
 
-char GLOBAL_QUIET_MODE = 0;
+char GLOBAL_PRNT_WARNING ;
+char GLOBAL_PRNT_CPU       ;
+char GLOBAL_PRNT_PARAMETER;
+char GLOBAL_PRNT_PROGRESS  ;
+char GLOBAL_IS_QUIET_MODE  ;
+
+char GLOBAL_CPU_REQUEST;
+char GLOBAL_CPU_CURRENT = 0;
+
 
 #include "abc_000_warning.h"

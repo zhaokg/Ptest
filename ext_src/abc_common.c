@@ -1372,70 +1372,57 @@ static INLINE void zeroOut_Xmars_zero(F32PTR Xt_mars, F32PTR Xt_zeroBackup, U32P
 
 #include "abc_cpu.h"
 #include "abc_ide_util.h"
-void SetupRoutines_AutoByCPU(Bool quite) {
 
-	static int IS_CPU_INSTRUCTON_CHECKED = 0;
-	if (IS_CPU_INSTRUCTON_CHECKED) {
-		return;
+int GetNativeCPUType(void) {
+
+	static int GLOBAL_CPU_NATIVE = 0;
+	if (GLOBAL_CPU_NATIVE) {
+		return GLOBAL_CPU_NATIVE;
 	}
-	if (!quite)	r_printf("\nOn the first run, check the CPU instruction set ... \n");
+	//if (!quite)	r_printf("\nOn the first run, check the CPU instruction set ... \n");
 	 
-	 struct cpu_x86 cpuinfo;
-	 detect_host(&cpuinfo);
-	 if (!quite) print_cpuinfo(&cpuinfo);
-	 i386_cpuid_caches(quite);
-
+	 struct cpu_x86   cpuinfo;
+	 struct cpu_cache caches[8];
+	 cpuinfo_detect(&cpuinfo,NULL);
+ 
 #if !defined(COMPILER_SOLARIS) && defined(TARGET_64) && !defined(cpu_ARM64)
 	if (cpuinfo.HW_AVX512_F /*Foundation*/ && cpuinfo.HW_AVX512_BW && cpuinfo.HW_AVX512_DQ && cpuinfo.HW_AVX512_VL) {
-		 SetupVectorFunction_AVX512();
-		 SetupPCG_AVX512();
-		 if (!quite)	  r_printf("CPU checking result: The AVX512-enabled library is used ... \n\n");
-	}
-	else if (cpuinfo.HW_AVX &&cpuinfo.HW_AVX2 && cpuinfo.HW_FMA3) {
-		 SetupVectorFunction_AVX2();
-		 SetupPCG_AVX2();
-		 if (!quite)	 r_printf("CPU checking result: The AVX2-enabled library is used ...\n\n");
-	}
-	else {
-		 SetupVectorFunction_Generic();
-		 SetupPCG_GENERIC();
-		 if (!quite)	 r_printf("CPU checking result: No AVX2/AVX512 is supported and the default library is used ...\n\n");
+		GLOBAL_CPU_NATIVE = 3;
+		// if (!quite)	  r_printf("CPU checking result: The AVX512-enabled library is used ... \n\n");
+	}	else if (cpuinfo.HW_AVX &&cpuinfo.HW_AVX2 && cpuinfo.HW_FMA3) {
+		GLOBAL_CPU_NATIVE = 2;
+		// if (!quite)	 r_printf("CPU checking result: The AVX2-enabled library is used ...\n\n");
+	}	else {
+		GLOBAL_CPU_NATIVE = 1;
+		 //if (!quite)	 r_printf("CPU checking result: No AVX2/AVX512 is supported and the default library is used ...\n\n");
 	}
 #else
-	 SetupVectorFunction_Generic();
-	 SetupPCG_GENERIC();
-	 if (!quite) r_printf("CPU checking result: No AVX2 is supported and the default library is used ...");
+	 GLOBAL_CPU_NATIVE = 1;
+	 //if (!quite) r_printf("CPU checking result: No AVX2 is supported and the default library is used ...");
 #endif
-
-	 IS_CPU_INSTRUCTON_CHECKED = 1;
-
+ 
+	 return GLOBAL_CPU_NATIVE;
 }
 
-void SetupRoutines_UserChoice(int avxOption) {
+void SetupRoutines_ByCPU(int cputype) {
 
 #if !defined(COMPILER_SOLARIS) && defined(TARGET_64) && !defined(cpu_ARM64)
-
-	if (avxOption == 0) {
-		SetupVectorFunction_Generic();
-		SetupPCG_GENERIC();
-	}
-	else if (avxOption == 2) {
+	if (cputype == 2) {
 		SetupVectorFunction_AVX2();
 		SetupPCG_AVX2();
 	}
-	else if (avxOption == 512) {
+	else if (cputype == 3) {
 		SetupVectorFunction_AVX512();
 		SetupPCG_AVX512();
-	}
-	else {
-		SetupRoutines_AutoByCPU(1L); // Do not print out
+	} else {
+		SetupVectorFunction_Generic();
+		SetupPCG_GENERIC();	 
 	} 
 #else
 	//for SOaris system or Win32
 	SetupVectorFunction_Generic();
 	SetupPCG_GENERIC();
 #endif
-
 }
 
 

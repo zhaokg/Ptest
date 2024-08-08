@@ -174,9 +174,9 @@ extern "C" {
 #endif
 
 // defined in globalvars.c
-extern char GLOBAL_QUIET_MODE;
-#define q_warning(...)  { if (!GLOBAL_QUIET_MODE) {r_warning(__VA_ARGS__);} }
-#define q_printf(...)   { if (!GLOBAL_QUIET_MODE) {r_printf(__VA_ARGS__); } }
+extern char GLOBAL_PRNT_WARNING;
+#define q_warning(...)  { if (GLOBAL_PRNT_WARNING) {r_warning(__VA_ARGS__);} }
+#define q_printf(...)   { if (GLOBAL_PRNT_WARNING) {r_printf(__VA_ARGS__); } }
       
 
 #if R_INTERFACE==1

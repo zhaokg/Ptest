@@ -214,7 +214,7 @@ void beast2_main_corev4_gui(void) {
 	SetUpPrecFunctions(opt->prior.precPriorType, opt->io.q, &precFunc);
 
 	// Print a blank line to be backspaced by the follow
-	if (extra.printProgressBar) {
+	if (extra.printProgress) {
 		F32 frac = 0.0; I32 firstTimeRun = 1;
 		/*---------WINDOW-------------------------*/
 		// mexPrint is not just thread-sate but danagerous to use in any new threads
@@ -736,7 +736,7 @@ void beast2_main_corev4_gui(void) {
 					}	 
 
 					//Re-sample beta to be used for either re-sampling prec (ite%20=0) or predicting Y (ite%thiningFactor=0)
-					if (bResampleParameter || (bStoreCurrentSample && extra.useMeanOrRndBeta)) {
+					if (bResampleParameter || (bStoreCurrentSample && extra.useRndBeta)) {
 							//Compute beta = beta_mean + Rsig2 * randn(p, 1);
 							//Usig2 = (1 / sqrt(sig2)) * U; 		beta = beta_mean + linsolve(Usig2, randn(p, 1), opts);
 							//status = vdRngGaussian( method, stream, n, r, a, sigma );
@@ -826,7 +826,7 @@ void beast2_main_corev4_gui(void) {
 					}
 
 					// RE-SAMPLE beta to be used for either re-sampling prec (ite%20=0) or predicting Y (ite%thiningFactor=0)
-					if (bResampleParameter || (bStoreCurrentSample && extra.useMeanOrRndBeta)) {
+					if (bResampleParameter || (bStoreCurrentSample && extra.useRndBeta)) {
 						r_vsRngGaussian(VSL_RNG_METHOD_GAUSSIAN_ICDF, stream, K * q, MEMBUF, 0., 1.);
 						r_cblas_sgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, K, q, q, 1.0, MEMBUF, K, MODEL.sig2, q, 0.f, MODEL.beta, K);
 						//LAPACKE_strtrs (int matrix_layout , char uplo , char trans , char diag , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , double * b , lapack_int ldb );
@@ -906,7 +906,7 @@ void beast2_main_corev4_gui(void) {
 				}
 
 
-				const F32PTR BETA = (extra.useMeanOrRndBeta == 0) ? MODEL.curr.beta_mean : MODEL.beta;
+				const F32PTR BETA = (extra.useRndBeta == 0) ? MODEL.curr.beta_mean : MODEL.beta;
 				{
 					 F32PTR MEMBUF1 = Xnewterm;
 
@@ -1116,7 +1116,7 @@ void beast2_main_corev4_gui(void) {
 
 				/*---------WINDOW-------------------------*/
 				// mexPrint is not just thread-sate but danagerous to use in any new threads
-				//if (extra.printProgressBar && NUM_PIXELS == 1 && sample % 1000 == 0) {
+				//if (extra.printProgress && NUM_PIXELS == 1 && sample % 1000 == 0) {
 				//	F32 frac = (F32)(chainNumber * MCMC_SAMPLES + sample) / (MCMC_SAMPLES * MCMC_CHAINNUM);
 				//	printProgress1(frac, extra.consoleWidth, Xnewterm, 0);
 				//}

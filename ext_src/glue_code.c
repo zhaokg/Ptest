@@ -47,14 +47,62 @@
 #define __IS_STRING_EQUAL(a, b)  (strcicmp(a, #b) == 0)
  
 
-static void  GetArg_IsQuiteMode(VOIDPTR prhs[], int nrhs) {
+static void  GetArg_GlobalFlagss(VOIDPTR prhs[], int nrhs) {
 
- 	if (nrhs >= 6 && IsStruct( prhs[5L] ) ) {
- 			VOIDPTR tmp;
-			GLOBAL_QUIET_MODE = (tmp = GetField123Check(prhs[5L], "quiet", 3)) ? GetScalar(tmp) : 0L;
-			return;	 
-	} // if (nrhs >= 5)
-	GLOBAL_QUIET_MODE = 0;
+	 GLOBAL_PRNT_WARNING   = 1;
+	 GLOBAL_PRNT_CPU       = 0;
+	 GLOBAL_PRNT_PARAMETER = 1;
+	 GLOBAL_PRNT_PROGRESS  = 1;
+	 GLOBAL_IS_QUIET_MODE  = 0;	 	 
+	 GLOBAL_CPU_REQUEST    = 0;
+	   
+ 	if (nrhs >= 6 && IsStruct(prhs[6L - 1L]) ) {
+ 		VOIDPTR tmp;
+		VOIDPTR extra = prhs[6L - 1L];
+		GLOBAL_IS_QUIET_MODE = (tmp = GetField123Check(extra, "quiet", 3)) ? GetScalar(tmp) : 0L;
+		if (GLOBAL_IS_QUIET_MODE) {
+			GLOBAL_PRNT_WARNING   = 0;
+			GLOBAL_PRNT_CPU       = 0;
+			GLOBAL_PRNT_PARAMETER = 0;
+			GLOBAL_PRNT_PROGRESS  = 0;
+		} else {
+			GLOBAL_PRNT_WARNING   = (tmp = GetField123Check(extra, "printWarning",  7)) ? GetScalar(tmp) : 1L;
+			GLOBAL_PRNT_CPU       = (tmp = GetField123Check(extra, "printCpuInfo",  7)) ? GetScalar(tmp) : 0L;
+			GLOBAL_PRNT_PARAMETER = (tmp = GetField123Check(extra, "printParam",    7)) ? GetScalar(tmp) : 1L;
+			GLOBAL_PRNT_PROGRESS  = (tmp = GetField123Check(extra, "printProgress", 7)) ? GetScalar(tmp) : 1L;
+		}
+
+		tmp = GetField123Check(extra, "cputype", 3);
+		if (tmp && IsChar(tmp)) {
+			char  str[10+1];
+			GetCharArray(tmp, str, 10);
+
+			if (str[0] == 's' || str[0] == 'S') {                            // sse
+				GLOBAL_CPU_REQUEST = 1;
+			} else if ((str[0] == 's' || str[0] == 'A') && str[3] == '2' ) { // avx2
+				GLOBAL_CPU_REQUEST = 2;
+			} else if ((str[0] == 's' || str[0] == 'A') && str[3] == '4') {  // avx512
+				GLOBAL_CPU_REQUEST = 3;
+			} else {                                                          //auto
+				GLOBAL_CPU_REQUEST = 0;
+			}
+		}
+
+	} // if (nrhs >= 6 && IsStruct(prhs[6L - 1L]) )
+
+
+	if (GLOBAL_PRNT_CPU) {
+		struct cpu_x86   cpuinfo;
+		struct cpu_cache caches[8];
+		cpuinfo_detect(&cpuinfo, caches);
+		cpuinfo_print(&cpuinfo, caches);
+	}
+
+	if (GLOBAL_CPU_REQUEST == 0) {
+		GLOBAL_CPU_REQUEST = GetNativeCPUType();
+	}
+	// GLOBAL_CPU_REQUEST: 1 sse/generic/arm64, 2 avx2,  3 avx512
+
 	return;
 }
 
@@ -62,29 +110,27 @@ static void  GetArg_IsQuiteMode(VOIDPTR prhs[], int nrhs) {
 
 void * mainFunction(void *prhs[], int nrhs) {
 
-	if (nrhs >= 7) {
-		int avxOption = GetScalar(prhs[nrhs - 1]); 
-		SetupRoutines_UserChoice(avxOption);
-	}	else {
-		GetArg_IsQuiteMode(prhs, nrhs);      // Set GLOBAL_QUITE_MODE
-		SetupRoutines_AutoByCPU(1L);          // prnitlevel=1: only print hhe libray choice result
-	}
-	//SetupVectorFunction_Generic();
-	//SetupPCG_GENERIC();	 	
-	//print_funcs();
+	//mexCallMATLAB(0, NULL, 2, prhs, "fprintf");
 
-	if (nrhs == 0 ) 	{
+	if (nrhs == 0) {
 		r_error("ERROR: Essential input paramaters are missing!\n");
 		//r_printf("\033[1m\033[32m" "\033[4m" "%cERROR: Essential input paramaters are missing!\n",149);
 		return IDE_NULL;
 	}
-	if ( !IsChar(prhs[0]) )	{
+
+	if (!IsChar(prhs[0])) {
 		r_error("ERROR: The very first parameter must be a string specifying the algorithm name!\n");
 		return IDE_NULL;
 	}
+	     
+	GetArg_GlobalFlagss(prhs, nrhs);
 
-	//mexCallMATLAB(0, NULL, 2, prhs, "fprintf");
-
+	if (GLOBAL_CPU_REQUEST != GLOBAL_CPU_CURRENT) {
+		GLOBAL_CPU_CURRENT = GLOBAL_CPU_REQUEST;
+		SetupRoutines_ByCPU(GLOBAL_CPU_CURRENT);
+		//print_funcs();
+	}
+	
 	#define __STRING_LEN__ 20
 	char  algorithm[__STRING_LEN__ +1];
 	GetCharArray(prhs[0], algorithm, __STRING_LEN__);
@@ -109,8 +155,8 @@ void * mainFunction(void *prhs[], int nrhs) {
 		/**********************************/
 	    //stackoverflow.com/questions/10828294/c-and-c-partial-initialization-of-automatic-structure
 	    //stackoverflow.com/questions/11152160/initializing-a-struct-to-0
-		//BEAST2_OPTIONS      option = {0,};		
-		BEAST2_OPTIONS      option = { {{0,},}, }; //Warning from MacOS: suggest braces around initialization of subobject [-Wmissing-braces]
+		//BEAST2_OPTIONS      option = {0,}; //Warning from MacOS: suggest braces around initialization of subobject [-Wmissing-braces]		
+		BEAST2_OPTIONS      option = { {{0,},}, }; 
 	
 		#if P_INTERFACE ==1
 			// Covert the second arg into a Numpy Array. the pointer returend
@@ -151,7 +197,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 		if (option.io.numOfPixels ==1) {
 			beast2_main_corev4();
 			BEAST2_DeallocateTimeSeriesIO(&(option.io));
-			if (option.extra.printProgressBar) {
+			if (GLOBAL_PRNT_PROGRESS) {
 				r_printf("\n");
 			}			
 		} else {
@@ -214,24 +260,24 @@ void * mainFunction(void *prhs[], int nrhs) {
 				if ( 0 == thread_stat[i]) {
 					//glue_code.c:160:42: warning: '0' flag ignored with '-' 
 					//r_printf("Parallel computing: thread#%-02d generated ... \n", i + 1);
-					r_printf("Parallel computing: thread#%-2d generated ... \n", i + 1);
+					if(GLOBAL_PRNT_PROGRESS) r_printf("Parallel computing: thread#%-2d generated ... \n", i + 1);
 			    } else {
-					r_printf("Parallel computing: thread#%-2d failed to generate ... \n", i + 1);
+					if (GLOBAL_PRNT_PROGRESS) r_printf("Parallel computing: thread#%-2d failed to generate ... \n", i + 1);
 				}
 				
 			}
-			r_printf("Rbeast: Waiting on %d threads...\n", NUM_THREADS);
+			if (GLOBAL_PRNT_PROGRESS) r_printf("Rbeast: Waiting on %d threads...\n", NUM_THREADS);
 			pthread_attr_destroy(&attr);
 
 
 			IDE_USER_INTERRUPT = 0;
 			#if R_INTERACE==1
-				r_printf("Press and hold the ESCAPE key or the STOP button to interrupt and quit while running.\n" );
+			if (GLOBAL_PRNT_PROGRESS)  r_printf("Press and hold the ESCAPE key or the STOP button to interrupt and quit while running.\n" );
 			#elif M_INTERFACE==1
-				r_printf("Press and hold CTR+C to interrupt and quit while running.\n");
+			if (GLOBAL_PRNT_PROGRESS)  r_printf("Press and hold CTR+C to interrupt and quit while running.\n");
 			#endif
 
-			if (option.extra.printProgressBar) {
+			if (option.extra.printProgress) {
 				// Print a blank line to be backspaced by the follow
 				void* StrBuf      = malloc(option.extra.consoleWidth * 3);
 				PERCENT_COMPLETED = 0;
@@ -253,14 +299,14 @@ void * mainFunction(void *prhs[], int nrhs) {
 				}
 
 				if (IDE_USER_INTERRUPT == 0) {
-					printProgress2(1.0, 0, option.extra.consoleWidth, StrBuf, 0);
+					if (GLOBAL_PRNT_PROGRESS)	printProgress2(1.0, 0, option.extra.consoleWidth, StrBuf, 0);
 				}
 
 				free(StrBuf);
 			}  
 
 			// Wait for all threads to complete
-			r_printf("\nFinalizing ... \n");
+			if (GLOBAL_PRNT_PROGRESS) r_printf("\nFinalizing ... \n");
 			for (I32 i = 0; i < NUM_THREADS; i++) {
 				//pthread_join(thread_id[i], NULL);
 				if (thread_stat[0] == 0) {
@@ -268,13 +314,13 @@ void * mainFunction(void *prhs[], int nrhs) {
 					I64 ret = 0;
 					pthread_join(thread_id[i], &ret); // the second arg is a pointer to a void ptr, so ret here must be I64.
 					//r_printf("\nstack size %d.\n", ret/1024/1024);
-					r_printf("Parallel computing : Thread # %-2d finished ... \n", i);
+					if (GLOBAL_PRNT_PROGRESS) r_printf("Parallel computing : Thread # %-2d finished ... \n", i);
 				}				
 			}
 			if (IDE_USER_INTERRUPT==0)
-				r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS);
+				if (GLOBAL_PRNT_PROGRESS) { r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS); }
 			else
-				r_printf("\nQuitted unexpectedly upon the user's interruption.\n");
+				if(GLOBAL_PRNT_PROGRESS) {r_printf("\nQuitted unexpectedly upon the user's interruption.\n");}
 
 			// Clean up and exit		
 			pthread_mutex_destroy(&mutex);
@@ -383,7 +429,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 		if (option.io.numOfPixels ==1) {
 			beast2_main_corev4_bic(whichCritia);
 			BEAST2_DeallocateTimeSeriesIO(&(option.io));
-			if (option.extra.printProgressBar) {
+			if (GLOBAL_PRNT_PROGRESS) {
 				r_printf("\n");
 			}
 		} else {
@@ -446,24 +492,24 @@ void * mainFunction(void *prhs[], int nrhs) {
 				if ( 0 == thread_stat[i]) {
 					//glue_code.c:160:42: warning: '0' flag ignored with '-' 
 					//r_printf("Parallel computing: thread#%-02d generated ... \n", i + 1);
-					r_printf("Parallel computing: thread#%-2d generated ... \n", i + 1);
+					if (GLOBAL_PRNT_PROGRESS)  r_printf("Parallel computing: thread#%-2d generated ... \n", i + 1);
 			    } else {
-					r_printf("Parallel computing: thread#%-2d failed to generate ... \n", i + 1);
+					if (GLOBAL_PRNT_PROGRESS)  r_printf("Parallel computing: thread#%-2d failed to generate ... \n", i + 1);
 				}
 				
 			}
-			r_printf("Rbeast: Waiting on %d threads...\n", NUM_THREADS);
+			if (GLOBAL_PRNT_PROGRESS)  r_printf("Rbeast: Waiting on %d threads...\n", NUM_THREADS);
 			pthread_attr_destroy(&attr);
 
 
 			IDE_USER_INTERRUPT = 0;
 			#if R_INTERACE==1
-				r_printf("Press and hold the ESCAPE key or the STOP button to interrupt and quit while running.\n" );
+			if (GLOBAL_PRNT_PROGRESS)  r_printf("Press and hold the ESCAPE key or the STOP button to interrupt and quit while running.\n" );
 			#elif M_INTERFACE==1
-				r_printf("Press and hold CTR+C to interrupt and quit while running.\n");
+			if (GLOBAL_PRNT_PROGRESS)  r_printf("Press and hold CTR+C to interrupt and quit while running.\n");
 			#endif
 
-			if (option.extra.printProgressBar) {
+			if (option.extra.printProgress) {
 				// Print a blank line to be backspaced by the follow
 				void* StrBuf      = malloc(option.extra.consoleWidth * 3);
 				PERCENT_COMPLETED = 0;
@@ -479,20 +525,20 @@ void * mainFunction(void *prhs[], int nrhs) {
 					if (CheckInterrupt()) {
 						ConsumeInterruptSignal();// only needed for Matlab
 						IDE_USER_INTERRUPT = 1;
-						r_printf("Quitting due to unexpected user interruption...\n");
+						if (GLOBAL_PRNT_PROGRESS)  r_printf("Quitting due to unexpected user interruption...\n");
 					}					
 					Sleep_ms(2 * 1000);
 				}
 
 				if (IDE_USER_INTERRUPT == 0) {
-					printProgress2(1.0, 0, option.extra.consoleWidth, StrBuf, 0);
+					if (GLOBAL_PRNT_PROGRESS) 	printProgress2(1.0, 0, option.extra.consoleWidth, StrBuf, 0);
 				}
 
 				free(StrBuf);
 			}  
 
 			// Wait for all threads to complete
-			r_printf("\nFinalizing ... \n");
+			if (GLOBAL_PRNT_PROGRESS)  r_printf("\nFinalizing ... \n");
 			for (I32 i = 0; i < NUM_THREADS; i++) {
 				//pthread_join(thread_id[i], NULL);
 				if (thread_stat[0] == 0) {
@@ -500,13 +546,13 @@ void * mainFunction(void *prhs[], int nrhs) {
 					I64 ret = 0;
 					pthread_join(thread_id[i], &ret); // the second arg is a pointer to a void ptr, so ret here must be I64.
 					//r_printf("\nstack size %d.\n", ret/1024/1024);
-					r_printf("Parallel computing : Thread # %-2d finished ... \n", i);
+					if (GLOBAL_PRNT_PROGRESS)  r_printf("Parallel computing : Thread # %-2d finished ... \n", i);
 				}				
 			}
 			if (IDE_USER_INTERRUPT==0)
-				r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS);
+				if (GLOBAL_PRNT_PROGRESS) { r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS); }
 			else
-				r_printf("\nQuitted unexpectedly upon the user's interruption.\n");
+			    if (GLOBAL_PRNT_PROGRESS) { r_printf("\nQuitted unexpectedly upon the user's interruption.\n"); }
 
 			// Clean up and exit		
 			pthread_mutex_destroy(&mutex);
@@ -612,7 +658,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 
 	 
 		void compute_seasonal_svdbasis(F32PTR y, F32PTR Yout, int  Kmax, SVDBasisMEM* mem);
-		float Y[] = {2.2859,2.0691,1.8224,1.5187,1.5328,2.0847,2.8942,3.2902,3.728,5.8975,6.5847,10.2307,10.9694,17.5811,14.1326,11.5202,10.2331,6.6177,5.0504,4.2145,1.8737,3.197,2.8468,2.5349,1.6543,1.3169,1.8825,2.2085,1.8276,2.5948,3.6769,4.822,4.8609,6.4938,6.9191,10.2873,11.2253,13.0343,14.1471,15.8413,11.9918,7.2993,5.5117,6.621,5.5967,2.8521,3.9991,3.2917,4.342,1.6677,1.9921,2.329,1.494,1.697,2.6342,2.5178,2.8399,4.4247,6.831,10.3966,13.3897,14.5965,14.5742,12.6073,11.3888,10.045,9.0508,5.148,4.2168,2.952,2.7271,2.3879,2.0889,1.5052,2.004,1.7263,1.4218,1.8645,3.7781,3.2067,2.5755,3.0108,5.7034,8.6385,9.9321,11.321,13.1164,13.2138,10.3973,8.117,6.3119,5.269,6.7344,3.2315,2.6521,2.6256,2.0983,1.844,1.9795,1.4476,1.8262,1.7339,2.4015,2.1856,3.1992,3.5943,5.1744,7.0701,10.6768,12.4415,15.6008,14.9724,10.063,8.6803,9.1394,6.0462,4.1622,2.6468,3.2652,2.0314,2.2326,1.8504,3.217,1.9163,1.1103,1.8004,2.5058,2.0672,3.3731,3.3932,6.4282,6.4809,10.5954,12.5961,15.711,14.2856,12.7219,12.4061,7.4394,9.5144,5.696,3.1871,3.2476,3.844,2.523,2.0841,2.1426,1.7278,2.0496,1.7432,1.8544,2.4466,3.3078,2.5855,4.2597,6.4083,7.4898,11.4539,12.9476,13.7927,15.2775,13.0988,8.255,7.3098,6.1615,3.3724,1.9019,2.6075,4.4399,2.2925,2.268,2.0642,1.9616,2.0934,2.0652,1.974,2.6556,3.2962,3.8939,4.9837,7.8963,11.7756,11.005,13.3557,11.9917,11.4185,9.9252,8.1113,5.6223,4.4981,3.5695,2.3075,2.5229,2.3264,1.9057,1.4906,1.5844,2.3672,2.0908,2.3647,3.0101,2.4715,4.5199,6.8071,7.7233,9.065,12.7859,14.8723,14.2513,16.931,12.1172,8.4426,6.9039,6.276,5.3299,3.2293};
+		float Y[] = {2.2859f,2.0691f,1.8224f,1.5187f,1.5328f,2.0847f,2.8942f,3.2902f,3.728f,5.8975f,6.5847f,10.2307f,10.9694,17.5811,14.1326,11.5202,10.2331,6.6177,5.0504,4.2145,1.8737,3.197,2.8468,2.5349,1.6543,1.3169,1.8825,2.2085,1.8276,2.5948,3.6769,4.822,4.8609,6.4938,6.9191,10.2873,11.2253,13.0343,14.1471,15.8413,11.9918,7.2993,5.5117,6.621,5.5967,2.8521,3.9991,3.2917,4.342,1.6677,1.9921,2.329,1.494,1.697,2.6342,2.5178,2.8399,4.4247,6.831,10.3966,13.3897,14.5965,14.5742,12.6073,11.3888,10.045,9.0508,5.148,4.2168,2.952,2.7271,2.3879,2.0889,1.5052,2.004,1.7263,1.4218,1.8645,3.7781,3.2067,2.5755,3.0108,5.7034,8.6385,9.9321,11.321,13.1164,13.2138,10.3973,8.117,6.3119,5.269,6.7344,3.2315,2.6521,2.6256,2.0983,1.844,1.9795,1.4476,1.8262,1.7339,2.4015,2.1856,3.1992,3.5943,5.1744,7.0701,10.6768,12.4415,15.6008,14.9724,10.063,8.6803,9.1394,6.0462,4.1622,2.6468,3.2652,2.0314,2.2326,1.8504,3.217,1.9163,1.1103,1.8004,2.5058,2.0672,3.3731,3.3932,6.4282,6.4809,10.5954,12.5961,15.711,14.2856,12.7219,12.4061,7.4394,9.5144,5.696,3.1871,3.2476,3.844,2.523,2.0841,2.1426,1.7278,2.0496,1.7432,1.8544,2.4466,3.3078,2.5855,4.2597,6.4083,7.4898,11.4539,12.9476,13.7927,15.2775,13.0988,8.255,7.3098,6.1615,3.3724,1.9019,2.6075,4.4399,2.2925,2.268,2.0642,1.9616,2.0934,2.0652,1.974,2.6556,3.2962,3.8939,4.9837,7.8963,11.7756,11.005,13.3557,11.9917,11.4185,9.9252,8.1113,5.6223,4.4981,3.5695,2.3075,2.5229,2.3264,1.9057,1.4906,1.5844,2.3672,2.0908,2.3647,3.0101,2.4715,4.5199,6.8071,7.7233,9.065,12.7859,14.8723,14.2513,16.931,12.1172,8.4426,6.9039,6.276,5.3299,3.2293};
 		
 		
 		for (int i = 0; i < 9*24; i++) {
@@ -748,7 +794,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 		}
 		pthread_attr_destroy(&attr);
 
-		if (option.extra.printProgressBar) {
+		if (option.extra.printProgress) {
 			// Print a blank line to be backspaced by the follow
 			void* BUF;
 			BUF = malloc(option.extra.consoleWidth * 3);
@@ -1035,6 +1081,84 @@ void DllExport mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* p
 
 #elif P_INTERFACE == 1
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//  EXPLICILTY LOADING THE C API FUNCTIONS
+/////////////////////////////////////////////////////////////////////////////////////////
+
+extern int import_array(void);
+extern void** PyArray_API;
+
+int import_array(void) {
+
+	PyObject* numpy   = PyImport_ImportModule("numpy.core._multiarray_umath");  // new ref
+
+	if (numpy == NULL) {
+		PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");
+		return -1;
+	}
+
+	PyObject* c_api = PyObject_GetAttrString(numpy, "_ARRAY_API");
+    Py_DECREF(numpy);
+ 
+	if (c_api == NULL) {
+		PyErr_SetString(PyExc_AttributeError, "_ARRAY_API not found");
+		return -1;
+	}
+
+ 
+#if PY_VERSION_HEX >= 0x02070000
+	if (!PyCapsule_CheckExact(c_api)) {
+		PyErr_SetString(PyExc_RuntimeError, "_ARRAY_API is not PyCapsule object");
+		Py_DECREF(c_api);
+		return -1;
+	}
+	PyArray_API = (void**)PyCapsule_GetPointer(c_api, NULL);
+#else
+	if (!PyCObject_Check(c_api)) {
+		PyErr_SetString(PyExc_RuntimeError, "_ARRAY_API is not PyCObject object");
+		Py_DECREF(c_api);
+		return -1;
+	}
+	PyArray_API = (void**)PyCObject_AsVoidPtr(c_api);
+#endif
+
+
+	Py_DECREF(c_api);
+	if (PyArray_API == NULL) {
+		PyErr_SetString(PyExc_RuntimeError, "_ARRAY_API is NULL pointer. Failed to load Numpy functions!");
+		return -1;
+	}
+
+	return 0;
+
+	/*
+	//Perform runtime check of C API version
+	if (NPY_VERSION != PyArray_GetNDArrayCVersion()) {
+		PyErr_Format(PyExc_RuntimeError, "module compiled against "\
+			"ABI version %%x but this version of numpy is %%x", (int)NPY_VERSION, (int)PyArray_GetNDArrayCVersion());
+		return -1;
+	}
+	if (NPY_FEATURE_VERSION > PyArray_GetNDArrayCFeatureVersion()) {
+		PyErr_Format(PyExc_RuntimeError, "module compiled against "\
+			"API version %%x but this version of numpy is %%x", (int)NPY_FEATURE_VERSION, (int)PyArray_GetNDArrayCFeatureVersion());
+		return -1;
+	}
+
+	 // Perform runtime check of endianness and check it matches the one set by  the headers (npy_endian.h) as a safeguard
+
+	st = PyArray_GetEndianness();
+	if (st == NPY_CPU_UNKNOWN_ENDIAN) {
+		PyErr_Format(PyExc_RuntimeError, "FATAL: module compiled as unknown endian");
+		return -1;
+	}
+  */
+
+}
+/////////////////////////////////////////////////////////////////////////////////////////
+// END OF  EXPLICILTY LOADING THE C API FUNCTIONS
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
 DllExport PyObject* pexFunction(PyObject* self, PyObject* args, PyObject* kwds) {
 
 	int nargs = PyTuple_Size(args);
@@ -1102,14 +1226,30 @@ PyMODINIT_FUNC PyInit_Rbeast() {
       return NULL;
   }
   */
-   
-  //r_printf("Initialization done!\n");
+
+
 
   import_array();  // Load NumPy
+
+  /*
+  
+ "numpy/_core/code_generators/numpy_api.py": define a look-up table multiarray_api of the paired C APi names and indices
+ "numpy/_core/code_generators/generate_numpy_api.py":  Write _multiarray_api.h on the fly that contians import_array()
+
+ numpy.core.multiarray._ARRAY_API is borrowed from numpy._core_multiarray._ARRAY_API
+ "numpy/_core/src/multiarray/multiarraymodule.c":  _ARRAY_API is assigend in this multiarray module defition function
+     c_api = PyCapsule_New((void *)PyArray_API, NULL, NULL);
+     PyDict_SetItemString(d, "_ARRAY_API", c_api);
+
+https://github.com/numpy/numpy/blob/73a1e4dc8f1c3cbc24d571cca3f50d54319de14c/doc/source/reference/c-api/array.rst#L3902
+has a section "Including and importing the C API" to describe how to use import_array to load numpy in C
+  */
 
   currentModule= m;
   return m;
 }
+
+
 #endif
 
 

@@ -66,7 +66,7 @@ packages = find_namespace_packages(where='./py_src', exclude=['build','tests','e
 #print(packages)
 setup(
     name             = "Rbeast",   
-    version          = '0.1.20',
+    version          = '0.1.21',
     description      = "Bayesian changepoint detection and time series decomposition",
     author           = "Kaiguang Zhao",
     author_email     = 'zhao.1423@osu.edu',
@@ -92,7 +92,7 @@ setup(
     ],    
     #setup_requires      = ['numpy'],           # Deprecated in favor of pyproject.toml
     #install_requires     =  ['numpy>=1.17.3', 'matplotlib>=2.2.0'], # ['numpy>=1.10', 'matplotlib>=2.2.0'],
-    install_requires     =  ['numpy>=1.17.3'],                       # remove the depedence on matlplotlib; give a warning if matplot is missing
+    install_requires     =  ['numpy>=1.10.0'],                       # remove the depedence on matlplotlib; give a warning if matplot is missing
     #entry_points        ={  'console_scripts': ['mycommand=exampleproject.data:main1'] },    
     packages             = packages,    
     package_dir          = {"Rbeast": "py_src/Rbeast","Rbeast.data": "py_src/Rbeast/data", '': '.'},      

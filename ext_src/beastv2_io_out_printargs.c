@@ -17,7 +17,6 @@
 
 void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 {	
-	if (opt->extra.printOptions== 0 || GLOBAL_QUIET_MODE) return;
 	A(METADATA_PTR) meta = &(opt->io.meta);
 	BEAST2_IO_PTR   io    = &opt->io;
 	TimeVecInfo     *tvec  = &io->T;
@@ -74,13 +73,17 @@ void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 	#define Print(fmtstr,hasComponent,...)  {if(hasComponent) r_printf(fmtstr,  __VA_ARGS__);          }
 
 	Print("%s", hasAny, "\n");	
-	Print("%sINFO%s: To supress printing the parameers in beast(),      set print.options = 0 \n", hasAny, em1, em2);
-	Print("%sINFO%s: To supress printing the parameers in beast%cirreg(),set print.options = 0 \n", hasAny, em1, em2, dashdot);
-	Print("%sINFO%s: To supress printing the parameers in beast123(),   set extra%cprintOptions = 0  \n", hasAny, em1, em2, filler);
+	//Print("%sINFO%s: To supress printing parameers in beast(),          set print%cparams = 0 \n", hasAny, em1, em2, dashdot);
+	//Print("%sINFO%s: To supress printing parameers in beast%cirreg(),    set print%cparams = 0 \n", hasAny, em1, em2, dashdot, dashdot);
+	//Print("%sINFO%s: To supress printing parameers in beast123(),       set extra%cprintParams = 0  \n", hasAny, em1, em2, filler);
 		
-	Print("%sINFO%s: To supress warning messages in beast(),            set quiet = 1 \n", hasAny, em1, em2);
-	Print("%sINFO%s: To supress warning messages in beast%cirreg(),      set quiet = 1 \n", hasAny, em1, em2, dashdot);
-	Print("%sINFO%s: To supress warning messages in beast123(),         set extra%cquiet = 1  \n", hasAny, em1, em2, filler);
+	//Print("%sINFO%s: To supress warning messages in beast(),            set quiet = 1 \n", hasAny, em1, em2);
+	//Print("%sINFO%s: To supress warning messages in beast%cirreg(),      set quiet = 1 \n", hasAny, em1, em2, dashdot);
+	//Print("%sINFO%s: To supress warning messages in beast123(),         set extra%cquiet = 1  \n", hasAny, em1, em2, filler);
+
+	Print("%sINFO%s: Set print%cparam/print%cwarning/print%cprogress = 0 to suppress msg in beast() and beast%cirreg()\n", hasAny, em1, em2, dashdot, dashdot, dashdot, dashdot);
+	Print("%sINFO%s: Set extra%cprintParameter/printWarning/printProgress = 0 to suppress msg in beast123()\n", hasAny, em1, em2, filler);
+	Print("%sINFO%s: Set quiet=1 in beast() or beast%cirreg, and extra%cquiet=1 in beast123() to print nothing\n", hasAny, em1, em2, dashdot, filler);
 
 	Print("%s", hasAny, "\n");
 	Print("%c--------------------------------------------------%c\n", hasAny, comment, comment);
@@ -283,8 +286,11 @@ void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 	Print("extra%ctallyIncDecTrendJump = %-5s %c differentiate increased/decreased slopes at tcp\n", hasTrendCmpnt,  filler, logicals[!!extra->tallyIncDecTrendJump], comment);
 	Print("extra%ctallyPosNegOutliers  = %-5s %c differentiate postive/negative outliers\n", hasOutlierCmpnt,filler, logicals[!!extra->tallyPosNegOutliers], comment);
 
-	Print("extra%cprintProgressBar     = %-5s %c if true, show an ascii progressbar\n", hasAny, filler, logicals[!!extra->printProgressBar], comment);
-	Print("extra%cprintOptions         = %-5s %c if true, print the option of the BEAST run\n", hasAny, filler, logicals[!!extra->printOptions], comment);
+	Print("extra%cquiet                = %-5s %c if true, print nothing\n", hasAny, filler, logicals[!!GLOBAL_IS_QUIET_MODE], comment);
+	Print("extra%cprintProgress        = %-5s %c if true, show an ascii progressbar\n", hasAny, filler, logicals[!!GLOBAL_PRNT_PROGRESS], comment);
+	Print("extra%cprintParameter       = %-5s %c if true, print the parameters of the BEAST run\n", hasAny, filler, logicals[!!GLOBAL_PRNT_PARAMETER], comment);
+	Print("extra%cprintWarning         = %-5s %c if true, print warnings, if any\n", hasAny, filler, logicals[!!GLOBAL_PRNT_WARNING], comment);
+	Print("extra%cprintCpuInfo         = %-5s %c if true, print the cpu info\n", hasAny, filler, logicals[!!GLOBAL_PRNT_CPU], comment);
 	Print("extra%cconsoleWidth         = %-5d %c an integer specifying the console width for printing\n", hasAny, filler, extra->consoleWidth, comment);
 	//Print("  extra%cnumCPUCoresToUse     = %d\n", filler, extra->numCPUCoresToUse, hasAny);
 	Print("extra%cnumThreadsPerCPU     = %-5d %c each cpu core spawns %d concurrent threads (for beast123())\n", hasAny, filler, extra->numThreadsPerCPU, comment, extra->numThreadsPerCPU);

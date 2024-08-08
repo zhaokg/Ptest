@@ -1,4 +1,4 @@
-name: Build
+name: NewBuildAll
 #on: [push, pull_request]
 on: [workflow_dispatch] # manual tigger
 
@@ -43,38 +43,19 @@ jobs:
         with:
              python-version: '3.7'
  
-      - run: copy  pyproject_np1.17.3_miw3738.toml  pyproject.toml
+      - run: copy  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
-      - run: copy  pyproject_np1.19.3_miw39.toml  pyproject.toml 
+      - run: copy  pyproject_np1.19.3_miw39.toml  pyproject_NotUsed.toml 
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp39-* 
-             
-      - run:  copy pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:    cp310-*
-              
-      - run: copy pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp311-*    
-             
-      - run: copy pyproject_np1.26.0_musl_312.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp312-*    
-             #CIBW_ARCHS_MACOS:        x86_64 arm64              
-
-              
+             CIBW_BUILD:   cp39-*  cp310-* cp311-*  cp312-*   
+             #CIBW_ARCHS_MACOS:        x86_64 arm64                  
+            
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
@@ -102,35 +83,11 @@ jobs:
         with:
              python-version: '3.7'
  
-      - run: cp  pyproject_np1.17.3_miw3738.toml  pyproject.toml
+      - run: cp  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml # pyproject.toml
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*  
-   
-      - run: cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp39-* 
-             
-      - run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:    cp310-*
-              
-      - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp311-*     
-
-      - run: cp pyproject_np1.26.0_musl_312.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp312-*    
+             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*       
               
       - uses: actions/upload-artifact@v3
         with:
@@ -164,31 +121,12 @@ jobs:
         with:
           platforms: arm64    #all
    
-      - run: cp  pyproject_np1.19.3_miw39.toml  pyproject.toml 
+      - run: cp  pyproject_np1.19.3_miw39.toml  pyproject_NotUed.toml 
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp38-*  cp39-* 
-             
-      - run:  cp pyproject_np1.21.3_miwma310.toml  pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:    cp310-*
-              
-      - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp311-*   
-
-      - run: cp pyproject_np1.26.0_musl_312.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp312-*   
-             
-              
+             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*       
+       
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
@@ -216,17 +154,11 @@ jobs:
         with:
              python-version: '3.9'
                   
-      - run: cp pyproject_np1.25.0_musl_39310311.toml pyproject.toml 
+      - run: cp pyproject_np1.25.0_musl_39310311.toml pyproject_NotUed.toml 
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*   
-
-      - run: cp pyproject_np1.26.0_musl_312.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp312-*musllinux*                
+             CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*   cp312-*musllinux*   
               
       - uses: actions/upload-artifact@v3
         with:
@@ -245,7 +177,7 @@ jobs:
       fail-fast: true
       max-parallel: 5
       matrix:
-        os:      [macos-latest]    
+        os:      [macos-latest]    #[macos-12]    
 
     steps:  
   
@@ -258,74 +190,17 @@ jobs:
       - run: cp pyproject_np1.17.3_miw3738.toml pyproject.toml 
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
-             CIBW_ARCHS:  x86_64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp37-*   cp38-*  
-             
-      - run: cp pyproject_np1.21.0_ma3839.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:  arm64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp38-*    cp39-*              
-             
-      - run: cp pyproject_np1.21.3_miwma310.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   x86_64 arm64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp310-*  
- 
-      - run: cp pyproject_np1.23.2_miwma311.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:  x86_64 arm64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp311-*  
-
-      - run: cp pyproject_np1.26.0_musl_312.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:   x86_64 arm64 #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp312-*               
+             CIBW_ARCHS:  x86_64  arm64  #all, native AMD64 x86 ARM64
+             CIBW_BUILD:  cp37-*   cp38-*   cp38-*    cp39-*   cp310-*  cp311-*    cp312-*  
+          
              
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl		            
           
-############################################################################
-#    Build Wheels for MacOS12
-#   Numpy can't be built for macos-latest
-############################################################################   
-  build_wheels_mac12:
-    name: Make ${{ matrix.os }} wheels  
-    runs-on: ${{ matrix.os }}
-    env:
-      arch:   x86_64  #  aarch64 x86_64
-      CIBW_SKIP:   '*-musllinux_aarch64' 
-    strategy:
-      fail-fast: true
-      max-parallel: 5
-      matrix:
-        os:      [macos-12]    
-
-    steps:  
-  
-      - uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-             python-version: '3.9'
- 
-      - run: cp pyproject_np1.19.3_miw39.toml pyproject.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
-        env:             
-             CIBW_ARCHS:  x86_64    #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp39-*  
-             
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ./wheelhouse/*.whl	
-             
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [  build_sdist , build_wheels_win, build_wheels_linux,build_wheels_linux_aarch64, build_wheels_musl_linux,   build_wheels_mac, build_wheels_mac12]
+    needs: [  build_sdist , build_wheels_win, build_wheels_linux,build_wheels_linux_aarch64, build_wheels_musl_linux,   build_wheels_mac]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     steps:

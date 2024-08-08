@@ -85,39 +85,41 @@ def plot(o, index=0,\
          ):
 
     """    
-           
-   *Input arguments*:
-    --------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------           
+*Input arguments*:
+--------------------------------------------------------------------------------------------------
    
-    o:    the time series analysis output from  beast123; o
-           should contain results for mulltiple time series
+o:    the time series analysis output from  beast123; o
+      should contain results for mulltiple time series
 
-    index: if o contains results for more than 1 time series, index specifies 
-           for which time series the result is printed.  If o is the result for 
-           a 3D stacked cube, index will be a vector of 2  integer to specify the 
-           row and col of the desired pixel. If o contains  only one time series, 
-           index will be ignored
+index: if o contains results for more than 1 time series, index specifies  for which 
+       time series the result is printed.  If o is the result for a 3D stacked cube, 
+       index will be a vector of 2  integer to specify the row and col of the desired pixel.
+       If o contains  only one time series, index will be ignored
  
-    vars:  a vector of strings indicating the elements or variables 
-          of o to plot. Possible vars strings include 'st' (season plus trend), 's' (season component),
-          't' (trend component), 'o' (outliers), 'scp', 'tcp', 'ocp'  (occurrence probability
-          of seasonal/trend/outlier changepoint), 'sorder' (seasonal harmonic order), 
-          'torder' (trend polynomial order), 'samp' (amplitude of seasonality), 'tslp' (slope of trend),
-          'slpsgn' (probabilities of the slope being positive, zero, and negative) and 'error' (remainder).
+vars:  a vector of strings indicating the elements or variables 
+       of o to plot. Possible vars strings include 'st' (season plus trend), 's' (season component),
+       't' (trend component), 'o' (outliers), 'scp', 'tcp', 'ocp'  (occurrence probability
+       of seasonal/trend/outlier changepoint), 'sorder' (seasonal harmonic order), 
+       'torder' (trend polynomial order), 'samp' (amplitude of seasonality), 'tslp' (slope of trend),
+       'slpsgn' (probabilities of the slope being positive, zero, and negative) and 'error' (remainder).
    
-    ncpStat: A string to specify which statistic is used for 
-           the Number of ChangePoint (ncp). Five values are possible: 'mean', 'mode', 'median',
-           'pct90', and 'max'; the default is 'median'. Individual models sampled by BEAST has
-           a varying dimension (e.g., number of changepoints or knots). For example, 
-           if mcmc$samples=10, the numbers of changepoints for the 10 sampled models are assumed
-           to be c(0, 2, 4, 1, 1, 2, 7, 6, 6, 1). The mean ncp will be 3.1 (rounded to 3), 
-           the median is 2.5 (2), the mode is 1, and the maximum is 7.  The 'max' option plots 
-           all the changepoints recorded in out$trend$cp, out$season$cp, or out$outlier$cp; many of 
-           these changepoints are bound to be false positives, so do not blindly treat all of them 
-           as actual changepoints.
- 
-    Examples:
-    --------------------------------------------------------------------------------------------------
+ncpStat: a string to specify which statistic to use for the number of ChangePoint (ncp). 
+         Five values are possible: 'mean', 'mode', 'median', 'pct90', and 'max'; the default is 'median'. 
+         Individual models sampled by BEAST has a varying dimension (e.g., number of changepoints or knots). 
+         For example, if mcmc$samples=10, the numbers of changepoints for the 10 sampled models are assumed
+         to be c(0, 2, 4, 1, 1, 2, 7, 6, 6, 1). 
+		 (1) the mean ncp will be 3.1 (rounded to 3), 
+		 (2) the median is 2.5 (2)
+		 (3) the mode is 1, 
+		 (4) the maximum is 7.
+         The 'max' option will plot all the changepoints recorded in out.trend.cp, out.season.cp, or o.outlier.cp; 
+         many of these changepoints are bound to be false positives, so do not blindly treat all of them as 
+         actual changepoints.
+
+-------------------------------------------------------------------------------------------------- 
+Examples:
+--------------------------------------------------------------------------------------------------
     # in the slpsgn plot, the upper red envelope refers to probability of trend slope being positive,
     # the middle green to probability of trend slope being zero, the blue to probability of slope
     # of being negative
