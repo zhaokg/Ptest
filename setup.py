@@ -52,7 +52,9 @@ filenames.append("ext_src/abc_ioFlushcpp.cpp")
 modules = Extension(
             "Rbeast.Rbeast",
             sources       = filenames,
-            include_dirs  = [get_numpy_include(), "ext_src/"],      # [ np.get_include(), "ext_src/"],
+            #include_dirs  = [ np.get_include(), "ext_src/"],   # Bad option bcz np needs to be installed fist
+            #include_dirs  = [get_numpy_include(), "ext_src/"], # Bad option bcz np needs to be installed fist as build-time dependencies                  
+            include_dirs  = ["ext_src/"],                 
             define_macros = [('P_RELEASE','1'),('R_INTERFACE','0')],
             libraries     = extralibs
         )
