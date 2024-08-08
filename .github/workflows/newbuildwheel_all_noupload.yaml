@@ -187,7 +187,7 @@ jobs:
         with:
              python-version: '3.9'
                   
-      - run: cp pyproject_np1.17.3_miw3738.toml pyproject.toml 
+      - run: cp pyproject_np1.17.3_miw3738.toml pyprojectNotUSED.toml 
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:  x86_64  arm64  #all, native AMD64 x86 ARM64
