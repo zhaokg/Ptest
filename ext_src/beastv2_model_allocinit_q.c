@@ -593,6 +593,7 @@ void AllocInitModelMEM(BEAST2_MODEL_PTR model, BEAST2_OPTIONS_PTR opt, MemPointe
 
 			MODEL.oid = i;
 
+			basis->prior.minKnotNum = opt->prior.outlierMinKnotNum;
 			basis->prior.maxKnotNum = opt->prior.outlierMaxKnotNum;
 
 			isComponentFixed[i] = 0;

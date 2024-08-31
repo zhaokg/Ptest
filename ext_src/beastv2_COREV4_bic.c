@@ -38,6 +38,9 @@ static  void ComputeMargLik_prec01_BIC(BEAST2_MODELDATA_PTR data, PRECSTATE_PTR 
 {
 	I32 K = data->K;
 	solve_U_as_LU_invdiag_sqrmat(data->cholXtX, data->XtY, data->beta_mean, K);
+
+	//r_printf("bic: %d %f %f\n", K, data->cholXtX[0], data->XtY[0]);
+
 	//Compute alpha2_star: Two ways to compute alpha2_star: YtY-m*V*m
 	/* ---THE FIRST WAY---
 			//GlobalMEMBuf_1st = Xnewterm + K_newTerm*Npad;
@@ -93,6 +96,7 @@ static  void ComputeMargLik_prec01_BIC(BEAST2_MODELDATA_PTR data, PRECSTATE_PTR 
 
 	data->marg_lik = -BIC / 2.0;
  
+
 	return;
 }
 
@@ -101,82 +105,12 @@ static void BEAST2_EvaluateModel_BIC(BEAST2_MODELDATA* curmodel, BEAST2_BASIS_PT
 {
 	//TO RUN THIS FUNCTION, MUST FIRST RUN CONVERTBAIS so to GET NUMBERS OF BASIS TERMS	
 
-	I32 Npad = (I32)ceil((F32)N / 8.0f) * 8; Npad = N;//Correct for the inconsitency of X and Y in gemm and gemv
-	I32 K    = 0;
-	for (I32 basisID = 0; basisID < NUMBASIS; basisID++) {
-		BEAST2_BASIS_PTR basis = b + basisID;
-		if (basis->type != OUTLIERID) {
-			int         NUM_SEG = basis->nKnot + 1;
-			TKNOT_PTR   KNOT    = basis->KNOT;
-			TORDER_PTR  ORDER   = basis->ORDER;
+	curmodel->K = BEAST2_Basis_To_XmarsXtX_XtY( b,  NUMBASIS,  Xt_mars,  N, curmodel->XtX, curmodel->XtY,  yInfo);
 
-			BEAST2_BASESEG seg;
-			seg.ORDER1 = basis->type == TRENDID ? 0 : 1;
-			//For season terms: 1..(1)....(2)...(|sSegNum-1)...N (|N+1)
-			for (int i = 1; i <= NUM_SEG; i++) {
-				///The first segment starts from 1; other segments start one interval after the previous segment
-				//The last segment ends at N'; others end exactly at the current breakpoint minus one;
-				//the last bk is (N+1)
-				seg.R1     = KNOT[(i - 1) - 1L];
-				seg.R2     = KNOT[i - 1L] - 1L;
-				seg.ORDER2 = basis->type == DUMMYID ? 0 : ORDER[i - 1L];
-				I32 k = basis->GenTerms(Xt_mars + Npad * K, N, &seg, &(basis->bConst));
-				K += k;
-			}
-
-		}
-		else {
-			int         numOfSeg = basis->nKnot;
-			TKNOT_PTR   knotList = basis->KNOT;
-
-			BEAST2_BASESEG seg;
-			seg.ORDER1 = seg.ORDER2 = 0; // orders are not used at all
-			//For season terms: 1..(1)....(2)...(|sSegNum-1)...N (|N+1)
-			for (int i = 1; i <= numOfSeg; i++) {
-				///The first segment starts from 1; other segments start one interval after the previous segment
-				//The last segment ends at N'; others end exactly at the current breakpoint minus one;
-				//the last bk is (N+1)
-				seg.R1 = knotList[(i)-1L];
-				seg.R2 = knotList[(i)-1L];
-				I32 k = basis->GenTerms(Xt_mars + Npad * K, N, &seg, &(basis->bConst));
-				K += k;
-			}
-		}
-
-
-	}
-	curmodel->K = K;
-
-	//--------------------------------------------------------------------------------------------------
-	// Set those rows of X_mars specfied by rowsMissing  to zeros 
-	//	TODO: this could be buggy: Xt_mars may be not large enough to backup the X values at the missing rows
-	// for the full initial model
-	F32PTR	GlobalMEMBuf = Xt_mars + K * Npad;
-	F32PTR	Xt_zeroBackup = GlobalMEMBuf;
-	if (yInfo->nMissing > 0) {
-		F32 fillvalue = 0.f;
-		f32_mat_multirows_extract_set_by_scalar(Xt_mars, Npad, K, Xt_zeroBackup, yInfo->rowsMissing, yInfo->nMissing, fillvalue);
-	}
-
-	//Calcuate X'*X and Calcuate X'*Y
-	//DGEMM('T', 'N', &m, &n, &K, &alpha, X_mars, &K, X_mars, &K, &beta, XtX, &m);	
-	//cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double *a, const MKL_INT lda, const double *b, const MKL_INT ldb, const double beta, double *c, const MKL_INT ldc);
-
-
-	F32PTR XtX = curmodel->XtX;
-	r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K, K, N, 1.f, Xt_mars, Npad, Xt_mars, Npad, 0.f, XtX, K);
-	//cblas_dgemmt (const CBLAS_LAYOUT Layout, const CBLAS_UPLO uplo, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT n, const MKL_INT k, const double alpha, const double *a, const MKL_INT lda, const double *b, const MKL_INT ldb, const double beta, double *c, const MKL_INT ldc);
-	//cblas_dgemmt(CblasColMajor, CblasLower, CblasTrans, CblasNoTrans, k, N, 1, X_mars, N, X_mars, N, 0, XtY, k);				
-
-	F32PTR XtY = curmodel->XtY;
-	//cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m, const MKL_INT n, const double alpha, const double *a, const MKL_INT lda, const double *x, const MKL_INT incx, const double beta, double *y, const MKL_INT incy);
-	r_cblas_sgemv(CblasColMajor, CblasTrans, Npad, K, 1, Xt_mars, Npad, yInfo->Y, 1, 0, XtY, 1);
-
-	// Restore the backuped zeros at the missing rows
-	if (yInfo->nMissing > 0) {
-		f32_mat_multirows_set_by_submat(Xt_mars, Npad, K, Xt_zeroBackup, yInfo->rowsMissing, yInfo->nMissing);
-	}
-	// Now GlobalMEMBuf_1st is free to use;
+	I32 Npad    = N;
+	I32 K       = curmodel->K;
+	F32PTR XtX  = curmodel->XtX;
+	F32PTR XtY  = curmodel->XtY;
 
 	//X_mars has been constructed. Now use it to calcuate its margin likelihood
 	//Add precison values to the diagonal of XtX: post_P=XtX +diag(prec)	
@@ -194,9 +128,10 @@ static void BEAST2_EvaluateModel_BIC(BEAST2_MODELDATA* curmodel, BEAST2_BASIS_PT
 		r_cblas_scopy(K, XtY, 1, beta_mean, 1);
 		r_LAPACKE_spotrs(LAPACK_COL_MAJOR, 'U', K, 1, cholXtX, K, beta_mean, K);
 	*/
-	 
 
+	 
 	chol_addCol_skipleadingzeros_prec_invdiag(XtX, cholXtX, curmodel->precXtXDiag, K, 1, K);
+
   
 	//Compute beta = beta_mean + Rsig2 * randn(p, 1);
 	//Usig2 = (1 / sqrt(sig2)) * U; 		beta = beta_mean + linsolve(Usig2, randn(p, 1), opts);
@@ -301,12 +236,13 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	
 	// Allocate the output memory for a single chain (resultChain) and the averaged
 	// result of all chains ( result)
-	const BEAST2_RESULT resultChain = { NULL, };
-	BEAST2_RESULT       result      = { NULL, };
+	// Cannot make it constant; otehrwise resultChina will be treated as NULL and cause errors in mempcy(resultChina.xx)
+	//beastv2_COREV4.c:677:13: warning: null passed to a callee that requires a non-null argument [-Wnonnull]
+    BEAST2_RESULT resultChain = { NULL, };
+	BEAST2_RESULT result      = { NULL, };
 	BEAST2_Result_AllocMEM(&resultChain, opt, &MEM); 	
 	BEAST2_Result_AllocMEM(&result,      opt, &MEM);
 	
-
 
 	// Pre-allocate memory to save samples for calculating credibile intervals	 
 	const   I32  NumCIVars = MODEL.NUMBASIS + opt->extra.computeTrendSlope;
@@ -500,7 +436,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 			/****************************************************************************/			
 			{   
 				// Generate random knots (numknot,KNOTs and ORDERS)				
-				GenarateRandomBasis(MODEL.b, MODEL.NUMBASIS, N, &RND);//CHANGE: nunKnot, ORDER, KNOT, K, KBase, Ks, Ke, or TERM_TYPE				
+				GenarateRandomBasis(MODEL.b, MODEL.NUMBASIS, N, &RND, &yInfo);//CHANGE: nunKnot, ORDER, KNOT, K, KBase, Ks, Ke, or TERM_TYPE				
 				 
 				/*
 				for (int i = 0; i < MODEL.NUMBASIS; ++i) {
@@ -511,7 +447,6 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				}
 				*/
 
-  				MODEL.precState.precVec[0] = 0.0; //Added for BIC
 			
 				//Evaluate the initial model and compute its marg lik. CHANGE: DERIVE XMARS, K, BETA, BETA_MEAN, MARG_LIK
 				// Xtmars is a cotinguous mem block consiting of Xtmars, Xnewterm, and Xt_zerobackup. The first part will
@@ -524,6 +459,8 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				} else 	{
 					//MR_EvaluateModel(    &MODEL.curr, MODEL.b, Xt_mars, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.curr.precXtXDiag, opt->prior.precPriorType, &stream);
 				}
+
+				//r_printf("%f prec=%f [%f]\n", MODEL.curr.marg_lik, MODEL.curr.precXtXDiag[0], MODEL.precState.precVec[0]);
 		
 			}
 		
@@ -537,6 +474,12 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				memset(MODEL.extremePosVec, 1, N);
 				for (I32 i = 0; i < yInfo.nMissing; ++i) MODEL.extremePosVec[yInfo.rowsMissing[i]] = 0;
 				MODEL.extremPosNum = yInfo.n;
+
+				// Initialize the deviation vector to a large initial value: Used only for the OUTLIER proposal function
+				// Deviation will be updated once sample > 1
+				f32_fill_val(1e30, MODEL.deviation, N);
+				for (I32 i = 0; i < yInfo.nMissing; ++i) MODEL.deviation[yInfo.rowsMissing[i]]   = getNaN();
+				MODEL.avgDeviation[0] = 1.0;
 
 				// Clear up and zero out resultChain for initialization
 				BEAST2_Result_FillMEM(&resultChain, opt, 0);
@@ -564,9 +507,10 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				} 
 			} 
 
-			PROP_DATA PROPINFO = {.N = N, .Npad16 = Npad16,  .samples=&sample, .keyresult = coreResults, .mem = Xnewterm,.model = &MODEL, 
-				              .pRND =&RND, .yInfo =&yInfo, .nSample_ExtremVecNeedUpdate=1L, .sigFactor = opt->prior.sigFactor, 
-							  .outlierSigFactor = opt->prior.outlierSigFactor, };
+			PROP_DATA PROPINFO = { .N = N, .Npad16 = Npad16,  .samples = &sample, .keyresult = coreResults, .mem = Xnewterm,.model = &MODEL,
+							  .pRND = &RND, .yInfo = &yInfo,  .sigFactor = opt->prior.sigFactor, .outlierSigFactor = opt->prior.outlierSigFactor,
+							  .nSample_DeviationNeedUpdate = 1L, .shallUpdateExtremVec=0L, 
+				               .numBasisWithoutOutlier=MODEL.NUMBASIS - (opt->prior.basisType[MODEL.NUMBASIS - 1] == OUTLIERID),};
 
 			// Moved here bvz its xcols has two fixed lements, N and Npad
 			NEWTERM   NEW = { .newcols = {.N=N, .Nlda=Npad} };
@@ -682,8 +626,17 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				//if (MODEL.prop.marg_lik != MODEL.prop.marg_lik || fabs(MODEL.prop.marg_lik )>FLOAT_MAX || MODEL.prop.alpha2_star <0.f) {					   				  
 
 				if (IsNaN(MODEL.prop.marg_lik) || IsInf(MODEL.prop.marg_lik)) {
-					 continue;				 
+					// r_printf("ite-%5d[chn=%d] prec: %.4f| marg_lik_prop: %.4f | marg_like_curr: %.4f \n", ite, chainNumber, MODEL.precState.precVec[0], MODEL.prop.marg_lik, MODEL.curr.marg_lik);
+					
+					if (++numBadIterations < 20) {
+						continue;
+					} else {
+						skipCurrentPixel = 2;
+						break;
+					}
+					 
 				} //if (marg_lik_prop != marg_lik_prop || alpha2_star_prop <0.f) 
+				numBadIterations = 0;
 
 			   /****************************************************************************************/
 			   /*    DETERMINE WHETHER OR NOT TO ACCCEPT THE PROPSOED STEP                              */
@@ -777,7 +730,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 						 
 					}
 					else {
-						//MR_EvaluateModel(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.precState.precVec, &stream);
+						//BEAST2_EvaluateModel(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.precState.precVec, &stream);
 						//r_printf("MRite%d |%f|%f|diff:%f -prec %f\n", ite, MODEL.curr.marg_lik, MODEL.prop.marg_lik, MODEL.prop.marg_lik - MODEL.curr.marg_lik, MODEL.precState.precVec[0]);
 					 
 	                                   /****
@@ -873,7 +826,7 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 				}
 
 				// 1L || 0L: use of logical '||' with constant operand [-Wconstant-logical-operand]
-				F32PTR BETA = (extra.useRndBeta == 0) || 1L==1L /*BIC*/ ? MODEL.curr.beta_mean : MODEL.beta;
+				F32PTR BETA = (extra.useRndBeta == 0) || 1L == 1L /*BIC*/ ? MODEL.curr.beta_mean : MODEL.beta;
 				{
 					 F32PTR MEMBUF1 = Xnewterm;
 

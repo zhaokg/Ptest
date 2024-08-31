@@ -7,7 +7,7 @@
 	#define WARNING_SWITCH
     DISABLE_MANY_WARNINGS
 #else
-    // for MacOS, for some reason, sing and warning defined in R. h will expand into Rf_sign 
+    // for MacOS, for some reason, sign and warning defined in R. h will expand into Rf_sign 
     // to mess up the pragram ingore statements.
     #undef sign    
     #undef warning 

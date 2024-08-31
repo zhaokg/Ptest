@@ -158,6 +158,7 @@ static INLINE int pthread_mutex_unlock(pthread_mutex_t* mutex)  {     LeaveCriti
 static INLINE int pthread_cond_init(pthread_cond_t * cond, const pthread_condattr_t * attr) {     InitializeConditionVariable(cond);  return 0;}
 static INLINE int pthread_cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex) {   SleepConditionVariableCS(cond, mutex, INFINITE);  return 0;}
 static INLINE int pthread_cond_signal(pthread_cond_t * cond)    {   WakeConditionVariable(cond);    return 0;}
+static INLINE int pthread_cond_broadcast(pthread_cond_t* cond)  {   WakeAllConditionVariable(cond);    return 0; }
 static INLINE int pthread_cond_destroy(pthread_cond_t * cond)   {
 	//https:// stackoverflow.com/questions/28975958/why-does-windows-have-no-deleteconditionvariable-function-to-go-together-with
     return 0;

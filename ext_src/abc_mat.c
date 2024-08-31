@@ -161,7 +161,7 @@ void chol_columwise(F32PTR A, F32PTR U, I64  N, I64 K)
 			U    = U - (col - 1) + N; //jump to the next col
 		}
 
-		Ucol[COL - 1] = sqrt( A[COL-1] - SUM_UxU);
+		Ucol[COL - 1] = (F32) sqrt( A[COL-1] - SUM_UxU);
 	}
 
 }
@@ -182,12 +182,12 @@ void chol_columwise_v2( F32PTR A, F32PTR U, I64  N, I64 K )
 				sum += U[row - 1] * Ucol[row - 1];
 
 			F64 res		    = (A[col -1]-sum) / U[col -1];
-			Ucol[col - 1]	= res;
+			Ucol[col - 1]	= (F32) res;
 			SUM_Ucol_x_Ucol += res * res;	
 
 			U += N;								 // Jump to the next col (i.e., the new j-th col)
 		}
-		Ucol[COL -1] = sqrt(A[COL -1]-SUM_Ucol_x_Ucol);
+		Ucol[COL -1] = (F32) sqrt(A[COL -1]-SUM_Ucol_x_Ucol);
 	}
 	    
 
@@ -205,7 +205,7 @@ void chol_rowwise( F32PTR A, F32PTR U, I64  N, I64 K ) {
 		A  = A_base + (ROW-1)*N ;        //go to the start  of the ROW-th column
 
 		F64 sum = 0.0; 	for (I32 row = 1; row < ROW; ++row) {sum += U[row-1]* U[row-1]; }
-		F32 Ukk     = sqrt(A[ROW-1]-sum);				
+		F32 Ukk     = (F32) sqrt(A[ROW-1]-sum);
 		F32 Ukk_inv = 1.f / Ukk;
 		U[ROW - 1] = Ukk;
 	
@@ -236,14 +236,14 @@ void chol_addCol(F32PTR A, F32PTR U, I64 N, I64 K0, I64 K1)
 			F64 sum = 0.f;
 			for (I32 row = 1; row < col; row++)	{sum += (*U++)* (*Ucol++);}			
 			F64 Uk = (A[col - 1] - sum) / (*U);
-			*Ucol  = Uk;
-			SUM   +=Uk * Uk;
+			*Ucol  = (F32) Uk;
+			SUM   += Uk * Uk;
 
 			Ucol = Ucol - (col - 1);
 			U    = U - (col - 1) + N;
 		}
 
-		Ucol[COL - 1] = sqrt(A[COL - 1] - SUM);
+		Ucol[COL - 1] = (F32) sqrt(A[COL - 1] - SUM);
 	}
 
 }
@@ -257,8 +257,8 @@ void inplace_chol(F32PTR A, I64  N, I64 K)
 		F32 Ukk_inv;
 		{	F64 sum = 0.f;
 			for (I64 row = 1; row < COL; row++) { sum += A[row - 1] * A[row - 1]; };			
-			F64  Ukk = sqrt(A[COL-1] - sum);			
-			A[COL - 1] = Ukk;
+			F64  Ukk   = sqrt(A[COL-1] - sum);			
+			A[COL - 1] = (F32) Ukk;
 			Ukk_inv    = 1.f/Ukk;
 		}		
 

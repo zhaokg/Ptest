@@ -59,7 +59,7 @@ static int  GetArg_0th_Data(VOIDPTR prhs[], int nrhs, BEAST2_IO_PTR _OUT_ io) {
 		//DATA is a vector of numeric type, and not a struct variable with multivariate time series			
 		q = 1;
 		//Mem to be dellocated in DeallocatTimeSeriesIO
-		io->pdata   = malloc(sizeof(VOID_PTR) * q);
+		io->pdata    = malloc(sizeof(VOID_PTR) * q);
 		io->dtype    = malloc(sizeof(DATA_TYPE) * q);
 		io->pdata[0] = GetData(DATA);
 		io->dtype[0] = GetDataType(DATA);
@@ -692,7 +692,7 @@ static int  GetArg_2nd_Prior__(VOIDPTR prhs[], int nrhs, BEAST2_PRIOR_PTR prior,
 	struct PRIOR_MISSING {	
 		U08   seasonMinOrder, seasonMaxOrder, trendMinOrder, trendMaxOrder;
 		U08   trendMinSepDist, seasonMinSepDist;
-		U08   trendMinKnotNum, seasonMinKnotNum;
+		U08   trendMinKnotNum, seasonMinKnotNum, outlierMinKnotNum;
 		U08   trendMaxKnotNum, seasonMaxKnotNum,  outlierMaxKnotNum;
 
 		U08   trendLeftMargin, trendRightMargin;
@@ -748,6 +748,7 @@ static int  GetArg_2nd_Prior__(VOIDPTR prhs[], int nrhs, BEAST2_PRIOR_PTR prior,
 			o.trendRightMargin = (tmp = GetField123Check(S, "trendRightMargin", 10)) ? GetScalar(tmp) : (m.trendRightMargin = 1);
 
 			if (io->meta.hasOutlierCmpnt) {
+				o.outlierMinKnotNum = (tmp = GetField123Check(S, "outlierMinKnotNum", 10)) ? GetScalar(tmp) : (m.outlierMinKnotNum = 1);
 				o.outlierMaxKnotNum = (tmp = GetField123Check(S, "outlierMaxKnotNum", 10)) ? GetScalar(tmp) : (m.outlierMaxKnotNum = 1);
 				o.outlierSigFactor = (tmp = GetFieldCheck(S, "outlierSigFactor")) ? GetScalar(tmp) : (m.outlierSigFactor = 1);
 			}
@@ -887,9 +888,9 @@ static int  GetArg_2nd_Prior__(VOIDPTR prhs[], int nrhs, BEAST2_PRIOR_PTR prior,
 		o.trendMaxKnotNum = max(o.trendMaxKnotNum, o.trendMinKnotNum);	 
 	}
 	
+	if (m.outlierMinKnotNum) o.outlierMinKnotNum = 0;
 	if (m.outlierMaxKnotNum) o.outlierMaxKnotNum = o.trendMaxKnotNum;    
-	o.outlierMaxKnotNum = max(o.outlierMaxKnotNum, 1L); // at least has one; otherwise, the program crahses if hasOUtliercomponet=1
-	
+
 	if (m.K_MAX )            o.K_MAX            = 0;    // exact value of K_max to be determined later if Kmax = 0              
 	if (m.sigFactor)         o.sigFactor        = 1.8;            o.sigFactor        = max(o.sigFactor,        1.02);
 	if (m.outlierSigFactor)  o.outlierSigFactor = 2.5;            o.outlierSigFactor = max(o.outlierSigFactor, 1.5);
@@ -1122,6 +1123,19 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 	I08 hasTrendCmpnt    = 1;
 	I08 hasAlways        = 1;
 
+	// If outlierMaxKnotNum==0,, then force removing the outlier component
+	if (hasOutlierCmpnt ) {
+		if (opt->prior.outlierMinKnotNum > opt->io.N/2) {
+			opt->prior.outlierMinKnotNum = opt->io.N / 2;
+		}
+		// Remove the outlier componnet if ocp.min > ocp.max
+		if (opt->prior.outlierMaxKnotNum <= 0 || opt->prior.outlierMaxKnotNum < opt->prior.outlierMinKnotNum) {
+			hasOutlierCmpnt              = 0;			
+			opt->io.meta.hasOutlierCmpnt = 0;
+			opt->prior.numBasis--;
+		}		
+	}
+
 	// Period must be an integer when Dummy is used
 	if (hasDummyCmpnt) opt->io.meta.period = ceil(opt->io.meta.period);
 
@@ -1265,6 +1279,11 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 
 	if (opt->io.numOfPixels > 1) {
 		opt->extra.dumpMCMCSamples = 0;
+	}
+
+
+	if (opt->prior.numBasis == 1 && opt->prior.precPriorType == ComponentWise) {	
+		opt->prior.precPriorType = UniformPrec;
 	}
 
 	opt->extra.printProgress = GLOBAL_PRNT_PROGRESS;

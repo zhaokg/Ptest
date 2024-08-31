@@ -90,7 +90,7 @@ typedef struct BEAST2_PRIOR {
 
 	I16   trendMinKnotNum,  seasonMinKnotNum;
 	I16   trendMaxKnotNum,  seasonMaxKnotNum;
-	I16   outlierMaxKnotNum;
+	I16   outlierMinKnotNum, outlierMaxKnotNum;
 
 	U16   K_MAX;
  
@@ -188,7 +188,7 @@ typedef struct BEAST2_YINFO {
 	F32        alpha1_star;
 	TKNOT      n, nMissing;		
 	//q is added for MRBEAST and used in ComputeLik, PropseNew/__CalcAbsDeviation(compute deviaiton and extrempos)
-    //, MR_EvaluateModel,
+    //, BEAST2_EvaluateModel,
 	I32        q; 
 	I32PTR     rowsMissing;
 	F32PTR     Y;
@@ -288,10 +288,12 @@ typedef struct PROPOSE_STRUCT {
 	BEAST2_MODEL_PTR   model;
 	BEAST2_RANDSEEDPTR pRND;
 	BEAST2_YINFO_PTR   yInfo;
-	I32                nSample_ExtremVecNeedUpdate;
 	I32                N, Npad16;
 	F32                sigFactor;	
 	F32                outlierSigFactor;
+	I32                nSample_DeviationNeedUpdate;
+	I08                numBasisWithoutOutlier;
+	I08                shallUpdateExtremVec;
 } PROP_DATA, *_restrict PROP_DATA_PTR;
 
 

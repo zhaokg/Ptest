@@ -515,7 +515,7 @@ static void  print_cpucache(struct cpu_cache* cpu)  {
             , cpu[i].cache_coherency_line_size
             , cpu[i].cache_physical_line_partitions
             , cpu[i].cache_ways_of_associativity
-            , cpu[i].cache_total_size, cpu[i].cache_total_size >> 10
+            ,(size_t) cpu[i].cache_total_size, (size_t)(cpu[i].cache_total_size >> 10)
             , cpu[i].cache_is_fully_associative ? "true" : "false"
             , cpu[i].cache_is_self_initializing ? "true" : "false"
         );

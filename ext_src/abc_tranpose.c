@@ -168,7 +168,7 @@ void i32_transpose_inplace_prev_two_ends(I32PTR Mat, U64 NROW, U64 NCOL) {
 	// rosettacode.org/wiki/Matrix_transposition#C
 	if (NROW == 1 || NCOL == 1) { return; }
 
-	I32 NfixedPoints = greatest_common_divsor(NROW - 1, NCOL - 1) + 1L;
+	I32 NfixedPoints = greatest_common_divsor((int)NROW - 1, (int)NCOL - 1) + 1L;
 	U64 Nprocessed   = NfixedPoints;
 	I08 WORKED[Nwork + 1] = { 0, };
 	U64 K            = NROW * NCOL - 1;        // use int64 t- avoid ovwerflow in PREV()

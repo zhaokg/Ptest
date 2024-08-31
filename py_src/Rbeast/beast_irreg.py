@@ -29,7 +29,7 @@ def beast_irreg(Y, \
           precValue        = 1.5,
           precPriorType    = 'componentwise',  # componentwise','uniform','constant','orderwise'
           hasOutlier       = False,
-          ocp_max          = 10,		  
+          ocp_minmax       = [0, 10],		  
           print_param      = True,
           print_progress   = True,
           print_warning    = True,
@@ -51,7 +51,7 @@ The fitted model is:
      Y=trend+seasonal+outlier+error if data has periodic/seasonal variation and also has outliers
 where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
 be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
-be inferred; and the outlier component refers to potential pikes or dips at isolated data points and is 
+be inferred; and the outlier component refers to potential spikes or dips at isolated data points and is 
 included only if metadata.hasOutlierCmpnt=True (in beast123) or hasOutlier=True (in beast or beast_irreg)
 ######################################################################################################
 
@@ -206,9 +206,9 @@ precPriorType:
 hasOutlier:
         boolean; if true, the model with an outlier component will be fitted (if season='none',
         Y=trend+outlier+error, or if season ~= 'none', Y=trend+season+outlier+error).		
-ocp_max:
-        integer; needed only if outlier=True to specify the maximum number of outliers (i.e., 
-        Outlier-type ChangePoints--ocp) allowed in the time series
+ocp_minmax:
+        a vector of 2 integers (>=0); the min and max numbers of outlier-type changepoints (ocp) allowed in the time series.
+        Ocp refers to spikes or dips at isolated times that can't be modeled as trends or seasonal terms.
 print_param: 
          boolean; if true, print the beast paramers. 		 
 print_progress: 
@@ -384,7 +384,8 @@ at zhao.1423@osu.edu.
       prior.trendLeftMargin   = tseg_leftmargin
       prior.trendRightMargin  = tseg_rightmargin  
       if hasOutlier:
-            prior.outlierMaxKnotNum = ocp_max	  
+            prior.outlierMinKnotNum = ocp_minmax[0]	  	  
+            prior.outlierMaxKnotNum = ocp_minmax[1]	 
       prior.K_MAX            = 0
       prior.precValue        = precValue
       prior.precPriorType    = precPriorType

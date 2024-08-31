@@ -136,8 +136,10 @@ void beast2_main_corev4_gui(void) {
 	
 	// Allocate the output memory for a single chain (resultChain) and the averaged
 	// result of all chains ( result)
-	const BEAST2_RESULT resultChain = { NULL, };
-	BEAST2_RESULT       result = { NULL, };
+	// Cannot make it constant; otehrwise resultChina will be treated as NULL and cause errors in mempcy(resultChina.xx)
+	//beastv2_COREV4.c:677:13: warning: null passed to a callee that requires a non-null argument [-Wnonnull]
+    BEAST2_RESULT resultChain = { NULL, };
+	BEAST2_RESULT result      = { NULL, };
 	BEAST2_Result_AllocMEM(&resultChain, opt, &MEM);
 	BEAST2_Result_AllocMEM(&result, opt, &MEM);
 
@@ -395,7 +397,7 @@ void beast2_main_corev4_gui(void) {
 			/****************************************************************************/			
 			{   
 				// Generate random knots (numknot,KNOTs and ORDERS)				
-				GenarateRandomBasis(MODEL.b, MODEL.NUMBASIS, N, &RND);//CHANGE: nunKnot, ORDER, KNOT, K, KBase, Ks, Ke, or TERM_TYPE				
+				GenarateRandomBasis(MODEL.b, MODEL.NUMBASIS, N, &RND, &yInfo);//CHANGE: nunKnot, ORDER, KNOT, K, KBase, Ks, Ke, or TERM_TYPE				
 				 
 				/*
 				for (int i = 0; i < MODEL.NUMBASIS; ++i) {
@@ -412,11 +414,8 @@ void beast2_main_corev4_gui(void) {
 				// We don't use Xnewterm  or Xt_zerobackup as a temp mem buf bcz the zeroOutXmars function may need a much
 				// larger  mem due to the many terms of the inital random model	
 				// basis->K won't be updated inside the function and the old values from CalcBasisKsKeK is kept
-				if (q == 1) {
-					BEAST2_EvaluateModel(&MODEL.curr, MODEL.b, Xt_mars, N, MODEL.NUMBASIS, &yInfo, &hyperPar, &MODEL.precState, &precFunc); 
-				} else 	{
-					MR_EvaluateModel(    &MODEL.curr, MODEL.b, Xt_mars, N, MODEL.NUMBASIS, &yInfo, &hyperPar, &MODEL.precState, &precFunc);
-				}
+
+				BEAST2_EvaluateModel(&MODEL.curr, MODEL.b, Xt_mars, N, MODEL.NUMBASIS, &yInfo, &hyperPar, &MODEL.precState, &precFunc); // for both BEAST and MRBEAST
 		
 			}
 		
@@ -430,6 +429,12 @@ void beast2_main_corev4_gui(void) {
 				memset(MODEL.extremePosVec, 1, N);
 				for (I32 i = 0; i < yInfo.nMissing; ++i) MODEL.extremePosVec[yInfo.rowsMissing[i]] = 0;
 				MODEL.extremPosNum = yInfo.n;
+
+				// Initialize the deviation vector to a large initial value: Used only for the OUTLIER proposal function
+				// Deviation will be updated once sample > 1
+				f32_fill_val(1e30, MODEL.deviation, N);
+				for (I32 i = 0; i < yInfo.nMissing; ++i) MODEL.deviation[yInfo.rowsMissing[i]]   = getNaN();
+				MODEL.avgDeviation[0] = 1.0;
 
 				// Clear up and zero out resultChain for initialization
 				BEAST2_Result_FillMEM(&resultChain, opt, 0);
@@ -457,9 +462,10 @@ void beast2_main_corev4_gui(void) {
 				} 
 			} 
 
-			PROP_DATA PROPINFO = {.N = N, .Npad16 = Npad16,  .samples=&sample, .keyresult = coreResults, .mem = Xnewterm,.model = &MODEL, 
-				              .pRND =&RND, .yInfo =&yInfo, .nSample_ExtremVecNeedUpdate=1L, .sigFactor = opt->prior.sigFactor, 
-							  .outlierSigFactor = opt->prior.outlierSigFactor, };
+			PROP_DATA PROPINFO = { .N = N, .Npad16 = Npad16,  .samples = &sample, .keyresult = coreResults, .mem = Xnewterm,.model = &MODEL,
+							  .pRND = &RND, .yInfo = &yInfo,  .sigFactor = opt->prior.sigFactor, .outlierSigFactor = opt->prior.outlierSigFactor,
+							  .nSample_DeviationNeedUpdate = 1L, .shallUpdateExtremVec=0L, 
+				               .numBasisWithoutOutlier=MODEL.NUMBASIS - (opt->prior.basisType[MODEL.NUMBASIS - 1] == OUTLIERID),};
 
 			// Moved here bvz its xcols has two fixed lements, N and Npad
 			NEWTERM   NEW = { .newcols = {.N=N, .Nlda=Npad} };
@@ -690,7 +696,7 @@ void beast2_main_corev4_gui(void) {
 						 */
 					}
 					else {
-						MR_EvaluateModel(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.precState.precVec, &stream);
+						BEAST2_EvaluateModel(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, MODEL.precState.precVec, &stream);
 						//r_printf("MRite%d |%f|%f|diff:%f -prec %f\n", ite, MODEL.curr.marg_lik, MODEL.prop.marg_lik, MODEL.prop.marg_lik - MODEL.curr.marg_lik, MODEL.precState.precVec[0]);
 					 
 	                                   /****

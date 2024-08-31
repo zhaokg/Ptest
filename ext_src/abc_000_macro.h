@@ -350,9 +350,11 @@
     DISABLE_WARNING(switch, switch, NOT_USED) \
     DISABLE_WARNING(uninitialized, uninitialized, NOT_USED)\
     DISABLE_WARNING(pedantic, pedantic, NOT_USED) \
-    DISABLE_WARNING(div-by-zero,div-by-zero, NOT_USED)
+    DISABLE_WARNING(div-by-zero,div-by-zero, NOT_USED)\
+    DISABLE_WARNING(constant-logical-operand, constant-logical-operand, NOT_USED) 
 
 	#define  ENABLE_MANY_WARNINGS   \
+    ENABLE_WARNING(constant-logical-operand, constant-logical-operand, NOT_USED) \
     ENABLE_WARNING(div-by-zero,div-by-zero, NOT_USED) \
     ENABLE_WARNING(pedantic, pedantic, NOT_USED)\
     ENABLE_WARNING(uninitialized, uninitialized, NOT_USED)\
@@ -407,7 +409,8 @@
     DISABLE_WARNING(pedantic, pedantic, NOT_USED) \
     DISABLE_WARNING(typedef-redefinition, typedef-redefinition, NOT_USED) \
     DISABLE_WARNING(div-by-zero,div-by-zero, NOT_USED) \
-	DISABLE_WARNING(unused-but-set-variable, unused-but-set-variable, NOT_USED) 
+	DISABLE_WARNING(unused-but-set-variable, unused-but-set-variable, NOT_USED) \
+    DISABLE_WARNING(constant-logical-operand, constant-logical-operand, NOT_USED) 
 
 	/*DISABLE_WARNING(restrict, restrict, NOT_USED)\*/
 	/*ENABLE_WARNING(restrict, restrict, NOT_USED)\*/
@@ -425,6 +428,7 @@
 	//https://clang.llvm.org/docs/DiagnosticsReference.html#wpragmas
 	//https://clang.llvm.org/docs/DiagnosticsReference.html#wrestrict-expansion
 	#define  ENABLE_MANY_WARNINGS  \
+    ENABLE_WARNING(constant-logical-operand, constant-logical-operand, NOT_USED)  \
     ENABLE_WARNING(unused-but-set-variable, unused-but-set-variable, NOT_USED) \
     ENABLE_WARNING(div-by-zero,div-by-zero, NOT_USED) \
     ENABLE_WARNING(typedef-redefinition, typedef-redefinition, NOT_USED)\

@@ -692,6 +692,8 @@ void* BEAST2_Output_AllocMEM(A(OPTIONS_PTR)  opt)  {
 		for (int i = 0; i < N; i++) {
 			mat->time[i]=FracYear_from_DateNum(io->meta.startTime+ io->meta.deltaTime*i);
 		} 
+		io->meta.startTime = mat->time[0];
+		io->meta.deltaTime = mat->time[1]- mat->time[0];
 	}	else {
 		f32_seq(mat->time, io->meta.startTime, io->meta.deltaTime, N);
 	}    

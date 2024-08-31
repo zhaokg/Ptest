@@ -144,7 +144,9 @@ Y:  an iregularly-spaced time series or 1D signal; it should be a numeric vector
 	                         the ending window/segment of length trendRightMargin. trendRightMargin must
 	                         be an unitless integer–the number of time intervals/data points so that the
 	                         time window in the original unit is trendRightMargin*deltat. If missing,
-	                         trendRightMargin defaults to the minimum segment length 'trendMinSepDist'							 
+	                         trendRightMargin defaults to the minimum segment length 'trendMinSepDist'
+     prior.outlierMinKnotNum: an integer; needed only if meta.hasOutlierCmpnt=True to specify the minimum 
+                             number of outliers (i.e., outlier-type changepoints) allowed in the time series	
      prior.outlierMaxKnotNum: an integer; needed only if meta.hasOutlierCmpnt=True to specify the maximum 
                              number of outliers (i.e., outlier-type changepoints) allowed in the time series	
      prior.precValue        : numeric (>0); the hyperparameter of the precision prior; the default value is 1.5. 

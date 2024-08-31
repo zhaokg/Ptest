@@ -211,7 +211,18 @@ F32 DeterminePeriod(F32PTR Y, I32 N)
 	U08PTR isPeak = isNA;
 	I32PTR INDEX  = (I32PTR)(TMP + M); // INDEX is an array of lenght M
 
-	memset(isNA, 0, (size_t) M);
+	// memset(isNA, 0, (size_t) M);
+	// Give the warning:  ‘__builtin___memset_chk’ specified size between 18446744072635809792 and 
+	// 18446744073709551615 exceeds maximum object size 9223372036854775807 [-Wstringop-overflow=]
+	// Reason:  M is a signed int32. When M-01, it is first sign-extend and converted to 2^64.
+	// Borroed from go's specficatiin:
+	// When converting between integer types, if the value is a signed integer, it is sign extended to 
+	// implicit infinite precision; otherwise it is zero extended. It is then truncated to fit in the 
+	// result type's size. For example, if v := uint16(0x10F0), then uint32(int8(v)) == 0xFFFFFFF0. 
+	// The conversion always yields a valid value; there is no indication of overflow.
+
+	memset(isNA, 0, (size_t)(uint32_t)M);
+
 	I32  numPeaks = 0;
 	for ( I32 i = 2; i <= (M - 1); i++)	{
 		if (ans[(i)-1] > ans[(i - 1) - 1] && ans[(i)-1] > ans[(i + 1) - 1]) {

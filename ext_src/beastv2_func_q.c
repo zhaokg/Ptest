@@ -76,10 +76,7 @@ void SetupPointersForCoreResults(CORESULT* coreResults, BEAST2_BASIS_PTR b, I32 
 	}
 }
 
-void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
-	      BEAST2_YINFO_PTR  yInfo,    BEAST2_HyperPar *hyperPar, PRECSTATE_PTR precState, PREC_FUNCS * precFunc )
-{
-	//TO RUN THIS FUNCTION, MUST FIRST RUN CONVERTBAIS so to GET NUMBERS OF BASIS TERMS	
+int BEAST2_Basis_To_XmarsXtX_XtY(BEAST2_BASIS_PTR b, I32 NUMBASIS, F32PTR Xt_mars, I32 N, F32PTR XtX, F32PTR XtY, BEAST2_YINFO_PTR  yInfo) {
 	
 	I32 Npad	= (I32)ceil((F32)N / 8.0f) * 8; Npad = N;//Correct for the inconsitency of X and Y in gemm and gemv
 	I32 K		= 0;	 
@@ -124,7 +121,7 @@ void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PT
 
 
 	}
-	curmodel->K = K;
+	//curmodel->K = K;
 
 	//--------------------------------------------------------------------------------------------------
 	// Set those rows of X_mars specfied by rowsMissing  to zeros 
@@ -142,20 +139,43 @@ void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PT
 	//cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double *a, const MKL_INT lda, const double *b, const MKL_INT ldb, const double beta, double *c, const MKL_INT ldc);
 
 	
-	F32PTR XtX = curmodel->XtX;
+	//F32PTR XtX = curmodel->XtX;
 	r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K, K, N, 1.f, Xt_mars, Npad, Xt_mars, Npad, 0.f, XtX, K);
 	//cblas_dgemmt (const CBLAS_LAYOUT Layout, const CBLAS_UPLO uplo, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT n, const MKL_INT k, const double alpha, const double *a, const MKL_INT lda, const double *b, const MKL_INT ldb, const double beta, double *c, const MKL_INT ldc);
-	//cblas_dgemmt(CblasColMajor, CblasLower, CblasTrans, CblasNoTrans, k, N, 1, X_mars, N, X_mars, N, 0, XtY, k);				
+	//cblas_dgemmt(CblasColMajor, CblasLower, CblasTrans, CblasNoTrans, k, N, 1, X_mars, N, X_mars, N, 0, XtY, k);	
 
-	F32PTR XtY = curmodel->XtY;
-	//cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m, const MKL_INT n, const double alpha, const double *a, const MKL_INT lda, const double *x, const MKL_INT incx, const double beta, double *y, const MKL_INT incy);
-	r_cblas_sgemv(CblasColMajor, CblasTrans, Npad, K, 1, Xt_mars, Npad, yInfo->Y, 1, 0, XtY, 1);
+
+	//F32PTR XtY = curmodel->XtY;
+	if (yInfo->q == 1) {	
+		//cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m, const MKL_INT n, const double alpha, const double *a, const MKL_INT lda, const double *x, const MKL_INT incx, const double beta, double *y, const MKL_INT incy);
+		r_cblas_sgemv(CblasColMajor, CblasTrans, Npad, K, 1, Xt_mars, Npad, yInfo->Y, 1, 0, XtY, 1);
+	}	else {
+		//MRBEAST--------start
+		r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K, yInfo->q, N, 1.f, Xt_mars, Npad, yInfo->Y, N, 0.f, XtY, K);
+		//MRBEAST---------end
+	}
 
 	// Restore the backuped zeros at the missing rows
 	if (yInfo->nMissing > 0) {
 		f32_mat_multirows_set_by_submat(Xt_mars, Npad, K, Xt_zeroBackup, yInfo->rowsMissing, yInfo->nMissing);
 	}
 	// Now GlobalMEMBuf_1st is free to use;
+
+	return K;
+}
+
+void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
+	      BEAST2_YINFO_PTR  yInfo,    BEAST2_HyperPar *hyperPar, PRECSTATE_PTR precState, PREC_FUNCS * precFunc )
+{
+	//TO RUN THIS FUNCTION, MUST FIRST RUN CONVERTBAIS so to GET NUMBERS OF BASIS TERMS	
+	
+	// urmodel->XtX is filled in the function below
+	curmodel->K = BEAST2_Basis_To_XmarsXtX_XtY(b, NUMBASIS, Xt_mars, N, curmodel->XtX, curmodel->XtY, yInfo);
+
+	I32 Npad    = N;
+	I32 K       = curmodel->K;
+	F32PTR XtX  = curmodel->XtX;
+	F32PTR XtY  = curmodel->XtY;
 
 	//X_mars has been constructed. Now use it to calcuate its margin likelihood
 	//Add precison values to the diagonal of XtX: post_P=XtX +diag(prec)	
@@ -179,7 +199,7 @@ void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PT
 	//                Get PrecXttDiag
 	///////////////////////////////////////////////////////// 
 	// [0:ConstPrec, 1:UniformPrec, 2:ComponentWise], 3:OrderWise		 
-	precFunc->SetPrecXtXDiag(curmodel->precXtXDiag, b, NUMBASIS, precState);
+	precFunc->SetPrecXtXDiag(curmodel->precXtXDiag, b, NUMBASIS, precState);    //CHANGE: (1)nothing  or (2) MODEL.curr.precXtXDiag
 	precFunc->chol_addCol(XtX, cholXtX, curmodel->precXtXDiag, K, 1, K);
 
 
@@ -220,6 +240,10 @@ void BEAST2_EvaluateModel(	BEAST2_MODELDATA *curmodel, BEAST2_BASIS_PTR b, F32PT
 
 	return;
 }
+
+  
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 void MatxVec(BEAST2_BASESEG* SEG, I32 numSeg, F32PTR X, F32PTR Y, F32PTR XtY, I32 N)
 {
@@ -372,6 +396,7 @@ void MatxMat(BEAST2_BASESEG*infoX,I32 numBandsX, F32PTR X,BEAST2_BASESEG*infoY,I
 	}
  
 }
+
 void XtX_ByGroup(BEAST2_BASESEG* SEG, I32 numSeg,F32PTR X,F32PTR XtX,I32 N, I32 Knew) {
 	/*
 	r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans,
@@ -518,6 +543,7 @@ void Update_XtX_from_Xnewterm_ByGroup(F32PTR X, F32PTR Xnewterm, F32PTR XtX, F32
 	}
 
 }
+
 void Update_XtY_from_Xnewterm_ByGroup(F32PTR Y, F32PTR Xnewterm, F32PTR XtY, F32PTR XtYnew, NEWTERM* NEW , int q) {
 
     const I32 k1       = NEW->newcols.k1;
@@ -728,154 +754,4 @@ void Update_XtY_from_Xnewterm_NoGroup(F32PTR Y, F32PTR Xnewterm, F32PTR XtY, F32
 }
 //https: //stackoverflow.com/questions/3174850/what-is-the-correct-type-for-array-indexes-in-c#
 //https: //stackoverflow.com/questions/797318/how-to-split-a-string-literal-across-multiple-lines-in-c-objective-c
-  
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-void MR_EvaluateModel( BEAST2_MODELDATA *curmodel,  BEAST2_BASIS_PTR b, F32PTR Xt_mars, I32 N, I32 NUMBASIS,
-	BEAST2_YINFO_PTR yInfo,	 BEAST2_HyperPar *hyperPar, PRECSTATE_PTR precState, PREC_FUNCS  * precFunc)
-{
-	//TO RUN THIS FUNCTION, MUST FIRST RUN CONVERTBAIS so to GET NUMBERS OF BASIS TERMS	
-
-	
-	I32 Npad	= (I32)ceil((F32)N / 8.0f) * 8; Npad = N;//Correct for the inconsitency of X and Y in gemm and gemv
-	I32 K		= 0;	 
-	for (I32 basisID = 0; basisID < NUMBASIS; basisID++) {
-		BEAST2_BASIS_PTR basis = b + basisID;
-		if (basis->type != OUTLIERID) {
-			int         NUM_SEG = basis->nKnot + 1;
-			TKNOT_PTR   KNOT	= basis->KNOT;
-			TORDER_PTR  ORDER   = basis->ORDER;
-
-
-			BEAST2_BASESEG seg;
-			seg.ORDER1 = basis->type == TRENDID ? 0 : 1;
-			//For season terms: 1..(1)....(2)...(|sSegNum-1)...N (|N+1)
-			for (int i = 1; i <= NUM_SEG; i++) {
-				///The first segment starts from 1; other segments start one interval after the previous segment
-				//The last segment ends at N'; others end exactly at the current breakpoint minus one;
-				//the last bk is (N+1)
-				seg.R1     = KNOT[(i - 1) - 1L];
-				seg.R2     = KNOT[i - 1L] - 1L;
-				seg.ORDER2 = basis->type==DUMMYID? 0 :  ORDER[i - 1L];
-				I32 k  = basis->GenTerms(Xt_mars + Npad * K, N, &seg, &(basis->bConst));
-				K += k;
-			}
-
-		} 	else	{
-			int         numOfSeg = basis->nKnot;
-			TKNOT_PTR   knotList = basis->KNOT;
-
-			BEAST2_BASESEG seg;
-			seg.ORDER1 = seg.ORDER2 = 0; // orders are not used at all
-			//For season terms: 1..(1)....(2)...(|sSegNum-1)...N (|N+1)
-			for (int i = 1; i <= numOfSeg; i++) {
-				///The first segment starts from 1; other segments start one interval after the previous segment
-				//The last segment ends at N'; others end exactly at the current breakpoint minus one;
-				//the last bk is (N+1)
-				seg.R1  = knotList[(i)-1L];
-				seg.R2  = knotList[(i)-1L];
-				I32 k = basis->GenTerms(Xt_mars + Npad * K, N, &seg, &(basis->bConst));
-				K += k;
-			}
-		}
-
-
-	}
-	curmodel->K = K;
-
-	//--------------------------------------------------------------------------------------------------
-	// Set those rows of X_mars specfied by rowsMissing  to zeros 
-	//	TODO: this could be buggy: Xt_mars may be not large enough to backup the X values at the missing rows
-	// for the full initial model
-	F32PTR	GlobalMEMBuf  = Xt_mars + K * Npad;
-	F32PTR	Xt_zeroBackup = GlobalMEMBuf;
-	if (yInfo->nMissing > 0) {
-		F32 fillvalue = 0.f;
-		f32_mat_multirows_extract_set_by_scalar(Xt_mars, Npad, K, Xt_zeroBackup, yInfo->rowsMissing, yInfo->nMissing, fillvalue);
-	}
-
-	//Calcuate X'*X and Calcuate X'*Y
-	//DGEMM('T', 'N', &m, &n, &K, &alpha, X_mars, &K, X_mars, &K, &beta, XtX, &m);	
-	//cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double *a, const MKL_INT lda, const double *b, const MKL_INT ldb, const double beta, double *c, const MKL_INT ldc);
-
-	
-	F32PTR XtX = curmodel->XtX;
-	r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K, K, N, 1.f, Xt_mars, Npad, Xt_mars, Npad, 0.f, XtX, K);
-	//cblas_dgemmt (const CBLAS_LAYOUT Layout, const CBLAS_UPLO uplo, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT n, const MKL_INT k, const double alpha, const double *a, const MKL_INT lda, const double *b, const MKL_INT ldb, const double beta, double *c, const MKL_INT ldc);
-	//cblas_dgemmt(CblasColMajor, CblasLower, CblasTrans, CblasNoTrans, k, N, 1, X_mars, N, X_mars, N, 0, XtY, k);				
-
-    //MRBEAST
-    I32 q = yInfo->q;
-
-	F32PTR XtY = curmodel->XtY;
-	//cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m, const MKL_INT n, const double alpha, const double *a, const MKL_INT lda, const double *x, const MKL_INT incx, const double beta, double *y, const MKL_INT incy);
-	//BEAST: r_cblas_sgemv(CblasColMajor, CblasTrans, Npad, K, 1, Xt_mars, Npad, pyInfo->Y, 1, 0, XtY, 1);	
-	
-	//MRBEAST--------start
-	r_cblas_sgemm(CblasColMajor, CblasTrans, CblasNoTrans, K, q, N, 1.f, Xt_mars, Npad, yInfo->Y, N, 0.f, XtY, K);
-	//MRBEAST---------end
-
-	// Restore the backuped zeros at the missing rows
-	if (yInfo->nMissing > 0) {
-		f32_mat_multirows_set_by_submat(Xt_mars, Npad, K, Xt_zeroBackup, yInfo->rowsMissing, yInfo->nMissing);
-	}
-	// Now GlobalMEMBuf_1st is free to use;
-
-	//X_mars has been constructed. Now use it to calcuate its margin likelihood
-	//Add precison values to the diagonal of XtX: post_P=XtX +diag(prec)	
-	F32PTR cholXtX = curmodel->cholXtX;
-	//f32_copy( XtX,  cholXtX, K * K);
-	//f32_add_val_matrixdiag(cholXtX, precVal, K);
-
-	//Solve inv(Post_P)*XtY using  Post_P*b=XtY to get beta_mean
-	F32PTR beta_mean = curmodel->beta_mean;	
-	///////////////////////////////////////////////////////////////
-	/*	
-		//lapack_int LAPACKE_spotrf(int matrix_layout, char uplo, lapack_int n, double * a, lapack_int lda);
-		r_LAPACKE_spotrf(LAPACK_COL_MAJOR, 'U', K, cholXtX, K); // Choleskey decomposition; only the upper triagnle elements are used
-		//LAPACKE_spotrs (int matrix_layout , char uplo , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , double * b , lapack_int ldb );
-		r_cblas_scopy(K, XtY, 1, beta_mean, 1);
-		r_LAPACKE_spotrs(LAPACK_COL_MAJOR, 'U', K, 1, cholXtX, K, beta_mean, K);	
-	*/
-	
-	/////////////////////////////////////////////////////////
-	//                Get PrecXttDiag
-	///////////////////////////////////////////////////////// 
-	// [0:ConstPrec, 1:UniformPrec, 2:ComponentWise], 3:OrderWise		 
-	precFunc->SetPrecXtXDiag(curmodel->precXtXDiag, b, NUMBASIS, precState);    //CHANGE: (1)nothing  or (2) MODEL.curr.precXtXDiag
-	precFunc->chol_addCol(XtX, cholXtX, curmodel->precXtXDiag, K, 1, K);
-		
-	//Compute beta = beta_mean + Rsig2 * randn(p, 1);
-	//Usig2 = (1 / sqrt(sig2)) * U; 		beta = beta_mean + linsolve(Usig2, randn(p, 1), opts);
-	//status = vdRngGaussian( method, stream, n, r, a, sigma );
-
-	/**********************************************************/
-	// Sample beta from beta_mean and cholXtX
-	/********************************************************/
-	/*
-	F32PTR beta = model->beta;
-	r_vsRngGaussian(VSL_RNG_METHOD_GAUSSIAN_ICDF, (*(VSLStreamStatePtr *)stream), K, beta, 0, 1);
-
-	// LAPACKE_strtrs (int matrix_layout , char uplo , char trans , char diag , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , double * b , lapack_int ldb );
-	{
-		//r_LAPACKE_strtrs(LAPACK_COL_MAJOR, 'U', 'N', 'N', K, 1, post_P_U, K, beta, K);
-		solve_U_as_U_invdiag(cholXtX, beta, K, K);
-	}
-	r_ippsMulC_32f_I(sqrtf(model->sig2), beta, K);
-	r_ippsAdd_32f_I(beta_mean, beta, K);
-	*/
-	/**********************************************************/
-	// Sample beta from beta_mean and cholXtX
-	/********************************************************/
-
-	precFunc->SetNtermsPerPrecGrp(curmodel->nTermsPerPrecGrp, b, NUMBASIS, precState);
-	precFunc->ComputeMargLik(curmodel, precState, yInfo, hyperPar);	 
-
- 	return;
-
-	//MRBEAST--
- 
-}
 #include "abc_000_warning.h"

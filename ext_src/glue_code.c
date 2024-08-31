@@ -317,10 +317,12 @@ void * mainFunction(void *prhs[], int nrhs) {
 					if (GLOBAL_PRNT_PROGRESS) r_printf("Parallel computing : Thread # %-2d finished ... \n", i);
 				}				
 			}
-			if (IDE_USER_INTERRUPT==0)
-				if (GLOBAL_PRNT_PROGRESS) { r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS); }
-			else
-				if(GLOBAL_PRNT_PROGRESS) {r_printf("\nQuitted unexpectedly upon the user's interruption.\n");}
+			if (IDE_USER_INTERRUPT==0) {
+				if (GLOBAL_PRNT_PROGRESS)  r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS); 
+			}	else {
+				if (GLOBAL_PRNT_PROGRESS)  r_printf("\nQuitted unexpectedly upon the user's interruption.\n");
+			}
+			
 
 			// Clean up and exit		
 			pthread_mutex_destroy(&mutex);
@@ -371,14 +373,14 @@ void * mainFunction(void *prhs[], int nrhs) {
 		*/
 
 		int whichCritia = 0;
-		if      (__IS_STRING_EQUAL(algorithm, beast_bic))   whichCritia = 1;
-		else if (__IS_STRING_EQUAL(algorithm, beast_aic)) 	whichCritia = 2;
-		else if (__IS_STRING_EQUAL(algorithm, beast_aicc)) 	whichCritia = 3;
-		else if (__IS_STRING_EQUAL(algorithm, beast_hic)) 	whichCritia = 4;
+		if      (__IS_STRING_EQUAL(algorithm, beast_bic))       whichCritia = 1;
+		else if (__IS_STRING_EQUAL(algorithm, beast_aic)) 	    whichCritia = 2;
+		else if (__IS_STRING_EQUAL(algorithm, beast_aicc)) 	    whichCritia = 3;
+		else if (__IS_STRING_EQUAL(algorithm, beast_hic)) 	    whichCritia = 4;
 		else if (__IS_STRING_EQUAL(algorithm, beast_bic0.25)) 	whichCritia = 25;
 		else if (__IS_STRING_EQUAL(algorithm, beast_bic0.5)) 	whichCritia = 50;
 		else if (__IS_STRING_EQUAL(algorithm, beast_bic1.5)) 	whichCritia = 150;
-		else if (__IS_STRING_EQUAL(algorithm, beast_bic2)) 	 whichCritia = 200;
+		else if (__IS_STRING_EQUAL(algorithm, beast_bic2)) 	    whichCritia = 200;
 		
 
 		/**********************************/
@@ -421,7 +423,14 @@ void * mainFunction(void *prhs[], int nrhs) {
 			ANS = PROTECT(BEAST2_Output_AllocMEM(&option)); nptr++;
 		}
 		/**********************************/
-		
+	
+		// For UniforPrior and ConstantPrec, PrecXtXDiag points to precVec whose value is borrowed
+		// from precValue
+		if (option.prior.precPriorType != ConstPrec) {
+			option.prior.precPriorType = UniformPrec;
+			option.prior.precValue     = 0;
+		}
+
 		extern int beast2_main_corev4_bic(int whichCritia);
 		extern int beast2_main_core_bic_mthrd(void* dummy);
 
@@ -549,10 +558,12 @@ void * mainFunction(void *prhs[], int nrhs) {
 					if (GLOBAL_PRNT_PROGRESS)  r_printf("Parallel computing : Thread # %-2d finished ... \n", i);
 				}				
 			}
-			if (IDE_USER_INTERRUPT==0)
-				if (GLOBAL_PRNT_PROGRESS) { r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS); }
-			else
-			    if (GLOBAL_PRNT_PROGRESS) { r_printf("\nQuitted unexpectedly upon the user's interruption.\n"); }
+			if (IDE_USER_INTERRUPT == 0) {
+				if (GLOBAL_PRNT_PROGRESS)  r_printf("\nRbeast: Waited on %d threads. Done.\n", NUM_THREADS); 
+			}	else {
+				if (GLOBAL_PRNT_PROGRESS)  r_printf("\nQuitted unexpectedly upon the user's interruption.\n"); 
+			}
+			 
 
 			// Clean up and exit		
 			pthread_mutex_destroy(&mutex);

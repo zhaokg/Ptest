@@ -138,7 +138,7 @@ void AllocateYinfoMEM(BEAST2_YINFO_PTR yInfo, BEAST2_OPTIONS_PTR opt, MemPointer
 	nodes[nNodes++] = (MemNode){ .addr = &yInfo->rowsMissing,    .size = sizeof(U32) * MAXNUM_MISSINGROW,   .align =64,.offset_from_origin = 0 };
 
 	//added for MRBEAST and used in ComputeLik, PropseNew/__CalcAbsDeviation(compute deviaiton and extrempos)
-	//, MR_EvaluateModel,
+	//, BEAST2EvaluateModel,
 	yInfo->q               = q;
 
 	if (opt->io.meta.deseasonalize) {
