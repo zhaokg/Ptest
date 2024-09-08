@@ -419,6 +419,8 @@ at zhao.1423@osu.edu.
       extra = lambda: None   ###Just get an empty object###
       extra.dumpInputData        = True
       extra.whichOutputDimIsTime = 1
+      if 'ci' in kwargs:
+            dump_ci  = kwargs['ci']      
       extra.computeCredible      = dump_ci
       extra.fastCIComputation    = True
       extra.computeSeasonOrder   = True

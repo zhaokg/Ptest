@@ -180,11 +180,12 @@ static void BEAST2_EvaluateModel_BIC(BEAST2_MODELDATA* curmodel, BEAST2_BASIS_PT
 #define  DEBUG_MODE  0
 
 /***********MULTITHREAD*******************/
-int beast2_main_core_bic_mthrd(void* dummy)
+int beast2_main_core_bic_mthrd(void* dummy) {
 /***********MULTITHREAD*******************/
-{
+
 	whichCriteria = (int) dummy;
 
+	
 	// A struct to track allocated pointers   
 	// Do not use 'const MemPointers MEM' bcz Clang will asssume other fields as zeros (e.g., alloc, and alloc0).
 	MemPointers MEM = (MemPointers){.init = mem_init,};
@@ -245,7 +246,6 @@ int beast2_main_core_bic_mthrd(void* dummy)
 	BEAST2_Result_AllocMEM(&resultChain, opt, &MEM); 	
 	BEAST2_Result_AllocMEM(&result,      opt, &MEM);
 	
-
 	// Pre-allocate memory to save samples for calculating credibile intervals	 
 	const   I32  NumCIVars = MODEL.NUMBASIS + opt->extra.computeTrendSlope;
 	 CI_PARAM     ciParam   = { 0, };
@@ -304,7 +304,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 	opt->prior.alpha1 = 0.;
 	opt->prior.alpha2 = 0.;
 
-	const BEAST2_HyperPar  hyperPar = { .alpha_1=opt->prior.alpha1,.alpha_2=opt->prior.alpha2,.del_1=opt->prior.delta1,  .del_2=opt->prior.delta2};
+	const BEAST2_HyperPar  hyperPar = { .alpha_1=opt->prior.alpha1,.alpha_2=opt->prior.alpha2,.del_1=opt->prior.delta1, .del_2=opt->prior.delta2};
 
 	/****************************************************************************/
 	//		THE OUTERMOST LOOP: Loop through all the time series one by one
@@ -361,9 +361,10 @@ int beast2_main_core_bic_mthrd(void* dummy)
 	/***********MULTITHREAD*******************/
 	//The next two global variables will be set in the main thread
 	//because if kept here, they can be wrongly initialized multiple times
-	//NUM_OF_PROCESSED_GOOD_PIXELS  = 0;  // this is a global variable.
-	//NUM_OF_PROCESSED_PIXELS       = 0;  // this is also a global variable.
+	//NUM_OF_PROCESSED_GOOD_PIXELS  = 0; //this is a global variable.
+	//NUM_OF_PROCESSED_PIXELS       = 0;  //this is also a global variable.
 	/***********MULTITHREAD*******************/
+
 	for (U32 pixelIndex = 1; pixelIndex <= NUM_PIXELS; pixelIndex++)
 	{
 		/***********MULTITHREAD*******************/
@@ -457,7 +458,6 @@ int beast2_main_core_bic_mthrd(void* dummy)
 					MODEL.b[i].CalcBasisKsKeK_TermType(&MODEL.b[i]); 	/// Get Ks and Ke for individula segments of each components
 				}
 				*/
-
 			
 				//Evaluate the initial model and compute its marg lik. CHANGE: DERIVE XMARS, K, BETA, BETA_MEAN, MARG_LIK
 				// Xtmars is a cotinguous mem block consiting of Xtmars, Xnewterm, and Xt_zerobackup. The first part will
@@ -716,6 +716,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 						MODEL.curr.marg_lik    = MODEL.prop.marg_lik;
 						MODEL.curr.K           = MODEL.prop.K;     //GetNumOfXmarCols(&MODEL): this function should also give KNEW; if not, there must be something wrong!						
 					}
+
 					#if DEBUG_MODE == 1
 					if (q == 1 && ite==1) {						
 						BEAST2_EvaluateModel_BIC(&MODEL.prop, MODEL.b, Xdebug, N, MODEL.NUMBASIS, &yInfo, &hyperPar, &MODEL.precState);											
@@ -1049,7 +1050,7 @@ int beast2_main_core_bic_mthrd(void* dummy)
 				//	F32 frac = (F32)(chainNumber * MCMC_SAMPLES + sample) / (MCMC_SAMPLES * MCMC_CHAINNUM);
 				//	printProgress1(frac, extra.consoleWidth, Xnewterm, 0);
 				//}
-				/***********MULTITHREAD*******************/			
+				/***********MULTITHREAD*******************/				
 
 			}//WHILE(sample<SAMPLE)
 
@@ -1322,9 +1323,9 @@ int beast2_main_core_bic_mthrd(void* dummy)
 			// Jump out of the chainumber loop
 			if (skipCurrentPixel) {
 			/***********MULTITHREAD*******************/
-			     q_warning("\nWARNING(#%d):The max number of bad iterations exceeded. Can't decompose the current time series\n", skipCurrentPixel);
-			     break;
+			//q_warning("\nWARNING(#%d):The max number of bad iterations exceeded. Can't decompose the current time series\n", skipCurrentPixel);
 			/***********MULTITHREAD*******************/
+			     break;
 			}
 
 		}
@@ -1732,7 +1733,9 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		//if (!skipCurrentPixel)	NUM_OF_PROCESSED_GOOD_PIXELS++; //avoid the branch
 		NUM_OF_PROCESSED_GOOD_PIXELS += !skipCurrentPixel;              //this is a global variable.
 		NUM_OF_PROCESSED_PIXELS++;					//this is also a global variable.
+		pthread_mutex_unlock(&mutex);
 		/***********MULTITHREAD*******************/
+
 
 
 		/***********MULTITHREAD*******************/
@@ -1753,8 +1756,6 @@ int beast2_main_core_bic_mthrd(void* dummy)
 			}
 		}
 		/***********MULTITHREAD*******************/
-		
-		
 
 		#if DEBUG_MODE == 1
 		r_printf("TREND: birth%4d/%-5d|death%4d/%-5d|merge%4d/%-5d|move%4d/%-5d|chorder%4d/%-5d\n", 
@@ -1763,6 +1764,8 @@ int beast2_main_core_bic_mthrd(void* dummy)
 			      accS[0], flagS[0], accS[1], flagS[1], accS[2], flagS[2], accS[3], flagS[3], accS[4], flagS[4]);
 		#endif
 
+
+				
 		/***********MULTITHREAD*******************/
 		/*
 		pthread_mutex_lock(&mutex);
@@ -1777,6 +1780,8 @@ int beast2_main_core_bic_mthrd(void* dummy)
 		}
 
 		/***********MULTITHREAD*******************/
+
+
 
 	} //for (U32 pixelIndex = 1; pixelIndex <= TOTALNUMPIXELS; pixelIndex++)
 
