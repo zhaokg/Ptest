@@ -41,7 +41,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-             python-version: '3.7'
+             python-version: '3.9'
  
       - run: copy  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml
       - uses: pypa/cibuildwheel@v2.16.5
@@ -82,7 +82,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-             python-version: '3.7'
+             python-version: '3.9'
  
       - run: cp  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml # pyproject.toml
       - uses: pypa/cibuildwheel@v2.16.5
@@ -116,7 +116,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-             python-version: '3.7'
+             python-version: '3.9'
  
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
