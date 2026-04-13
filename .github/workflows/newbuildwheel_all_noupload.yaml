@@ -206,7 +206,7 @@ jobs:
 ############################################################################
 #   Merge all artificats into one file
 ############################################################################             
- merge_artifacts:
+  merge_artifacts:
     name: Merge All Artifacts
     runs-on: ubuntu-latest
     needs: [build_sdist, build_wheels_win, build_wheels_linux, build_wheels_linux_aarch64, build_wheels_musl_linux, build_wheels_mac]
