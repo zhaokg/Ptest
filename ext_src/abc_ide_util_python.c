@@ -8,6 +8,7 @@
 #include "abc_common.h"
 #include "abc_date.h"
 
+
 #if P_INTERFACE==1  
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -524,12 +525,12 @@ static void* PyGetDictItemString(void *ptr, char *fldname) {
     if (item) { 
         return item; 
     }
-       
-    char tmpName[100 + 1];
+   
     PyObject* keys = PyDict_Keys(ptr);              // new ref
-    int       n    = PyList_Size(keys);
-    item = NULL;
+    int       n    = (int) PyList_Size(keys);
+    item           = NULL;
     for (int i = 0; i < n; i++) {
+        char      tmpName[100 + 1];
         PyObject* tmpkey = PyList_GetItem(keys, i);  // borrowed ref
         int       len    = GetCharArray(tmpkey, tmpName, 100);
         if (len > 0 && strcicmp(tmpName, fldname) == 0) {
@@ -549,12 +550,11 @@ static void* PyGetDictItemString123(void *ptr, char *fldname, int nPartial) {
         return item; 
     }
 
-   
-    char tmpName[100 + 1];
     PyObject* keys = PyDict_Keys(ptr);              // new ref
-    int       n    = PyList_Size(keys);
+    int       n    = (int) PyList_Size(keys);
     item = NULL;
     for (int i = 0; i < n; i++) {
+        char      tmpName[100 + 1];
         PyObject* tmpkey = PyList_GetItem(keys, i);  // borrowed ref
         int       len    = GetCharArray(tmpkey, tmpName, 100);
         if (len > 0 && strcicmp_nfirst(tmpName, fldname,nPartial) == 0) {
@@ -572,22 +572,16 @@ int IsClass(void* ptr, char* class) { return 0; }
 int IsCell(void* ptr) { return 0; }
 int IsChar(void* ptr) {   
 
-    if (ptr == NULL) return 0;
-
-    if (PyUnicode_Check(ptr)) {
-        return 1;
-    } 
-    if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_STRING) {
-        return 1;
-    }
-    if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_UNICODE) {
-        return 1;
-    }
+    if (ptr == NULL)                  return 0;
+    if (PyUnicode_Check(ptr))         return 1;    
+    if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_STRING)      return 1;    
+    if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_UNICODE)     return 1;
+    
 
     PyGetItem pyGetItem = NULL;
     if      (PyList_Check(ptr))        pyGetItem = PyList_GetItem;
-    else if (PyTuple_Check(ptr))       pyGetItem = PyDict_GetItem;
- 
+    else if (PyTuple_Check(ptr))       pyGetItem = PyTuple_GetItem; //PyDict_GetItem;
+    
     
     if(pyGetItem) {      
         int sz = (int) PyObject_Size(ptr);
@@ -621,12 +615,10 @@ int IsChar(void* ptr) {
     return 0;
 }
 int IsStruct(void* ptr) {
-    if (ptr == NULL) return 0;
 
-    if (PyList_Check(ptr) || PyDict_Check(ptr) || PyTuple_Check(ptr) ) {
-        return 1L;
-    }
-    
+    if (ptr == NULL)  return 0;
+    if (PyList_Check(ptr) || PyDict_Check(ptr) || PyTuple_Check(ptr) )     return 1L;
+        
     Pob dict = PyGetDict(ptr);
     if (dict) {
         if (PyUnicode_Check(ptr)) {
@@ -655,22 +647,20 @@ int IsSingle(void* ptr) {
     }
     return 0L;
 }
+
 int IsDouble(void* ptr) {
     //PyLong_Check(ptr),
     //PyObject_IsInstance(ptr, (PyObject*)&PyLong_Type) 
  
-    if (PyFloat_Check(ptr)) {
-        return 1L;
-    } 
-    if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_FLOAT64) {
-        return 1L;
-    }
+    if (PyFloat_Check(ptr))                                         return 1L; 
+    if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_FLOAT64)     return 1L;
 
     PyGetItem pyGetItem = NULL;
-    if (PyList_Check(ptr))           pyGetItem = PyList_GetItem;
-    else if (PyTuple_Check(ptr))     pyGetItem = PyDict_GetItem;
+    if      (PyList_Check(ptr))       pyGetItem = PyList_GetItem;
+    else if (PyTuple_Check(ptr))      pyGetItem = PyTuple_GetItem; //PyDict_GetItem;
+
     if (pyGetItem) {
-        int sz = PyObject_Size(ptr);
+        int sz = (int) PyObject_Size(ptr);
         int ok = 1;
         for (int i = 0; i < sz; ++i) {
             if (!PyFloat_Check(pyGetItem(ptr, i))) {
@@ -714,13 +704,13 @@ int IsInt32(void* ptr) {
     }
 
     PyGetItem pyGetItem = NULL;
-    if      (PyList_Check(ptr))      pyGetItem = PyList_GetItem;
-    else if (PyTuple_Check(ptr))     pyGetItem = PyDict_GetItem;
+    if      (PyList_Check(ptr))       pyGetItem = PyList_GetItem;
+    else if (PyTuple_Check(ptr))      pyGetItem = PyTuple_GetItem; //PyDict_GetItem;
     if (pyGetItem) {
-        int sz = PyObject_Size(ptr);
+        int sz = (int) PyObject_Size(ptr);
         int ok = 1;
         for (int i = 0; i < sz; ++i) {
-            if (!PyLong_Check(pyGetItem(ptr, i))) {
+            if ( !PyLong_Check( pyGetItem(ptr, i) ) ) {
                 ok = 0;
                 break;
             }
@@ -761,10 +751,11 @@ int IsLogical(void* ptr) {
     }
 
     PyGetItem pyGetItem = NULL;
-    if      (PyList_Check(ptr))      pyGetItem = PyList_GetItem;
-    else if (PyTuple_Check(ptr))     pyGetItem = PyDict_GetItem;
+    if      (PyList_Check(ptr))       pyGetItem = PyList_GetItem;
+    else if (PyTuple_Check(ptr))      pyGetItem = PyTuple_GetItem; //PyDict_GetItem;
+
     if (pyGetItem) {
-        int sz = PyObject_Size(ptr);
+        int sz = (int) PyObject_Size(ptr);
         int ok = 1;
         for (int i = 0; i < sz; ++i) {
             if (!PyBool_Check(pyGetItem(ptr, i))) {
@@ -832,8 +823,8 @@ void  GetFieldNameByIdx(VOID_PTR strucVar, I32 ind0, char *str, int buflen) {
     Pob dict   = PyGetDict(strucVar);
     
     if (dict) {
-        PyObject* keys = PyDict_Keys(dict);              // new ref
-        int       n    = PyList_Size(keys);
+        PyObject*  keys = PyDict_Keys(dict);              // new ref
+        Py_ssize_t n    = PyList_Size(keys);
 
         PyObject* tmpkey = PyList_GetItem(keys, ind0);  // borrowed ref
         if (IsChar(tmpkey)) {
@@ -924,7 +915,7 @@ I32 GetCharArray(void* ptr, char* dst, int n) {
         Py_ssize_t  len;
         char* str = PyUnicode_AsUTF8AndSize(ptr, &len);
         strncpy(dst, str, n);
-        return len;
+        return (I32) len;
     }
 
 

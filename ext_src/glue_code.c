@@ -1332,11 +1332,9 @@ PyMODINIT_FUNC PyInit_Rbeast() {
   }
   */
 
-  /*************************/
+  
   // Load NumPy
-  /*************************/
-   
-  import_array_numpy2x();  //import_array();    /* for Numpy 1.x*/
+   import_array_numpy2x();  //import_array();    /* for Numpy 1.x*/
 
   /*
   
