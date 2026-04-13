@@ -22,12 +22,21 @@ extern char GLOBAL_PRNT_CPU;
 extern char GLOBAL_PRNT_PARAMETER;
 extern char GLOBAL_PRNT_PROGRESS;
 extern char GLOBAL_IS_QUIET_MODE;
+<<<<<<< HEAD
+=======
+
+extern char GLOBAL_CPU_REQUEST;
+extern  char GLOBAL_CPU_CURRENT;
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 extern char GLOBAL_CPU_REQUEST;
 extern  char GLOBAL_CPU_CURRENT;
 
+<<<<<<< HEAD
 //extern float   GLOBAL_MODEL_PRIOR_FACTOR ;
 
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 extern int  beast2_main_corev4(void);
 extern void beast2_main_corev4_gui(void);
 extern int  beast2_main_corev4_mthrd(void* dummy);

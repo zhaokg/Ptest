@@ -16,8 +16,11 @@ def beast(Y,                     \
           tseg_minlength   = None,    # an integer
           tseg_leftmargin  = None,    # an integer
           tseg_rightmargin = None,    # an integer
+<<<<<<< HEAD
           s_complexfct     = 0.0,
           t_complexfct     = 0.0,
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
           method           = 'bayes', # 'bayes','bic','aic','aicc','hic', 'bic0.25','bic0.5'
           detrend          = False,
           deseasonalize    = False,
@@ -45,10 +48,17 @@ def beast(Y,                     \
 Bayesian changepoint detection and time series decomposition for regular or irregular time series data
     
 The fitted model is:
+<<<<<<< HEAD
   Y = trend + error             if data has no periodic/seasonal variation (i.e., season='none')
   Y = trend + seasonal + error  if data has periodic/seasonal variation 
   Y = trend + outlier  + error  if data is trend-only (no seasonal variation) but with potential outliers
   Y = trend + seasonal + outlier + error if data has periodic/seasonal variation and also has outliers
+=======
+     Y=trend+error             if data has no periodic/seasonal variation (i.e., season='none')
+     Y=trend+seasonal+error    if data has periodic/seasonal variation 
+     Y=trend+outlier +error    if data is trend-only (no seasonal variation) but with potential outliers
+     Y=trend+seasonal+outlier+error if data has periodic/seasonal variation and also has outliers
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
 be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
 be inferred; and the outlier component refers to potential spikes or dips at isolated data points and is 
@@ -90,11 +100,16 @@ start:
          (5) a datenum as a object variable ( e.g. rb.args( datenum=731320, origin='python'),
              rb.args(year=2002, month=4, day=15) )         
 deltat: 
+<<<<<<< HEAD
          a number or string; the time interval between consecutive datapoints. Its unit must be consistent with "start". 
          (1) If start is numeric, the unit is unkown and arbitrary and  will be ignored by BEAST (e.g., 2021.3 can be be of any unit, a time, a distance, etc.).
          (2) If start is a vector of [year, month, day] or a date string, deltat is interpreted in units of years. For example, for a monthly series with 
           start = [2021, 1, 24], start is internally converted to a fractional year 2021 + (24 - 0.5)/365 = 2021.0644 and deltat = 1/12} can be used to
           specify a 1-month interval (1/12 yr). Alternatively, use a string to specify deltat  (e.g., '1/12 year', '1.0 month', '30 days').
+=======
+         a number or string; the time interval between consecutive datapoints.. Use a string to specify the time unit
+         (e.g., '1/12 year', '1.0 month', '30 days'). Possile units are year,
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 period:  
          a number or string to specify the period if peridodic/seasonal variations 
          are present in the data. If period is given a zero, negative value or 'none' 
@@ -236,7 +251,11 @@ gui:
 The keywords for beast() are converted to 'metadata', 'prior','mcmc', and 'extra' options used 
 in the beast123() interface. Examples are:
          deseasonalize <-> metadata.deseasonalize
+<<<<<<< HEAD
          hasOutlier    <-> metadata.hasOutlierCmpnt		 
+=======
+		 hasOutlier    <-> metadata.hasOutlierCmpnt		 
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
          scp_minmax[0] <-> prior.seasonMinOrder
          scp_minmax[1] <-> prior.seasonMaxOrder
          sseg_min      <-> prior.seasonMinSepDist

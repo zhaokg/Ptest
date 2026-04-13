@@ -30,7 +30,10 @@ char GLOBAL_IS_QUIET_MODE  ;
 char GLOBAL_CPU_REQUEST;
 char GLOBAL_CPU_CURRENT = 0;
 
+<<<<<<< HEAD
 
 //float   GLOBAL_MODEL_PRIOR_FACTOR = 1.0;
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 #include "abc_000_warning.h"

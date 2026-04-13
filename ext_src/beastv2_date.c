@@ -1,6 +1,14 @@
 #include "abc_000_warning.h"
 #include "abc_001_config.h"
 
+<<<<<<< HEAD
+=======
+#include <math.h>
+#include <string.h>
+#include <time.h>
+#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
+
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #include "abc_datatype.h"
 #include "abc_blas_lapack_lib.h"
 #include "abc_ide_util.h"  //printf

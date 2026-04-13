@@ -57,6 +57,12 @@ typedef struct {
 } NEWCOLINFO, * _restrict NEWCOLINFO_PTR;
 
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 typedef struct {
 	I32 N;
 	I32 Nlda; // the leading dimensio of the X

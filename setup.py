@@ -52,8 +52,10 @@ filenames.append("ext_src/abc_ioFlushcpp.cpp")
 modules = Extension(
             "Rbeast.Rbeast",
             sources       = filenames,
-            include_dirs  = [get_numpy_include(), "ext_src/"],      # [ np.get_include(), "ext_src/"],
-            define_macros = [('P_RELEASE','1'),('RRR_INTERFACE','0')],
+            #include_dirs  = [ np.get_include(), "ext_src/"],   # Bad option bcz np needs to be installed fist
+            #include_dirs  = [get_numpy_include(), "ext_src/"], # Bad option bcz np needs to be installed fist as build-time dependencies                  
+            include_dirs  = ["ext_src/"],                 
+            define_macros = [('P_RELEASE','1'),('R_INTERFACE','0')],
             libraries     = extralibs
         )
         
@@ -66,7 +68,7 @@ packages = find_namespace_packages(where='./py_src', exclude=['build','tests','e
 #print(packages)
 setup(
     name             = "Rbeast",   
-    version          = '0.1.19',
+    version          = '0.1.23',
     description      = "Bayesian changepoint detection and time series decomposition",
     author           = "Kaiguang Zhao",
     author_email     = 'zhao.1423@osu.edu',
@@ -92,7 +94,7 @@ setup(
     ],    
     #setup_requires      = ['numpy'],           # Deprecated in favor of pyproject.toml
     #install_requires     =  ['numpy>=1.17.3', 'matplotlib>=2.2.0'], # ['numpy>=1.10', 'matplotlib>=2.2.0'],
-    install_requires     =  ['numpy>=1.17.3'],                       # remove the depedence on matlplotlib; give a warning if matplot is missing
+    install_requires     =  ['numpy>=1.10.0'],                       # remove the depedence on matlplotlib; give a warning if matplot is missing
     #entry_points        ={  'console_scripts': ['mycommand=exampleproject.data:main1'] },    
     packages             = packages,    
     package_dir          = {"Rbeast": "py_src/Rbeast","Rbeast.data": "py_src/Rbeast/data", '': '.'},      

@@ -23,8 +23,13 @@
 #define FINDEX_JOIN(fun, name)  JOIN2(fun, name) 
 #define FINDEX(name)            FINDEX_JOIN(funprefix, name)
 
+<<<<<<< HEAD
 #define SwapIndex( index, i, j)             { int   tmp =index[i];  index[i]=index[j]; index[j]=tmp;}
 #define SwapElements( arr, i, j)            { DTYPE tmp =arr[i];    arr[i]  =arr[j];   arr[j]=tmp;}
+=======
+#define SwapIndex( index, i, j)             { int tmp=index[i]; index[i]=index[j]; index[j]=tmp;}
+#define SwapElements( arr, i, j)            { DTYPE tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;}
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #define SwapElemIndex( arr, index, i, j)    { SwapElements(arr,i,j); SwapIndex(index,i,j); }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,8 +61,15 @@
 #define LESSEQ(a, b)  (a >= b)
 #include "abc_sort_template.h"
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+#define DTYPE         int32_t
+#define funprefix     i32a
+#define LESS(a, b)    (a < b)
+#define LESSEQ(a, b)  (a <= b)
+#include "abc_sort_template.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+<<<<<<< HEAD
 #define DTYPE         int16_t
 #define funprefix     i16a
 #define LESS(a, b)    (a < b)
@@ -80,11 +92,14 @@
 #include "abc_sort_template.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #define DTYPE         int32_t
 #define funprefix     i32d
 #define LESS(a, b)    (a > b)
 #define LESSEQ(a, b)  (a >= b)
 #include "abc_sort_template.h"
+<<<<<<< HEAD
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +115,8 @@
 #define LESS(a, b)    (a > b)
 #define LESSEQ(a, b)  (a >= b)
 #include "abc_sort_template.h"
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 int i32_find_unique_occurrance_inplace(I32PTR arr, int n, I32PTR counts) {
 
@@ -254,6 +271,7 @@ static void i32_quicksortA_iterative(I32PTR  arr, int *stack, int l, int h) {
 	return;
 }
 
+<<<<<<< HEAD
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -381,5 +399,7 @@ void test_sort_alg( void ) {
 */
 
  
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #include "abc_000_warning.h"
 

@@ -18,8 +18,11 @@ def beast_irreg(Y, \
           tseg_minlength   = None,    # an integer
           tseg_leftmargin  = None,    # an integer
           tseg_rightmargin = None,    # an integer
+<<<<<<< HEAD
           s_complexfct     = 0.0,
           t_complexfct     = 0.0,          
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
           method           = 'bayes', # 'bayes','bic','aic','aicc','hic', 'bic0.25','bic0.5'
           detrend          = False,
           deseasonalize    = False,
@@ -47,10 +50,17 @@ def beast_irreg(Y, \
 Bayesian changepoint detection and time series decomposition for regular or irregular time series data
     
 The fitted model is:
+<<<<<<< HEAD
   Y = trend + error             if data has no periodic/seasonal variation (i.e., season='none')
   Y = trend + seasonal + error  if data has periodic/seasonal variation 
   Y = trend + outlier  + error  if data is trend-only (no seasonal variation) but with potential outliers
   Y = trend + seasonal + outlier + error if data has periodic/seasonal variation and also has outliers
+=======
+     Y=trend+error             if data has no periodic/seasonal variation (i.e., season='none')
+     Y=trend+seasonal+error    if data has periodic/seasonal variation 
+     Y=trend+outlier +error    if data is trend-only (no seasonal variation) but with potential outliers
+     Y=trend+seasonal+outlier+error if data has periodic/seasonal variation and also has outliers
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
 be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
 be inferred; and the outlier component refers to potential spikes or dips at isolated data points and is 
@@ -157,6 +167,7 @@ tseg_rightmargin:
          That is,  no trend changepoints are allowed in the ending window/segment of length tseg_rightmargin. 
          tseg_rightmargin must be an unitless integer–the number of time intervals/data points so that the
          time window in the original unit is tseg_rightmargin*deltat.
+<<<<<<< HEAD
 s_complexfct:
           Numeric (defaulted to 0.0); a hyperprior parameter--newly added in Version 1.02--controlling the complexity of
           the seasonal curve (i.e., the number of seasonal changepoints). A prior of the form  p(k) ~ exp[lambda*(k+1)] 
@@ -167,6 +178,8 @@ s_complexfct:
           positive values (e.g.,  ambda = 5.76) favor more changepoints (more complex curves).
 t_complexfct: 
           Numeric (defaulted to 0.0); analogous to s_complexfct, but for the trend component and the number of trend changepoints.
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 method: 
          a string specifying which method to formulat model posterior probability. Possible values are
          (1) 'bayes': the full Bayesian formulation (this is the default)  
@@ -401,8 +414,11 @@ at zhao.1423@osu.edu.
       prior.K_MAX            = 0
       prior.precValue        = precValue
       prior.precPriorType    = precPriorType
+<<<<<<< HEAD
       prior.seasonModelPriorFactor = s_complexfct;
       prior.trendComplexityFactor  = t_complexfct;         
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
     #......End of displaying pripr ......
     #......Start of displaying 'mcmc' ......
       mcmc = lambda: None   ###Just get an empty object###

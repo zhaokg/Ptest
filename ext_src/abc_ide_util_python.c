@@ -16,6 +16,7 @@
 
 #include "limits.h"
 
+<<<<<<< HEAD
 void** PyArray_API = NULL;
 
 
@@ -44,6 +45,9 @@ void** PyArray_API = NULL;
 #define NPY_2_2_API_VERSION 0x00000013
 #define NPY_2_3_API_VERSION 0x00000014
 #define NPY_2_4_API_VERSION 0x00000015
+=======
+void** PyArray_API=NULL;
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 typedef unsigned char npy_bool;
 
@@ -294,8 +298,11 @@ typedef struct {
 #define NPY_ARRAY_BEHAVED         (NPY_ARRAY_ALIGNED      |  NPY_ARRAY_WRITEABLE)
 #define NPY_ARRAY_FARRAY          (NPY_ARRAY_F_CONTIGUOUS |  NPY_ARRAY_BEHAVED)
 
+<<<<<<< HEAD
 
 #define PyArray_GetNDArrayCVersion     (*(unsigned int (*)(void))    PyArray_API[0])  // Numpy's C API Version
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #define PyArray_Type           (*(PyTypeObject *)             PyArray_API[2])
 #define PyArray_DescrFromType  (*(PyArray_Descr * (*)(int))   PyArray_API[45])
 #define PyArray_Size           (*(npy_intp (*)(PyObject *))   PyArray_API[59])
@@ -332,6 +339,7 @@ typedef struct  PyArray_ArrFuncs PyArray_ArrFuncs;
 typedef struct  NpyAuxData  NpyAuxData;
 typedef struct  NpyAuxData  NpyAuxData;
 
+<<<<<<< HEAD
 /* Migrate from Num[y 1.x to Numpy 2.x
 
  If old code directly accessed fields like descr->elsize, NumPy recommends replacing that with accessors such as PyArray_
@@ -341,6 +349,8 @@ ITEMSIZE(arr) or PyDataType_ELSIZE(descr). Also, elsize is now conceptually npy_
  functions.
 */
 
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 typedef struct _PyArray_Descr {
     PyObject_HEAD
         /*
@@ -403,7 +413,11 @@ typedef struct tagPyArrayObject_fields {
 
 
 static int       PyArray_TYPE(const PyArrayObject* arr) { return ((PyArrayObject_fields*)arr)->descr->type_num; }
+<<<<<<< HEAD
 static void*     PyArray_DATA(PyArrayObject* arr) { return ((PyArrayObject_fields*)arr)->data; }
+=======
+static void* PyArray_DATA(PyArrayObject* arr) { return ((PyArrayObject_fields*)arr)->data; }
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 static npy_intp  PyArray_ITEMSIZE(const PyArrayObject* arr) { return ((PyArrayObject_fields*)arr)->descr->elsize; }
 static int       PyArray_NDIM(const PyArrayObject* arr) { return ((PyArrayObject_fields*)arr)->nd; }
 

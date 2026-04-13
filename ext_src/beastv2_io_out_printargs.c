@@ -236,6 +236,7 @@ void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 	A(PRIOR_PTR) prior = &(opt->prior);
 
 	Print("%c......Start of displaying 'prior' ......\n", hasAny, comment);
+<<<<<<< HEAD
 	Print("prior                       = %-10s %c prior is the true hyperprior parameters of BEAST model\n", hasAny, emptyList, comment);
 	Print("prior%cseasonMinOrder        = %-10d %c sorder%cminmax[%d]: min harmonic order alllowed\n", hasSeasonCmpnt, filler, prior->seasonMinOrder,comment,dashdot1,baseIdx);
 	Print("prior%cseasonMaxOrder        = %-10d %c sorder%cminmax[%d]: max harmonic order alllowed\n", hasSeasonCmpnt, filler, prior->seasonMaxOrder,comment,dashdot1,baseIdx+1);
@@ -261,6 +262,31 @@ void BEAST2_print_options(A(OPTIONS_PTR)  opt)
 	Print("prior%cK_MAX                 = %-10d %c max number of terms in general linear model (relevant only at small values)\n", hasAny,      filler, prior->K_MAX, comment);
 	Print("prior%cprecValue             = %-10g %c useful mainly when precPriorType='constant'\n", hasAny,      filler, prior->precValue, comment);
 	Print("prior%cmodelPriorType        = %-10d\n", hasAny, filler, prior->modelPriorType);
+=======
+	Print("prior                   = %-10s %c prior is the true model parameters of BEAST\n", hasAny, emptyList, comment);
+	Print("prior%cseasonMinOrder    = %-10d %c sorder%cminmax[%d]: min harmonic order alllowed\n", hasSeasonCmpnt, filler, prior->seasonMinOrder,comment,dashdot1,baseIdx);
+	Print("prior%cseasonMaxOrder    = %-10d %c sorder%cminmax[%d]: max harmonic order alllowed\n", hasSeasonCmpnt, filler, prior->seasonMaxOrder,comment,dashdot1,baseIdx+1);
+	Print("prior%cseasonMinKnotNum  = %-10d %c scp%cminmax[%d]   : min num of seasonal chngpts allowed\n", hasSeasonCmpnt, filler, prior->seasonMinKnotNum, comment,dashdot1,baseIdx);
+	Print("prior%cseasonMaxKnotNum  = %-10d %c scp%cminmax[%d]   : max num of seasonal chngpts allowed\n", hasSeasonCmpnt, filler, prior->seasonMaxKnotNum, comment,dashdot1,baseIdx+1);
+	Print("prior%cseasonMinSepDist  = %-10d %c sseg%cmin        : min seasonal segment length in terms of datapoints\n", hasSeasonCmpnt, filler, prior->seasonMinSepDist,comment,dashdot1);
+	Print("prior%cseasonLeftMargin  = %-10d %c sseg%cleftmargin : no season chngpts in the first %d datapoints\n", hasSeasonCmpnt, filler, prior->seasonLeftMargin, comment,dashdot1,prior->seasonLeftMargin);
+	Print("prior%cseasonRightMargin = %-10d %c sseg%crightmargin: no season chngpts in the last %d datapoints\n", hasSeasonCmpnt, filler, prior->seasonRightMargin, comment,dashdot1, prior->seasonRightMargin);
+
+	Print("prior%ctrendMinOrder     = %-10d %c torder%cminmax[%d]: min trend polynomial order alllowed\n", hasTrendCmpnt,  filler, prior->trendMinOrder, comment,dashdot1,baseIdx);
+	Print("prior%ctrendMaxOrder     = %-10d %c torder%cminmax[%d]: max trend polynomial order alllowed\n", hasTrendCmpnt,  filler, prior->trendMaxOrder, comment,dashdot1,baseIdx+1);
+	Print("prior%ctrendMinKnotNum   = %-10d %c tcp%cminmax[%d]   : min num of chngpts in trend allowed\n", hasTrendCmpnt,  filler, prior->trendMinKnotNum, comment,dashdot1,baseIdx);
+	Print("prior%ctrendMaxKnotNum   = %-10d %c tcp%cminmax[%d]   : max num of chngpts in trend allowed\n", hasTrendCmpnt,  filler, prior->trendMaxKnotNum, comment,dashdot1,baseIdx+1);
+	Print("prior%ctrendMinSepDist   = %-10d %c tseg%cmin        : min trend segment length in terms of datapoints\n", hasTrendCmpnt,  filler, prior->trendMinSepDist, comment,dashdot1);
+	Print("prior%ctrendLeftMargin   = %-10d %c tseg%cleftmargin : no trend chngpts in the first %d datapoints\n", hasTrendCmpnt, filler, prior->trendLeftMargin, comment, dashdot1,prior->trendLeftMargin);
+	Print("prior%ctrendRightMargin  = %-10d %c tseg%crightmargin: no trend chngpts in the last %d datapoints\n", hasTrendCmpnt, filler, prior->trendRightMargin, comment, dashdot1,prior->trendRightMargin);
+
+	Print("prior%coutlierMinKnotNum = %-10d %c ocp%cminmax[%d]   : min num of datapoints treated as outliers\n", hasOutlierCmpnt, filler, prior->outlierMinKnotNum, comment,dashdot1,baseIdx);
+	Print("prior%coutlierMaxKnotNum = %-10d %c ocp%cminmax[%d]   : max num of datapoints treated as outliers\n", hasOutlierCmpnt, filler, prior->outlierMaxKnotNum, comment,dashdot1,baseIdx+1);
+	Print("prior%coutlierSigFactor  = %-10g %c above which datapoints considered outliers\n", hasOutlierCmpnt, filler, prior->outlierSigFactor, comment);
+	Print("prior%cK_MAX             = %-10d %c max number of terms in general linear model (relevant only at small values)\n", hasAny,      filler, prior->K_MAX, comment);
+	Print("prior%cprecValue         = %-10g %c useful mainly when precPriorType='constant'\n", hasAny,      filler, prior->precValue, comment);
+	Print("prior%cmodelPriorType    = %-10d\n", hasAny, filler, prior->modelPriorType);
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	//Print("   prior%calpha1           = %f\n", hasAny,      filler, prior->alpha1 );
 	//Print("   prior%calpha2           = %f\n", hasAny,      filler, prior->alpha2);
 	//Print("   prior%cdelta1           = %f\n", hasAny,      filler, prior->delta1);

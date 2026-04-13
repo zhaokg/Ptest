@@ -150,6 +150,7 @@ extern int GetNumCores(void);
 
     extern int pthread_attr_setaffinity_np(pthread_attr_t* attr, size_t cpusetsize, const cpu_set_t* cpuset);
 
+<<<<<<< HEAD
     static INLINE int pthread_mutex_init(pthread_mutex_t* mutex, const pthread_mutexattr_t* attr) {    InitializeCriticalSection(mutex);    return 0;}
     static INLINE int pthread_mutex_destroy(pthread_mutex_t* mutex) {     DeleteCriticalSection(mutex);   return 0;}
     static INLINE int pthread_mutex_lock(pthread_mutex_t* mutex)    {     EnterCriticalSection(mutex);    return 0; }
@@ -167,6 +168,36 @@ extern int GetNumCores(void);
 	    //Closehandle doesn't destory the thread; it only destory the handle itself and the thread may still run and 
 	    // we lose the handle to kil or wait on it
         //https:// stackoverflow.com/questions/3959473/must-i-closehandle-on-a-thread-handle
+=======
+static INLINE int pthread_mutex_init(pthread_mutex_t* mutex, const pthread_mutexattr_t* attr) {    InitializeCriticalSection(mutex);    return 0;}
+static INLINE int pthread_mutex_destroy(pthread_mutex_t* mutex) {     DeleteCriticalSection(mutex);   return 0;}
+static INLINE int pthread_mutex_lock(pthread_mutex_t* mutex)    {     EnterCriticalSection(mutex);    return 0; }
+static INLINE int pthread_mutex_unlock(pthread_mutex_t* mutex)  {     LeaveCriticalSection(mutex);   return 0; }
+static INLINE int pthread_cond_init(pthread_cond_t * cond, const pthread_condattr_t * attr) {     InitializeConditionVariable(cond);  return 0;}
+static INLINE int pthread_cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex) {   SleepConditionVariableCS(cond, mutex, INFINITE);  return 0;}
+static INLINE int pthread_cond_signal(pthread_cond_t * cond)    {   WakeConditionVariable(cond);    return 0;}
+static INLINE int pthread_cond_broadcast(pthread_cond_t* cond)  {   WakeAllConditionVariable(cond);    return 0; }
+static INLINE int pthread_cond_destroy(pthread_cond_t * cond)   {
+	//https:// stackoverflow.com/questions/28975958/why-does-windows-have-no-deleteconditionvariable-function-to-go-together-with
+    return 0;
+}
+static INLINE void pthread_exit(void *value_ptr) {
+	//https:// stackoverflow.com/questions/11226072/windows-c-closing-thread-with-closehandle
+	//Closehandle doesn't destory the thread; it only destory the handle itself and the thread may still run and 
+	// we lose the handle to kil or wait on it
+    //https:// stackoverflow.com/questions/3959473/must-i-closehandle-on-a-thread-handle
+}
+
+#define PTHREAD_CREATE_JOINABLE  1
+static INLINE int         pthread_attr_setdetachstate(pthread_attr_t * attr, int detachstate) {   return 0;}
+static INLINE  pthread_t  pthread_self(void) { return (pthread_t)GetCurrentThreadId(); }
+static INLINE int         pthread_join(pthread_t thread, void **retvalue_ptr) {
+  //Even after the thread exited - its handle is valid. You can for instance query its return value
+	WaitForSingleObject(thread, INFINITE);
+    if (retvalue_ptr) {
+        //https:// stackoverflow.com/questions/7100441/how-can-you-get-the-return-value-of-a-windows-thread
+        GetExitCodeThread(thread, (LPDWORD) retvalue_ptr);
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
     }
 
     #define PTHREAD_CREATE_JOINABLE  1

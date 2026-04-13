@@ -57,7 +57,10 @@ static void  GetArg_GlobalFlagss(VOIDPTR prhs[], int nrhs) {
 	 GLOBAL_CPU_REQUEST    = 0;
 	   
  	if (nrhs >= 6 && IsStruct(prhs[6L - 1L]) ) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
  		VOIDPTR tmp;
 		VOIDPTR extra = prhs[6L - 1L];
 		GLOBAL_IS_QUIET_MODE = (tmp = GetField123Check(extra, "quiet", 3)) ? GetScalar(tmp) : 0L;
@@ -101,8 +104,13 @@ static void  GetArg_GlobalFlagss(VOIDPTR prhs[], int nrhs) {
 
 	if (GLOBAL_CPU_REQUEST == 0) {
 		GLOBAL_CPU_REQUEST = GetNativeCPUType();
+<<<<<<< HEAD
 		// GLOBAL_CPU_REQUEST: 1 sse/generic/arm64, 2 avx2,  3 avx512
 	}
+=======
+	}
+	// GLOBAL_CPU_REQUEST: 1 sse/generic/arm64, 2 avx2,  3 avx512
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 	return;
 }
@@ -110,6 +118,11 @@ static void  GetArg_GlobalFlagss(VOIDPTR prhs[], int nrhs) {
 
 void * mainFunction(void *prhs[], int nrhs) {
 
+<<<<<<< HEAD
+=======
+	//mexCallMATLAB(0, NULL, 2, prhs, "fprintf");
+
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	if (nrhs == 0) {
 		r_error("ERROR: Essential input paramaters are missing!\n");
 		//r_printf("\033[1m\033[32m" "\033[4m" "%cERROR: Essential input paramaters are missing!\n",149);
@@ -129,7 +142,11 @@ void * mainFunction(void *prhs[], int nrhs) {
 		//print_funcs();
 	}
 	
+<<<<<<< HEAD
 	#define __STRING_LEN__          20
+=======
+	#define __STRING_LEN__ 20
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	char  algorithm[__STRING_LEN__ +1];
 	GetCharArray(prhs[0], algorithm, __STRING_LEN__);
 
@@ -364,6 +381,10 @@ void * mainFunction(void *prhs[], int nrhs) {
 		else if (__IS_STRING_EQUAL(algorithm, beast_bic0.5)) 	whichCritia = 50;
 		else if (__IS_STRING_EQUAL(algorithm, beast_bic1.5)) 	whichCritia = 150;
 		else if (__IS_STRING_EQUAL(algorithm, beast_bic2)) 	    whichCritia = 200;
+<<<<<<< HEAD
+=======
+		
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 		/**********************************/
 	    //stackoverflow.com/questions/10828294/c-and-c-partial-initialization-of-automatic-structure
@@ -395,6 +416,17 @@ void * mainFunction(void *prhs[], int nrhs) {
 			option.prior.precPriorType = UniformPrec;
 			option.prior.precValue     = 0;
 		}
+<<<<<<< HEAD
+=======
+		/**********************************/
+	
+		// For UniforPrior and ConstantPrec, PrecXtXDiag points to precVec whose value is borrowed
+		// from precValue
+		if (option.prior.precPriorType != ConstPrec) {
+			option.prior.precPriorType = UniformPrec;
+			option.prior.precValue     = 0;
+		}
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 		extern int beast2_main_corev4_bic(int whichCritia);
 		extern int beast2_main_core_bic_mthrd(void* dummy);
@@ -1076,11 +1108,18 @@ void DllExport mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* p
 extern int import_array(void);
 extern void** PyArray_API;
 
+<<<<<<< HEAD
 // Load numpy.core._multiarray_umath (numpy 1.x only) to set up the PyArray_API list
 
 int import_array(void) {
 
 	PyObject* numpy   = PyImport_ImportModule("numpy.core._multiarray_umath");  // new ref
+=======
+int import_array(void) {
+
+	PyObject* numpy   = PyImport_ImportModule("numpy.core._multiarray_umath");  // new ref
+
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	if (numpy == NULL) {
 		PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");
 		return -1;
@@ -1088,13 +1127,21 @@ int import_array(void) {
 
 	PyObject* c_api = PyObject_GetAttrString(numpy, "_ARRAY_API");
     Py_DECREF(numpy);
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	if (c_api == NULL) {
 		PyErr_SetString(PyExc_AttributeError, "_ARRAY_API not found");
 		return -1;
 	}
 
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #if PY_VERSION_HEX >= 0x02070000
 	if (!PyCapsule_CheckExact(c_api)) {
 		PyErr_SetString(PyExc_RuntimeError, "_ARRAY_API is not PyCapsule object");
@@ -1118,8 +1165,12 @@ int import_array(void) {
 		return -1;
 	}
 
+<<<<<<< HEAD
 
 	r_printf("33333333333\n");
+=======
+	return 0;
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 	/*
 	//Perform runtime check of C API version
@@ -1128,7 +1179,10 @@ int import_array(void) {
 			"ABI version %%x but this version of numpy is %%x", (int)NPY_VERSION, (int)PyArray_GetNDArrayCVersion());
 		return -1;
 	}
+<<<<<<< HEAD
 	
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	if (NPY_FEATURE_VERSION > PyArray_GetNDArrayCFeatureVersion()) {
 		PyErr_Format(PyExc_RuntimeError, "module compiled against "\
 			"API version %%x but this version of numpy is %%x", (int)NPY_FEATURE_VERSION, (int)PyArray_GetNDArrayCFeatureVersion());
@@ -1144,6 +1198,7 @@ int import_array(void) {
 	}
   */
 
+<<<<<<< HEAD
 	return 0;
 
 }
@@ -1258,6 +1313,8 @@ int import_array_numpy2x(void) {
 	*/
   return 0;
 
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 }
 /////////////////////////////////////////////////////////////////////////////////////////
 // END OF  EXPLICILTY LOADING THE C API FUNCTIONS
@@ -1331,12 +1388,31 @@ PyMODINIT_FUNC PyInit_Rbeast() {
       return NULL;
   }
   */
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
   /*************************/
   // Load NumPy
   /*************************/
    
   import_array_numpy2x();  //import_array();    /* for Numpy 1.x*/
+
+  /*
+  
+ "numpy/_core/code_generators/numpy_api.py": define a look-up table multiarray_api of the paired C APi names and indices
+ "numpy/_core/code_generators/generate_numpy_api.py":  Write _multiarray_api.h on the fly that contians import_array()
+
+ numpy.core.multiarray._ARRAY_API is borrowed from numpy._core_multiarray._ARRAY_API
+ "numpy/_core/src/multiarray/multiarraymodule.c":  _ARRAY_API is assigend in this multiarray module defition function
+     c_api = PyCapsule_New((void *)PyArray_API, NULL, NULL);
+     PyDict_SetItemString(d, "_ARRAY_API", c_api);
+
+https://github.com/numpy/numpy/blob/73a1e4dc8f1c3cbc24d571cca3f50d54319de14c/doc/source/reference/c-api/array.rst#L3902
+has a section "Including and importing the C API" to describe how to use import_array to load numpy in C
+  */
 
   /*
   

@@ -91,8 +91,11 @@ typedef struct BEAST2_PRIOR {
 	I16   trendMinKnotNum,  seasonMinKnotNum;
 	I16   trendMaxKnotNum,  seasonMaxKnotNum;
 	I16   outlierMinKnotNum, outlierMaxKnotNum;
+<<<<<<< HEAD
 
 	F32   seasonComplexityFactor, trendComplexityFactor;
+=======
+>>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 	U16   K_MAX;
  
