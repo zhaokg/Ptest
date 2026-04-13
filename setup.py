@@ -68,7 +68,7 @@ packages = find_namespace_packages(where='./py_src', exclude=['build','tests','e
 #print(packages)
 setup(
     name             = "Rbeast",   
-    version          = '0.1.23',
+    version          = '0.1.24',
     description      = "Bayesian changepoint detection and time series decomposition",
     author           = "Kaiguang Zhao",
     author_email     = 'zhao.1423@osu.edu',
@@ -85,6 +85,8 @@ setup(
         "Programming Language :: Python :: 3.10",                        
         "Programming Language :: Python :: 3.11",   
         "Programming Language :: Python :: 3.12",   
+        "Programming Language :: Python :: 3.13",   
+        "Programming Language :: Python :: 3.14",   
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Hydrology",
         "Topic :: Scientific/Engineering :: Atmospheric Science",

@@ -4,6 +4,7 @@ on: [workflow_dispatch]  # manual tigger
 
 
 jobs:
+
 ############################################################################
 #    Build Sdist
 ############################################################################
@@ -99,7 +100,7 @@ jobs:
       - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     
+             CIBW_BUILD:   cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*      # cp37-*  (not supported by v3 and only by v2)
               
       - uses: actions/upload-artifact@v4
         with:
@@ -138,7 +139,7 @@ jobs:
       - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     
+             CIBW_BUILD:  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     #  cp37-*   
        
       - uses: actions/upload-artifact@v4
         with:
@@ -207,7 +208,7 @@ jobs:
       - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:  x86_64  arm64  #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp37-*   cp38-*   cp38-*    cp39-*   cp310-*  cp311-*    cp312-*   cp313-*   cp314-*
+             CIBW_BUILD:   cp38-*  cp39-*   cp310-*  cp311-*    cp312-*   cp313-*   cp314-*  # cp37-*  
           
              
       - uses: actions/upload-artifact@v4
