@@ -419,7 +419,6 @@ static void FINDEX(heapify)(DTYPE arr[], int N, int i, int* index) {
 
 static void FINDEX(heapSort)(DTYPE arr[], int low, int high, int *index) {
 
-<<<<<<< HEAD
 	DTYPE* arrstart   = arr   + low;
 	int  * indexstart = index + low;
 	int  N            = high - low + 1;
@@ -427,27 +426,13 @@ static void FINDEX(heapSort)(DTYPE arr[], int low, int high, int *index) {
 	// Build max heap
 	for (int i = N / 2 - 1; i >= 0; i--) {
 		FINDEX(heapify)(arrstart, N, i, indexstart);
-=======
-	DTYPE* arrstart  = arr + low;
-	int  N           = high - low + 1;
-
-	// Build max heap
-	for (int i = N / 2 - 1; i >= 0; i--) {
-		FINDEX(heapify)(arrstart, N, i,index);
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	}
 	
 	// Heap sort
 	for (int i = N - 1; i >= 0; i--) {
-<<<<<<< HEAD
 		SwapElemIndex(arrstart, indexstart, 0, i);
 		// Heapify root element to get highest element atm root again
 		FINDEX(heapify)(arrstart, i, 0, indexstart);
-=======
-		SwapElemIndex(arrstart, index, 0, i);
-		// Heapify root element to get highest element atm root again
-		FINDEX(heapify)(arrstart, i, 0,index);
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	}
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -527,12 +512,9 @@ static void FINDEX(introsortUtil)(DTYPE arr[], int  low, int  high, int * index,
 		return;
 	}
 
-<<<<<<< HEAD
 	//ERROR: Fixed error with the following function
 	//FINDEX(heapSort)(arr, low, high, index); 
 
-=======
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	// If the depth is zero use heapsort
 	if ( depthLimit == 0) {
 		FINDEX(heapSort)(arr, low, high,index);

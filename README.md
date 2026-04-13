@@ -150,7 +150,6 @@ Despite being published originally for ecological and enviornmental applications
 
 | Discipline | Publication Title |
 | --- | --- |
-<<<<<<< HEAD
 |Archaeogenetics|*Sikora, M., Canteri, E., Fernandez-Guerra, A., Oskolkov, N., Ågren, R., Hansson, L., Irving-Pease, E.K., Mühlemann, B., Holtsmark Nielsen, S., Scorrano, G. and Allentoft, M.E., 2025. The spatiotemporal distribution of human pathogens in ancient Eurasia. Nature, 643(8073), pp.1011-1019.*|
 |Sustainability|*Sun, X., Tian, L., Fang, H., Walling, D.E., Huang, L., Park, E., Li, D., Zheng, C. and Feng, L., 2025. Changes in global fluvial sediment concentrations and fluxes between 1985 and 2020. Nature Sustainability, 8(2), pp.142-151.*|
 |Paleoclimatology|*Lu, F., Lu, H., Gu, Y., Lin, P., Lu, Z., Zhang, Q., Zhang, H., Yang, F., Dong, X., Yi, S. and Chen, D., 2025. Tipping point-induced abrupt shifts in East Asian hydroclimate since the Last Glacial Maximum. Nature Communications, 16(1), p.477.*|
@@ -180,9 +179,6 @@ Despite being published originally for ecological and enviornmental applications
 |Rock Engineering|*Long, S., Yue, Z., Yue, W.V., Hu, H., Feng, Y., Yan, Y. and Xie, X., 2025. Identification of rock layer interface characteristics using drilling parameters. Rock Mechanics and Rock Engineering, 58(1), pp.1071-1098.*|
 |Energy|*Leiria, D., Johra, H., Anoruo, J., Praulins, I., Piscitelli, M.S., Capozzoli, A., Marszal-Pomianowska, A. and Pomianowski, M.Z., 2025. Is it returning too hot? Time series segmentation and feature clustering of end-user substation faults in district heating systems. Applied Energy, 381, p.125122.*|
 |Psychology|*Huang, X., Nguyen, A. and Lajoie, S.P., 2025. Examining socially shared regulation of learning in medical training: the interplay of heart rate change points on regulatory interactions: Huang et al. European Journal of Psychology of Education, 40(3), p.93.*|
-=======
-| Remote Sensing| *Li, J., Li, Z., Wu, H., and You, N., 2022. [Trend, seasonality, and abrupt change detection method for land surface temperature time-series analysis: Evaluation and improvement](https://doi.org/10.1016/j.rse.2022.113222). Remote Sensing of Environment, 10.1016/j.rse.2022.113222*|
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 |Paleoclimatology|*Anastasia Zhuravleva et al., 2023. Caribbean salinity anomalies contributed to variable North Atlantic circulation and climate during the Common Era.  Science Advances,   DOI:10.1126/sciadv.adg2639*|
 |   Population Ecology  | *Henderson, P. A. (2021). [Southwood's Ecological Methods (5th edition)](https://www.google.com/books/edition/Southwood_s_Ecological_Methods/snEhEAAAQBAJ?hl=en&gbpv=1&pg=PA473&printsec=frontcover). Oxford University Press., page 475-476*|
 |Climatology|*Webster, M.A., Riihelä, A., Kacimi, S., Ballinger, T.J., Blanchard-Wrigglesworth, E., Parker, C.L. and Boisvert, L., 2024. Summer snow on Arctic sea ice modulated by the Arctic Oscillation. Nature Geoscience, pp.1-8.*|

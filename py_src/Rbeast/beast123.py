@@ -127,21 +127,12 @@ Y:  an iregularly-spaced time series or 1D signal; it should be a numeric vector
 	                          be an unitless integer–the number of time intervals/data points so that the
 	                          time window in the original unit is seasonRightMargin*deltat. If missing,
 	                          seasonRightMargin defaults to the minimum segment length 'seasonMinSepDist'
-<<<<<<< HEAD
      prior.trendMinOrder    : min polyonimal order considered for the trend compnt
      prior.trendMaxOrder    : max polyonimal order considered for the trend compnt
      prior.trendMinKnotNum  : min number of trend changepints allowed
      prior.trendMaxKnotNum  : max number of trend changepints allowed
      prior.trendMinSepDist  : the min segment length of a trend segment(i.e, the min seperation distance
                                 between any two neighorboring trend changepoints)
-=======
-     prior.trendMinOrder	: min polyonimal order considered for the trend compnt
-     prior.trendMaxOrder	: max polyonimal order considered for the trend compnt
-     prior.trendMinKnotNum  : min number of trend changepints allowed
-     prior.trendMaxKnotNum  : max number of trend changepints allowed
-     prior.trendMinSepDist  : the min segment length of a trend segment(i.e, the min seperation distance
-                             between any two neighorboring trend changepoints)
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
      prior.trendLeftMargin  : an integer;  the number of leftmost data points excluded for 
 	                         trend changepoint detection. That is,  no trend changepoints are allowed in 
 	                         the starting window/segment of length trendLeftMargin. trendLeftMargin must
@@ -155,7 +146,6 @@ Y:  an iregularly-spaced time series or 1D signal; it should be a numeric vector
 	                         time window in the original unit is trendRightMargin*deltat. If missing,
 	                         trendRightMargin defaults to the minimum segment length 'trendMinSepDist'
      prior.outlierMinKnotNum: an integer; needed only if meta.hasOutlierCmpnt=True to specify the minimum 
-<<<<<<< HEAD
                                number of outliers (i.e., outlier-type changepoints) allowed in the time series	
      prior.outlierMaxKnotNum: an integer; needed only if meta.hasOutlierCmpnt=True to specify the maximum 
                                number of outliers (i.e., outlier-type changepoints) allowed in the time series	
@@ -186,28 +176,6 @@ Y:  an iregularly-spaced time series or 1D signal; it should be a numeric vector
                                   (e.g.,  ambda = 5.76) favor more changepoints (more complex curves).
      prior.trendComplexityFactor :    Numeric (defaulted to 0.0); analogous to s_complexfct, but for the trend component and the number
                                    of trend changepoints.						 
-=======
-                             number of outliers (i.e., outlier-type changepoints) allowed in the time series	
-     prior.outlierMaxKnotNum: an integer; needed only if meta.hasOutlierCmpnt=True to specify the maximum 
-                             number of outliers (i.e., outlier-type changepoints) allowed in the time series	
-     prior.precValue        : numeric (>0); the hyperparameter of the precision prior; the default value is 1.5. 
-                             precValue is useful only when precPriorType='constant', as further explained below
-     prior.precPriorType    :  a string taking one of 'constant', 'uniform',  'componentwise' (default), and 'orderwise'.
-                             (1) 'constant':  the precision parameter used to parameterize the model coefficients is fixed to
-                             a const specified by precValue. In other words, precValue is a user-defined hyperparameter 
-                             and the fitting result may be sensitive to the chosen values of precValue.
-                             (2) 'uniform':  the precision parameter used to parameterize the model coefficients is a random variable;
-                             its initial value is specified by precValue. In other words, precValue will be inferred by the MCMC,
-                             so the fitting result will be insensitive to the chose inital value of precValue.
-                             (3) 'componentwise': multiple precision parameters are used to parameterize the model coefficients for
-                             individual components (e.g., one for season and another for trend); their initial values is specified 
-                             by precValue. In other words, precValue will be inferred by the MCMC, so the fitting result will be 
-                             insensitive to the choice in precValue.
-                             (4) 'orderwise'}: multiple precision parameters are used to parameterize the model coefficients not just for 
-                             individual components but also for individual orders of each component; their initial values is specified 
-                             by precValue. In other words, precValue will be inferred by the MCMC, so the fitting result will be 
-                             insensitive to the choice in precValue. 							 
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 |> mcmc <|    parameters to set up the MCMC sampler
  

@@ -13,11 +13,6 @@
 #include "abc_vec.h"   // for f32_add_v_v2_vec_in_place, f32_diff_back,i32_increment_bycon_inplace i32_to_f32_scaelby_inplace, f32_sx_sxx_toavstd_inplace 
 #include "abc_math.h"  // for fastexp, fastsqrt only
 
-<<<<<<< HEAD
-=======
-#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
-
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #include "globalvars.h"  
 #include "beastv2_header.h"
 #include "beastv2_func.h" 
@@ -506,21 +501,13 @@ int beast2_main_corev4(void)   {
 			   /****************************************************************************************/
 						
 				F32 delta_lik = MODEL.prop.marg_lik - MODEL.curr.marg_lik;
-<<<<<<< HEAD
 				if   ( !(NEW.jumpType ==MOVE || basis->type ==OUTLIERID || basis->type == DUMMYID)  ) {
-=======
-				if   ( !(NEW.jumpType ==MOVE || basis->type ==OUTLIERID) ) {
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 					// Calcuate a factor adjusting the likelihood change
 					F32 factor = basis->ModelPrior(basis, &NEW.newcols, &NEW); 
 					delta_lik += factor;
 				}
-<<<<<<< HEAD
 
 					
-=======
-				
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 				//acceptTheProposal = *(RND.rnd16)++ < fastexp(delta_lik) * 65535.0f;				
 				I08     acceptTheProposal;
 				if      (delta_lik >   0.0f)   acceptTheProposal  = 1;
@@ -638,7 +625,6 @@ int beast2_main_corev4(void)   {
 				// Re-SAMPLING SIG2,  Beta, and PrecValue
 				/*******************************************/
 
-<<<<<<< HEAD
 				//  Resmapling  GLOBAL_MODEL_PRIOR_FACTOR
 				/*				
 				F64 sum1 = 0, sum2=0;
@@ -660,8 +646,6 @@ int beast2_main_corev4(void)   {
 				r_printf("new a: %f %f\n", GLOBAL_MODEL_PRIOR_FACTOR, ratio1* (sum1 / sum2));
 			    */
 
-=======
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 				if (q == 1) {
 			 
 				    //First, Re-SAMPLING SIG2			 

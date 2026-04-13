@@ -293,10 +293,6 @@
 
 //https: //stackoverflow.com/questions/39821164/how-do-you-define-a-multiline-macro-in-c
 //https: //www.geeksforgeeks.org/multiline-macros-in-c/
-<<<<<<< HEAD
-=======
-#if defined(COMPILER_GCC) 
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 #if defined(COMPILER_GCC) 
 //https: //github.com/BioMedIA/MIRTK/issues/230
@@ -357,12 +353,8 @@
 	ENABLE_WARNING(pragmas, pragmas, NOT_USED) \
 	ENABLE_WARNING(unknown-pragmas,unknown-pragmas, NOT_USED) 
 
-<<<<<<< HEAD
 #elif defined(COMPILER_CLANG)   
 
-=======
-#elif defined(COMPILER_CLANG)    || 1
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 //https://stackoverflow.com/questions/14261534/temporarily-overwrite-a-macro-in-c-preprocessor
 //https://clang.llvm.org/doxygen/classclang_1_1Preprocessor.html#a04dec9fbfa220dfea433bcbeffa270c3
 //https://gcc.gnu.org/onlinedocs/gcc-5.4.0/gcc/Push_002fPop-Macro-Pragmas.html

@@ -11,14 +11,10 @@
 #include "beastv2_func.h"    
 #include "beastv2_io.h"
 
-<<<<<<< HEAD
 #include <stdio.h>	   
 #include <math.h>
 #include <string.h>
 #include <time.h>
-=======
-#include <stdio.h>	          //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
  
 #define CondErrMsgRet0(cond, ...)   if(cond) { r_error(__VA_ARGS__); return 0;}
@@ -1295,7 +1291,6 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 	}
 
 	opt->extra.printProgress = GLOBAL_PRNT_PROGRESS;
-<<<<<<< HEAD
 
 
 	// the input is multivariate time series data
@@ -1313,18 +1308,12 @@ I32 PostCheckArgs(A(OPTIONS_PTR) opt) {
 		//option.extra.computeOutlierChngpt = 1;
 	}
 	
-=======
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 	return 1;
 }
 
 int BEAST2_GetArgs(VOIDPTR prhs[], int nrhs, A(OPTIONS_PTR) opt) {
 
-<<<<<<< HEAD
 	int  failed = !GetArg_0th_Data(prhs, nrhs, &opt->io)                  ||
-=======
-	int  failed = !GetArg_0th_Data(prhs, nrhs, &opt->io)                 ||
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 		          !GetArg_1st_MetaData(prhs, nrhs, &opt->io)		      || 				  
 			      !GetArg_2nd_Prior__(prhs, nrhs, &opt->prior, &opt->io)  ||
 			      !GetArg_3rd_MCMC___(prhs, nrhs, &opt->mcmc,  opt)       ||

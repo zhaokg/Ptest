@@ -9,14 +9,10 @@
 #include "beastv2_func.h"
 #include "beastv2_prior_precfunc.h"
 
-<<<<<<< HEAD
 
 #include <math.h>
 #include <string.h>
 #include <stdio.h>	 
-=======
-#include <stdio.h>	       //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 /*
 F32  GetPercentileNcp_old(F32PTR prob, I32 N, F32 pctile) {

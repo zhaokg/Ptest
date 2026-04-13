@@ -6,16 +6,12 @@
 #include "abc_vec.h"       
 #include "abc_sort.h"     //insert_sort
 
-<<<<<<< HEAD
 #include<stdio.h>  
 #include<inttypes.h>
 #include <stdlib.h> // atof atoi
 #include <string.h> // strchr strrchr strstr str stricmp
 #include <math.h>   // floor
 
-=======
-#include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name _IO_cookie_io_functions_t
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 // stackoverflow.com/questions/19377396/c-get-day-of-year-from-date
 static const int DAYS_CUMSUM[2][13] = { 

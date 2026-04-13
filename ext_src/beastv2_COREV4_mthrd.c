@@ -13,11 +13,6 @@
 #include "abc_vec.h"   // for f32_add_v_v2_vec_in_place, f32_diff_back,i32_increment_bycon_inplace i32_to_f32_scaelby_inplace, f32_sx_sxx_toavstd_inplace 
 #include "abc_math.h"  // for fastexp, fastsqrt only
 
-<<<<<<< HEAD
-=======
-#include <stdio.h>	               //fprintf fopen FILE #include<stdio.h>  // Need _GNU_SOURCE for manylinux; otherwise report /usr/include/stdio.h:316:6: error: unknown type name '_IO_cookie_io_functions_t'
-
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 #include "globalvars.h"  
 #include "beastv2_header.h"
 #include "beastv2_func.h" 
@@ -516,11 +511,7 @@ int beast2_main_corev4_mthrd(void* dummy) {
 			   /****************************************************************************************/
 						
 				F32 delta_lik = MODEL.prop.marg_lik - MODEL.curr.marg_lik;
-<<<<<<< HEAD
 				if (!(NEW.jumpType == MOVE || basis->type == OUTLIERID || basis->type == DUMMYID)) {
-=======
-				if   ( !(NEW.jumpType ==MOVE || basis->type ==OUTLIERID) ) {
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 					// Calcuate a factor adjusting the likelihood change
 					F32 factor = basis->ModelPrior(basis, &NEW.newcols, &NEW); 
 					delta_lik += factor;
@@ -1728,7 +1719,6 @@ int beast2_main_corev4_mthrd(void* dummy) {
 
 		/***********MULTITHREAD*******************/
 		/*
-<<<<<<< HEAD
 		F64 elaspedTime = Timer_ElapsedSinceBeakPt();
 		if (NUM_OF_PROCESSED_GOOD_PIXELS > 0 && NUM_PIXELS > 1 && (pixelIndex % 50 == 0 || elaspedTime > 1)) 		{
 			F64 estTimeForCompletion = Timer_ElapsedSecond()/NUM_OF_PROCESSED_GOOD_PIXELS * (NUM_PIXELS - pixelIndex);
@@ -1737,16 +1727,6 @@ int beast2_main_corev4_mthrd(void* dummy) {
 		}
 		*/
 		F32 elaspedTime = Timer_ElapsedSinceBeakPt();
-=======
-		F64 elaspedTime = GetElaspedTimeFromBreakPoint();
-		if (NUM_OF_PROCESSED_GOOD_PIXELS > 0 && NUM_PIXELS > 1 && (pixelIndex % 50 == 0 || elaspedTime > 1)) 		{
-			F64 estTimeForCompletion = GetElapsedSecondsSinceStart()/NUM_OF_PROCESSED_GOOD_PIXELS * (NUM_PIXELS - pixelIndex);
-			printProgress2((F32)pixelIndex / NUM_PIXELS, estTimeForCompletion, extra.consoleWidth, Xnewterm, 0);
-			if (elaspedTime > 1) SetBreakPointForStartedTimer();
-		}
-		*/
-		F32 elaspedTime = GetElaspedTimeFromBreakPoint();
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 		if (NUM_OF_PROCESSED_GOOD_PIXELS > 0 && NUM_PIXELS > 1 && (pixelIndex % 50 == 0 || elaspedTime > 1))  {
 			PERCENT_COMPLETED = (F32)NUM_OF_PROCESSED_PIXELS / NUM_PIXELS;
 			REMAINING_TIME    = Timer_ElapsedSecond()/NUM_OF_PROCESSED_GOOD_PIXELS * (NUM_PIXELS- NUM_OF_PROCESSED_PIXELS);

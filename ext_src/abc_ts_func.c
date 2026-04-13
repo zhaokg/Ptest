@@ -4,7 +4,6 @@
 #include "abc_blas_lapack_lib.h"
  
 #include "abc_ts_func.h"
-<<<<<<< HEAD
 #include "abc_vec.h"       // for f32_seq only
 #include "abc_math.h"      // for fastsqrt only
 #include "abc_date.h"      // for fastsqrt only
@@ -12,15 +11,6 @@
 #include "abc_common.h"    // normalize quicksort
 #include "abc_sort.h"
 
-=======
-#include "abc_vec.h"   // for f32_seq only
-#include "abc_math.h"  // for fastsqrt only
-#include "abc_date.h"  // for fastsqrt only
-#include "abc_ide_util.h"  //printf
-#include "abc_common.h" //normalize quicksort
-#include "abc_sort.h"
-#include "abc_blas_lapack_lib.h"
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 #if defined(PI)
 	#undef PI	

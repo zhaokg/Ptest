@@ -229,25 +229,9 @@
 
 #if R_INTERFACE == 1
     
-<<<<<<< HEAD
     #ifdef ERROR 
        #undef ERROR  // ERROR is defined in both windwows.h/wingdi.h and R.h
     #endif
-=======
-   #ifdef ERROR 
-       #undef ERROR  //ERROR is defined in both windwos.h/wingdi.h and R.h
-   #endif
-
-// For R only, This must appear before R.h: on the Redhat linux, if not,  report /usr/include/stdio.h:316:6: error: 
-// unknown type name '_IO_cookie_io_functions_t' because R.h includes "stdio.h".
-
-#if defined(COMPILER_CLANG)|| defined(COMPILER_GCC) ||defined(COMPILER_SOLARIS)
-	#ifndef _GNU_SOURCE
-		#define _GNU_SOURCE 1
-	#endif
-#endif
-
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
     //https://stackoverflow.com/questions/69672625/how-to-disable-r-no-remap-when-calling-rs-c-rinterals-h 
     //#define R_NO_REMAP  // mapping r api to aliaes (e.g., sign <> Rf_sign)   
@@ -368,7 +352,6 @@
 */
 
 // We will not use the standard method any longer and instead use the explicit loading
-<<<<<<< HEAD
 
 	#ifdef  USE_STANDARD_METHOD_IMPORT_NUMPY
 		#ifdef  SHOULD_IMPORT_NUMPY
@@ -395,33 +378,16 @@
                     -> set PyArray_API
                     -> check ABI/C-API versions
 */
-=======
-#ifdef  USE_STANDARD_METHOD_IMPORT_NUMPY
-	#ifdef  IMPORT_NUMPY
-	   #define PY_ARRAY_UNIQUE_SYMBOL NumpyAPIList
-	   #include "numpy/arrayobject.h"
-	#else
-		#define NO_IMPORT_ARRAY
-		#define PY_ARRAY_UNIQUE_SYMBOL NumpyAPIList
-		#include "numpy/arrayobject.h"
-	#endif
-   
-#endif
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
   // #pragma comment(lib , LIB_Python(python37_msvc.lib) ) 
   // No need to set up the lib explicitly 
   // (1) pynconfig.h has a pragma line to add python.lib:  pragma comment(lib,"python37.lib")   
-<<<<<<< HEAD
   // (2) Numpy uses the import_array to load the (np.core._multiarray_umath._ARRAY_API) variable to fill the api arrays
 
 // Improt the pyd extension module
 // import sys
 // sys.path.append('y:/testold')
 // import Rbeast
-=======
-  // (2) Numpy usss the import_array to load the (np.core._multiarray_umath._ARRAY_API) variable  to fill the api arrays
->>>>>>> df168a82c9c19db4fbe2432739b25f83ea654058
 
 #endif
 
