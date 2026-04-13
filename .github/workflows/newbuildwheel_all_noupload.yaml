@@ -53,7 +53,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp39-*  cp310-* cp311-*  cp312-*   
+             CIBW_BUILD:   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*
              #CIBW_ARCHS_MACOS:        x86_64 arm64                  
             
       - uses: actions/upload-artifact@v3
@@ -87,7 +87,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*       
+             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     
               
       - uses: actions/upload-artifact@v3
         with:
@@ -125,7 +125,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*       
+             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     
        
       - uses: actions/upload-artifact@v3
         with:
@@ -158,7 +158,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*   cp312-*musllinux*   
+             CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*   cp312-*musllinux*   cp313-*musllinux*  cp314-*musllinux*  
               
       - uses: actions/upload-artifact@v3
         with:
@@ -191,7 +191,7 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:  x86_64  arm64  #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp37-*   cp38-*   cp38-*    cp39-*   cp310-*  cp311-*    cp312-*  
+             CIBW_BUILD:  cp37-*   cp38-*   cp38-*    cp39-*   cp310-*  cp311-*    cp312-*   cp313-*   cp314-*
           
              
       - uses: actions/upload-artifact@v3
