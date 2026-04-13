@@ -19,7 +19,7 @@ jobs:
       - name: Build sdist
         run: "python setup.py sdist && ls -l dist"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./dist/*.tar.gz
           
@@ -56,7 +56,7 @@ jobs:
              CIBW_BUILD:   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*
              #CIBW_ARCHS_MACOS:        x86_64 arm64                  
             
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
@@ -89,7 +89,7 @@ jobs:
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     
               
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
           
@@ -127,7 +127,7 @@ jobs:
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     
        
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
@@ -160,7 +160,7 @@ jobs:
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*   cp312-*musllinux*   cp313-*musllinux*  cp314-*musllinux*  
               
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
@@ -194,7 +194,7 @@ jobs:
              CIBW_BUILD:  cp37-*   cp38-*   cp38-*    cp39-*   cp310-*  cp311-*    cp312-*   cp313-*   cp314-*
           
              
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl		            
           
