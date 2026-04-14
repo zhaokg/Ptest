@@ -1,6 +1,17 @@
-name: NewBuildAll
+name: NewBuildAll_NoUpload
 #on: [push, pull_request]
-on: [workflow_dispatch]  # manual tigger
+#on: [workflow_dispatch]  # manual tigger
+on:
+  workflow_dispatch:
+    inputs:
+      upload_flag:
+        description: 'Upload to PyPI'
+        required: true
+        default: 'NO'
+        type: choice
+        options:
+          - NO
+          - YES
 
 
 jobs:
@@ -66,6 +77,7 @@ jobs:
     needs: [ build_wheels_win]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    if: ${{ github.event.inputs.upload_flag }}  == 'YES'    
     steps:
       - uses: actions/download-artifact@v4
         with:
