@@ -68,12 +68,12 @@ packages = find_namespace_packages( where='./py_src', exclude=['build','tests','
 
 setup(
 
-    #name             = "Rbeast",   
+    #name             = "rbeast",   
     # - this is the DISTRUBTION NAME not the IMPORT NAME
     # - PyPI enforces PEP 503 normalization, which means it treats Rbeast and rbeast as the same project,
     # - but it requires the uploaded files to strictly follow the lowercase naming convention.
-    name             = "rbeast",    
-    version          = '0.1.24',
+    name             = "Rbeast",    
+    version          = '0.1.25',
     description      = "Bayesian changepoint detection and time series decomposition",
     author           = "Kaiguang Zhao",
     author_email     = 'zhao.1423@osu.edu',

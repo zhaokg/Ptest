@@ -11,6 +11,7 @@
 #include "abc_common.h"    // normalize quicksort
 #include "abc_sort.h"
 
+#include "math.h"
 
 #if defined(PI)
 	#undef PI	

@@ -205,6 +205,8 @@ int beast2_main_corev4_bic(int _whichCritia_)   {
 	BEAST2_MODEL  MODEL = {0,};
 	AllocInitModelMEM(&MODEL, opt, &MEM);
 
+	extern	U64 TimerGetTickCount();
+
 	//Initializing the random number generaotr	
 	LOCAL( 	
 		U64 seed = (opt->mcmc.seed == 0) ? TimerGetTickCount() : (opt->mcmc.seed+0x4f352a3dc);

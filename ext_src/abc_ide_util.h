@@ -2,6 +2,7 @@
 #include "abc_001_config.h"
 #include "abc_datatype.h"
 #include "abc_ts_func.h"
+#include "abc_common.h" // for word_wrap_indented
 
 #ifdef __cplusplus
 extern "C" {

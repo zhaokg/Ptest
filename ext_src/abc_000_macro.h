@@ -499,3 +499,6 @@ C:/rtools40/mingw32/i686-w64-mingw32/include/_mingw.h:225: note: this is the loc
 #define cp(n, src, dest)    memcpy(dest, src, sizeof(F32)*(size_t)(n))
 #define SCPY(n, src, dest)  memcpy(dest, src, sizeof(F32)*(size_t)(n))
 #define FILL0(dest,n)       memset(dest, 0L,  sizeof(F32)*(size_t)(n))
+
+
+// In MSVC< check the "C4013" wanring to make sure all functions have a declearation: No impicit declaration allowed
