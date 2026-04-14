@@ -10,8 +10,9 @@ on:
         default: 'NO'
         type: choice
         options:
-          - NO
-          - YES
+          - "NO"
+          - "YES"
+          - "Not Decided"
 
 jobs:
 
