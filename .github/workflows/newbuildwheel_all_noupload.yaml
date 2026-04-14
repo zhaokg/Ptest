@@ -1,7 +1,17 @@
 name: NewBuildAll_NoUpload
 #on: [push, pull_request]
-on: [workflow_dispatch]  # manual tigger
-
+#on: [workflow_dispatch]  # manual tigger
+on:
+  workflow_dispatch:
+    inputs:
+      upload_flag:
+        description: 'Upload to PyPI'
+        required: true
+        default: 'no'
+        type: choice
+        options:
+          - no
+          - yes
 
 jobs:
 
@@ -78,7 +88,7 @@ jobs:
 ############################################################################  
         
   build_wheels_linux:
-    name: Make ${{ matrix.os }} wheels  
+    name: Make ${{ matrix.os }} wheels  - x86_64 
     runs-on: ${{ matrix.os }}
     env:
       arch: x86_64 #  aarch64
@@ -111,7 +121,7 @@ jobs:
 #    Build Wheels for Linux (manyliux-aarch64) 
 ############################################################################             
   build_wheels_linux_aarch64:
-    name: Make ${{ matrix.os }} wheels  
+    name: Make ${{ matrix.os }} wheels  - aarch64
     runs-on: ${{ matrix.os }}
     env:
       arch:   aarch64  #  aarch64 x86_64
@@ -151,7 +161,7 @@ jobs:
 ############################################################################            
 
   build_wheels_musl_linux:
-    name: Make ${{ matrix.os }} wheels  
+    name: Make ${{ matrix.os }} wheels  -musllinux(x86_64 )
     runs-on: ${{ matrix.os }}
     env:
       arch:   x86_64  #  aarch64 x86_64
@@ -234,3 +244,26 @@ jobs:
           name: all-build-artifacts  # The final name for your single zip file
           pattern: '*'               # Merges all artifacts found in this workflow run
           delete-merged: true        # Optional: Deletes the individual small artifacts after merging
+          
+          
+  upload_pypi:
+    name: Upload to PyPI (prod)
+    needs: [ merge_artifacts ]
+    runs-on: ubuntu-22.04
+    #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    if: ${{ github.event.inputs.upload_flag }}  == 'yes'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: all-build-artifacts 
+          path: dist          
+          #pattern: '*'       # Grabs all unique artifacts (wheels + sdist)
+          #merge-multiple: true # Flattens them all into the 'dist' folder          
+
+      #- uses: pypa/gh-action-pypi-publish@v1.5.0
+      - uses: pypa/gh-action-pypi-publish@release/v1    
+        with:
+          user: __token__  # zhaokg
+          password: ${{ secrets.PYPI_PASSWORD }} 
+          repository_url: https://test.pypi.org/legacy/
+          

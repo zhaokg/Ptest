@@ -1,9 +1,10 @@
 name: NewBuildAll
 #on: [push, pull_request]
-on: [workflow_dispatch] # manual tigger
+on: [workflow_dispatch]  # manual tigger
 
 
 jobs:
+
 ############################################################################
 #    Build Sdist
 ############################################################################
@@ -11,15 +12,15 @@ jobs:
     name: Build sdist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v6      # downloads your code from your GitHub repository onto the runner      
+      - uses: actions/setup-python@v6
  
       - name: Check metadata
         run: "python setup.py check"
       - name: Build sdist
         run: "python setup.py sdist && ls -l dist"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./dist/*.tar.gz
           
@@ -34,30 +35,42 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os:      [windows-latest]    
+        os:   [windows-latest]    
 
     steps:       
-      - uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v4
+      # downloads your code from your GitHub repository onto the runner
+      - uses: actions/checkout@v6   
+      
+      # 1. First Build Pass: Legacy Versions (cp37-cp38)
+      - name: Install Python (Legacy)
+        uses: actions/setup-python@v6
         with:
-             python-version: '3.7'
+             python-version: '3.10'
  
-      - run: copy  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml
+      - run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*  cp38-*        
    
-      - run: copy  pyproject_np1.19.3_miw39.toml  pyproject_NotUsed.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
+
+      # 2. Second Build Pass: Modern Versions (cp39-cp314)
+      - name: Install Python (Legacy)
+        uses: actions/setup-python@v6
+        with:
+             python-version: '3.14'
+             
+      - run:  copy  pyproject_np1.19.3_miw39.toml  pyproject_NotUsed.toml 
+      - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*
-             #CIBW_ARCHS_MACOS:        x86_64 arm64                  
+             CIBW_BUILD:   cp39-* cp310-* cp311-*  cp312-*  cp313-*  cp314-*
+             #CIBW_ARCHS_MACOS:    x86_64 arm64   
+             #CIBW_BEFORE_BUILD: cp pyproject_np1.17.3_miw3738.toml pyproject.toml             
             
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-windows       # Add this        
           path: ./wheelhouse/*.whl
 
 ############################################################################
@@ -65,7 +78,7 @@ jobs:
 ############################################################################  
         
   build_wheels_linux:
-    name: Make ${{ matrix.os }} wheels  
+    name: Make ${{ matrix.os }} wheels  - x86_64 
     runs-on: ${{ matrix.os }}
     env:
       arch: x86_64 #  aarch64
@@ -77,27 +90,28 @@ jobs:
         os:      [ubuntu-latest]    
 
     steps:       
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-             python-version: '3.7'
+             python-version: '3.14'
  
-      - run: cp  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml # pyproject.toml
-      - uses: pypa/cibuildwheel@v2.16.5
+      - run:  cp  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml # pyproject.toml
+      - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*    cp313-*   cp314-*
+             CIBW_BUILD:   cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*      # cp37-*  (not supported by v3 and only by v2)
               
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-linux-x86_64  # Add this        
           path: ./wheelhouse/*.whl
           
 ############################################################################
 #    Build Wheels for Linux (manyliux-aarch64) 
 ############################################################################             
   build_wheels_linux_aarch64:
-    name: Make ${{ matrix.os }} wheels  
+    name: Make ${{ matrix.os }} wheels  - aarch64
     runs-on: ${{ matrix.os }}
     env:
       arch:   aarch64  #  aarch64 x86_64
@@ -110,25 +124,26 @@ jobs:
 
     steps:  
   
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-             python-version: '3.7'
+             python-version: '3.14'
  
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
           platforms: arm64    #all
    
-      - run: cp  pyproject_np1.19.3_miw39.toml  pyproject_NotUsed.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - run: cp  pyproject_np1.19.3_miw39.toml  pyproject_NotUed.toml 
+      - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*   cp39-*  cp310-* cp311-*  cp312-*    cp313-*   cp314-*    
+             CIBW_BUILD:  cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*     #  cp37-*   
        
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-linux-aarch64  # Add this        
           path: ./wheelhouse/*.whl
 
 ############################################################################
@@ -136,7 +151,7 @@ jobs:
 ############################################################################            
 
   build_wheels_musl_linux:
-    name: Make ${{ matrix.os }} wheels  
+    name: Make ${{ matrix.os }} wheels  -musllinux(x86_64 )
     runs-on: ${{ matrix.os }}
     env:
       arch:   x86_64  #  aarch64 x86_64
@@ -148,20 +163,21 @@ jobs:
 
     steps:  
   
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-             python-version: '3.9'
+             python-version: '3.14'
                   
-      - run: cp pyproject_np1.25.0_musl_39310311.toml pyproject_NotUsed.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - run: cp pyproject_np1.25.0_musl_39310311.toml pyproject_NotUed.toml 
+      - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:  cp39-*musllinux*  cp310-*musllinux*  cp311-*musllinux*   cp312-*musllinux*   cp313-*musllinux*  cp314-*musllinux*  
               
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-musl-linux  # Add this
           path: ./wheelhouse/*.whl
 
 ############################################################################
@@ -181,36 +197,62 @@ jobs:
 
     steps:  
   
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-             python-version: '3.9'
+             python-version: '3.14'
                   
       - run: cp pyproject_np1.17.3_miw3738.toml pyprojectNotUSED.toml 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:  x86_64  arm64  #all, native AMD64 x86 ARM64
-             CIBW_BUILD:  cp37-*   cp38-*   cp38-*    cp39-*   cp310-*  cp311-*    cp312-*    cp313-*   cp314-*  
+             CIBW_BUILD:   cp38-*  cp39-*   cp310-*  cp311-*    cp312-*   cp313-*   cp314-*  # cp37-*  
           
              
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: wheels-macos  # Add this    
           path: ./wheelhouse/*.whl		            
+
+############################################################################
+#   Merge all artificats into one file
+############################################################################             
+  merge_artifacts:
+    name: Merge All Artifacts
+    runs-on: ubuntu-latest
+    needs: [build_sdist, build_wheels_win, build_wheels_linux, build_wheels_linux_aarch64, build_wheels_musl_linux, build_wheels_mac]
+
+    # This line triggers the manual "Approve" button in GitHub
+    environment: production 
+
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: all-build-artifacts  # The final name for your single zip file
+          pattern: '*'               # Merges all artifacts found in this workflow run
+          delete-merged: true        # Optional: Deletes the individual small artifacts after merging
+          
           
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [  build_sdist , build_wheels_win, build_wheels_linux,build_wheels_linux_aarch64, build_wheels_musl_linux,   build_wheels_mac]
+    needs: [ merge_artifacts ]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
-          path: dist
+          name: all-build-artifacts 
+          path: dist          
+          #pattern: '*'       # Grabs all unique artifacts (wheels + sdist)
+          #merge-multiple: true # Flattens them all into the 'dist' folder          
 
-      - uses: pypa/gh-action-pypi-publish@v1.5.0
+      #- uses: pypa/gh-action-pypi-publish@v1.5.0
+      - uses: pypa/gh-action-pypi-publish@release/v1    
         with:
           user: __token__  # zhaokg
-          #repository_url: https://test.pypi.org/legacy/
           password: ${{ secrets.PYPI_PASSWORD }} 
+          repository_url: https://test.pypi.org/legacy/
+          

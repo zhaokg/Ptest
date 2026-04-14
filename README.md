@@ -30,7 +30,7 @@ library(Rbeast); data(Nile); o = beast(Nile); plot(o)
 ## Installation for Python
 
 <p  align="left">   
- <a href= "https://github.com/zhaokg/Rbeast"> <img src="https://img.shields.io/static/v1?style=plastic&logo=github&label=see also&message=github.com/zhaokg/Rbeast&color=brightgreen" height="20"></a>
+ <a href= "https://github.com/zhaokg/Rbeast"> <img src="https://img.shields.io/static/v1?style=plastic&logo=github&label=see%20also&message=github.com/zhaokg/Rbeast&color=brightgreen" height="20"></a>
 </p> 
 
 A package **`Rbeast`** has been deposited here at PyPI: https://pypi.org/project/Rbeast/. Install from a binary wheel using:
@@ -150,6 +150,7 @@ Despite being published originally for ecological and enviornmental applications
 
 | Discipline | Publication Title |
 | --- | --- |
+| Remote Sensing| *Li, J., Li, Z., Wu, H., and You, N., 2022. [Trend, seasonality, and abrupt change detection method for land surface temperature time-series analysis: Evaluation and improvement](https://doi.org/10.1016/j.rse.2022.113222). Remote Sensing of Environment, 10.1016/j.rse.2022.113222*|
 |Archaeogenetics|*Sikora, M., Canteri, E., Fernandez-Guerra, A., Oskolkov, N., Ågren, R., Hansson, L., Irving-Pease, E.K., Mühlemann, B., Holtsmark Nielsen, S., Scorrano, G. and Allentoft, M.E., 2025. The spatiotemporal distribution of human pathogens in ancient Eurasia. Nature, 643(8073), pp.1011-1019.*|
 |Sustainability|*Sun, X., Tian, L., Fang, H., Walling, D.E., Huang, L., Park, E., Li, D., Zheng, C. and Feng, L., 2025. Changes in global fluvial sediment concentrations and fluxes between 1985 and 2020. Nature Sustainability, 8(2), pp.142-151.*|
 |Paleoclimatology|*Lu, F., Lu, H., Gu, Y., Lin, P., Lu, Z., Zhang, Q., Zhang, H., Yang, F., Dong, X., Yi, S. and Chen, D., 2025. Tipping point-induced abrupt shifts in East Asian hydroclimate since the Last Glacial Maximum. Nature Communications, 16(1), p.477.*|
@@ -158,7 +159,6 @@ Despite being published originally for ecological and enviornmental applications
 |Paleoceanography|*Rahaman, W., Gutjahr, M. and Prabhat, P., 2025. Late Pliocene growth of the West Antarctic Ice Sheet to near-modern configuration. Nature Communications, 16(1), p.6705.*|
 |Zoology|*Meireles, J.P., Hahn-Klimroth, M., Lackey, L.B., van Eeuwijk, N., Bertelsen, M.F., Dressen, S., Dierkes, P.W., Abraham, A.J. and Clauss, M., 2026. Aging populations threaten conservation goals of zoos. Proceedings of the National Academy of Sciences, 123(5), p.e2522274123.*|
 |Medicial sciences|*Garcia-Aymerich, J., de Las Heras, M., Carsin, A.E., Accordini, S., Agustí, A., Bui, D., Dharmage, S.C., Dodd, J.W., Eze, I., Gehring, U. and Gislason, T., 2025. General population-based lung function trajectories over the life course: an accelerated cohort study. The Lancet Respiratory Medicine, 13(7), pp.611-622.*|
-| Remote Sensing| *Li, J., Li, Z., Wu, H., and You, N., 2022. [Trend, seasonality, and abrupt change detection method for land surface temperature time-series analysis: Evaluation and improvement](https://doi.org/10.1016/j.rse.2022.113222). Remote Sensing of Environment, 10.1016/j.rse.2022.113222*|
 |Climate Change|*Leclercq, L., Oelsmann, J., Cazenave, A., Passaro, M., Jevrejeva, S., Connors, S., Legeais, J.F., Birol, F. and Abarca-del-Rio, R., 2026. Abrupt trend change in global mean sea level and its components in the early 2010s. Communications Earth & Environment.*|
 |Communication|*Phillips, J.B., 2025. Exploring psyop-based conspiracy theories on social media. Information, Communication & Society, pp.1-20.*|
 |Applied Math|*Koutrouli, E., Manousopoulos, P., Theal, J. and Tresso, L., 2025. Crypto asset markets vs. financial markets: Event identification, latest insights and analyses. AppliedMath, 5(2), p.36.*|
