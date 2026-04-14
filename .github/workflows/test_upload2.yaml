@@ -12,7 +12,6 @@ on:
         options:
           - "NO"
           - "YES"
-          - "Not Decided"
 
 jobs:
 
