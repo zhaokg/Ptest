@@ -255,7 +255,7 @@ jobs:
     needs: [ merge_artifacts ]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
-    if: ${{ github.event.inputs.should_upload }}  == 'YES'
+    if: ${{ github.event.inputs.should_upload   == 'YES' }} 
     steps:
       - uses: actions/download-artifact@v4
         with:
