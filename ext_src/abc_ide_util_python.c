@@ -913,7 +913,7 @@ I32 GetCharArray(void* ptr, char* dst, int n) {
         * seems to hold the prhs passed in the mainFunction
         */
         Py_ssize_t  len;
-        char* str = PyUnicode_AsUTF8AndSize(ptr, &len);
+        const   char* str = PyUnicode_AsUTF8AndSize(ptr, &len);
         strncpy(dst, str, n);
         return (I32) len;
     }
@@ -940,51 +940,51 @@ I32 GetCharVecElem(void* ptr, int idx, char* dst, int n) {
 
     // It is a list or dict item
     if (tmpItem && PyUnicode_Check(tmpItem)) {   
-        char* str = PyUnicode_AsUTF8AndSize(tmpItem, &len);
+        const char* str = PyUnicode_AsUTF8AndSize(tmpItem, &len);
         len = min(len,n - 1);
         memcpy(dst, str, len);
         dst[len] = 0;
-        return len;
+        return (I32) len;
     }
 
     //If a Numpy string array
     if (PyArray_Check(ptr) && PyArray_TYPE(ptr)==NPY_STRING) {
-        char* base   = PyArray_DATA(ptr);
-        int   elsize = PyArray_ITEMSIZE(ptr);
-        char* str    = base + elsize * idx;
+        const char* base   = PyArray_DATA(ptr);
+        int         elsize = PyArray_ITEMSIZE(ptr);
+        char       *str    = base + elsize * idx;
         len     = min(elsize, n-1);
         memcpy(dst, str, len);
         dst[len] = 0;
-        return len;
+        return (I32) len;
     }
 
     //If a Numpy Unicode array
     if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_UNICODE) {
-        char* base   = PyArray_DATA(ptr);
-        int   elsize = PyArray_ITEMSIZE(ptr);
+        char*   base   = PyArray_DATA(ptr);
+        size_t  elsize = PyArray_ITEMSIZE(ptr);
         char* str = base + elsize * idx;
         len = min(elsize/4, n - 1);  // Assuming a Unicode char has 4 bytse
         for (int i = 0; i < len; i++) {
             dst[i] = str[i * 4];
         }
         dst[len] = 0;
-        return len;
+        return (I32) len;
     }
 
     //If a Numpy object array
     if (PyArray_Check(ptr) && PyArray_TYPE(ptr) == NPY_OBJECT) {
-        void** base  = PyArray_DATA(ptr);
-        int    elsize = PyArray_ITEMSIZE(ptr);
+        void**   base   = PyArray_DATA(ptr);
+        size_t   elsize = PyArray_ITEMSIZE(ptr);
 
         void* tmpItem = base[idx];
 
         // It is a list or dict item
         if (tmpItem && PyUnicode_Check(tmpItem)) {
-            char* str = PyUnicode_AsUTF8AndSize(tmpItem, &len);
+            const char* str = PyUnicode_AsUTF8AndSize(tmpItem, &len);
             len = min(len, n - 1);
             memcpy(dst, str, len);
             dst[len] = 0;
-            return len;
+            return (I32) len;
         }
  
     }
@@ -999,7 +999,7 @@ void* GetField123(const void* structVar, char* fname, int nPartial) {
     Pob dict = NULL;
 
     if (PyDict_Check((void*)structVar)) {
-        dict = structVar;
+        dict = (Pob) structVar;
     }   else {
         dict = PyGetDict( (void *) structVar);
     }
@@ -1060,15 +1060,15 @@ static F64 NumpyGetNumericElemt(void* ptr, int ind) {
 
 F64   GetScalar(const void* ptr) {
     
-    Pob item = ptr;
+    Pob item = (Pob) ptr;
     if (PyList_Check(ptr) ) {
-        item = PyList_GetItem(ptr,0);
+        item = PyList_GetItem( (Pob) ptr,0);
     }
     if (PyTuple_Check(ptr)) {
-        item = PyTuple_GetItem(ptr, 0);
+        item = PyTuple_GetItem( (Pob) ptr, 0);
     }    
     if (PyDict_Check(ptr)) {
-        item = PyGetDictItem(ptr, 0);
+        item = PyGetDictItem( (Pob) ptr, 0);
     }
 
     if (PyLong_Check(ptr)) {
@@ -1080,7 +1080,7 @@ F64   GetScalar(const void* ptr) {
 
     // For NumPy
     if (PyArray_Check(ptr)) {
-        return NumpyGetNumericElemt(ptr, 0);
+        return NumpyGetNumericElemt( (Pob) ptr, 0);
     }
     return getNaN();
 
@@ -1091,13 +1091,13 @@ F64   GetNumericElement(const void* Y, I32 idx0) {
     I32 idx = idx0; // zero-based
     Pob item = NULL;
     if (PyList_Check(Y)) {
-        item = PyList_GetItem(Y, idx);
+        item = PyList_GetItem( (Pob) Y, idx);
     }
     if (PyTuple_Check(Y)) {
-        item = PyTuple_GetItem(Y, idx);
+        item = PyTuple_GetItem( (Pob) Y, idx);
     }
     if (PyDict_Check(Y)) {
-        item = PyGetDictItem(Y, idx);
+        item = PyGetDictItem( (Pob) Y, idx);
     }
 
     if (item) {
@@ -1111,14 +1111,14 @@ F64   GetNumericElement(const void* Y, I32 idx0) {
     
     // For NumPy
     if (PyArray_Check(Y)) {
-        return NumpyGetNumericElemt(Y, idx);
+        return NumpyGetNumericElemt( (Pob) Y, idx);
     }
     return getNaN();
 }
 
 
 void* GetData(const void* ptr) { 
-    return PyArray_DATA(ptr);
+    return PyArray_DATA( (Pob) ptr);
 }
 
 /*
@@ -1143,10 +1143,10 @@ int   GetDataType(VOID_PTR Y) {
 int  GetDim1(const void* ptr) {
     if (PyArray_Check(ptr)) {
         npy_intp* dims = PyArray_DIMS(ptr);
-        return dims[0];
+        return (int) dims[0];
     }
     if (PyList_Check(ptr) || PyTuple_Check(ptr) ){
-        return PyObject_Size(ptr);
+        return (int) PyObject_Size(ptr);
     }
     return -9999L;
 }

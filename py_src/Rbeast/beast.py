@@ -1,5 +1,5 @@
-from .             import Rbeast as cb
-from .cvt_to_numpy import force_convert_to_numpy
+from .             import Rbeast as cbeast              # Rbeast here is the Rbeast-xxx.pyd C extension module
+from .cvt_to_numpy import force_convert_to_numpy_ndarray
 
 def beast(Y,                     \
           start            = 1,
@@ -16,8 +16,8 @@ def beast(Y,                     \
           tseg_minlength   = None,    # an integer
           tseg_leftmargin  = None,    # an integer
           tseg_rightmargin = None,    # an integer
-          s_complexfct     = 0.0,
-          t_complexfct     = 0.0,
+          s_complexfct     = 0.0,     # control the complexity of the fitted seasonal curve
+          t_complexfct     = 0.0,     # control the complexity of the fitted trend curve
           method           = 'bayes', # 'bayes','bic','aic','aicc','hic', 'bic0.25','bic0.5'
           detrend          = False,
           deseasonalize    = False,
@@ -45,14 +45,16 @@ def beast(Y,                     \
 Bayesian changepoint detection and time series decomposition for regular or irregular time series data
     
 The fitted model is:
+
   Y = trend + error             if data has no periodic/seasonal variation (i.e., season='none')
   Y = trend + seasonal + error  if data has periodic/seasonal variation 
   Y = trend + outlier  + error  if data is trend-only (no seasonal variation) but with potential outliers
   Y = trend + seasonal + outlier + error if data has periodic/seasonal variation and also has outliers
-where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
-be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
-be inferred; and the outlier component refers to potential spikes or dips at isolated data points and is 
-included only if metadata.hasOutlierCmpnt=True (in beast123) or hasOutlier=True (in beast or beast_irreg)
+
+where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to be
+nferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to be 
+inferred; and the outlier component refers to potential anomalous spikes or dips at isolated data points and
+is included only if hasOutlier=True (in beast or beast_irreg) or metadata.hasOutlierCmpnt=True (in beast123) 
 ######################################################################################################
   
 --------------------------------------------------------------------------------------------------
@@ -151,13 +153,14 @@ tseg_rightmargin:
          tseg_rightmargin must be an unitless integer–the number of time intervals/data points so that the
          time window in the original unit is tseg_rightmargin*deltat.
 s_complexfct:
-          Numeric (defaulted to 0.0); a hyperprior parameter--newly added in Version 1.02--controlling the complexity of
-          the seasonal curve (i.e., the number of seasonal changepoints). A prior of the form  p(k) ~ exp[lambda*(k+1)] 
-          is placed on the number of seasonal changepoints k, where lambda is seasonComplexityFactor (i.e.,s_complexfct:). 
-          Setting lambda = 0 (i.e., s_complexfct=0)  yields a non-informative prior p(k) ~ 1.0  where all model dimensions
-          are equally likely a priori. Users may tune seasonComplexityFactor or s_complexfct: in the range of [-20, 20]} or an
-          even wider range: negative values (e.g., lambda = -15.9) favor fewer changepoints (simpler seasonal curves), whereas 
-          positive values (e.g.,  ambda = 5.76) favor more changepoints (more complex curves).
+          Numeric (defaulted to 0.0); a hyperprior parameter--newly added in Version 0.1.24--controlling the complexity of
+          the seasonal curve (i.e., the model dimension or the number of seasonal changepoints). A prior of the form 
+          "p(k) ~ exp[lambda*(k+1)]" is placed on the number of seasonal changepoints k, where lambda is s_complexfct 
+          (i.e., prior.seasonComplexityFactor in the beast123() function). Setting lambda = 0 (i.e., s_complexfct=0) yields 
+          a non-informative prior "p(k) ~ 1.0" where all model dimensions are equally likely a priori. Users may tune s_complexfct
+          (for beast and beast_irreg)  or seasonComplexityFactor (for beast123) in the range of [-20, 20]} or an
+          even wider range: Negative values (e.g., lambda = -15.9) favor fewer changepoints (simpler seasonal curves), whereas 
+          positive values (e.g., lambda = 5.76) favor more changepoints (more complex curves).
 t_complexfct: 
           Numeric (defaulted to 0.0); analogous to s_complexfct, but for the trend component and the number of trend changepoints.
 method: 
@@ -339,7 +342,20 @@ o=rb.beast(beach, start='2004-1-15', deltat=1/12, period=1.0)
 # period='12 month': use a string to explicitly specify the unit      
 o=rb.beast(beach, start=[2004,1], deltat=1/12,      period='12 month')
 o=rb.beast(beach, start=[2004,1], deltat='1 month', period='365 days')
+
+
+# "t_complexfct" or "s_complexfct" is a hyperparameter controlling the complexity of
+#  the fitted trend or seasonal curve. Postive values for them tend to give more changepoints
+#  and negative values give fewer changepoints. These two parameters are introduced
+#  in Rbeast v1.24.0. In earlier values, they were not expoosed in the function
+#  API and were simply assumed to be zeros (i.e., non-informative priors on the model dimension/the number
+# of changepoints). Again, postive values favor more changepoints, and negative values farvor fewer changepoints
  
+o1 = rb.beast(beach, start=[2004,1], deltat=1/12, t_complexfct = 2.7  )   # More changepoints than the non-informative prior
+o2 = rb.beast(beach, start=[2004,1], deltat=1/12, t_complexfct = -3.1  )  # Fewer changepoints than the non-informative prior
+rb.plot(o1)
+rb.plot(o2)
+
 ## Monthly air co2 data since 1959: deltaTime=1/12 year
 co2, time = rb.load_example('co2')     
 o = rb.beast(co2, start=[1959,1,15],  deltat=1/12,  period=1.0)
@@ -368,13 +384,11 @@ o=rb.beast(Y, start=[2020,01,22], deltat='1.0 day',  period='7days', sseg_min=30
 Contact info: To report bug or get help, do not hesitate to contact Kaiguang Zhao
 at zhao.1423@osu.edu.
       """
-    
-      Y = force_convert_to_numpy(Y)
 
-    # ......Start of displaying 'MetaData' ......
-      metadata = lambda: None  ###Just get an empty object###
-                 
-    #......Start of displaying 'MetaData' ......
+    # For simplicity, just convert Y into a numpy ndarray 
+      Y = force_convert_to_numpy_ndarray(Y)
+
+    # ......Start of  'MetaData' ......
       metadata                  = lambda: None   ###Just get an empty object###
       metadata.isRegularOrdered = True
       metadata.season           = season
@@ -391,9 +405,9 @@ at zhao.1423@osu.edu.
       metadata.deseasonalize    = deseasonalize
       metadata.detrend          = detrend
       metadata.hasOutlierCmpnt  = hasOutlier
-    #........End of displaying MetaData ........
+    #........End of  MetaData ........
 
-    #......Start of displaying 'prior' ......
+    #......Start of  'prior' ......
       prior                      = lambda: None   ###Just get an empty object###
       prior.modelPriorType	 = 1
       if season !='none' or season == None:
@@ -417,11 +431,11 @@ at zhao.1423@osu.edu.
       prior.K_MAX            = 0
       prior.precValue        = precValue
       prior.precPriorType    = precPriorType
-      prior.seasonModelPriorFactor = s_complexfct;
-      prior.trendComplexityFactor  = t_complexfct;   
-
-    #......End of displaying pripr ......
-    #......Start of displaying 'mcmc' ......
+      prior.seasonModelPriorFactor = s_complexfct;  # new parameter introduced in Rbeast v1.24.0
+      prior.trendComplexityFactor  = t_complexfct;  # new parameter introduced in Rbeast v1.24.0  
+    #......End of  pripr ......
+    
+    #......Start of  'mcmc' ......
       mcmc = lambda: None   ###Just get an empty object###
       mcmc.seed                      = mcmc_seed
       mcmc.samples                   = mcmc_samples
@@ -432,8 +446,9 @@ at zhao.1423@osu.edu.
       mcmc.trendResamplingOrderProb  = 0.1000
       mcmc.seasonResamplingOrderProb = 0.1700
       mcmc.credIntervalAlphaLevel    = 0.950
-    #......End of displaying mcmc ......
-    #......Start of displaying 'extra' ......
+    #......End of  mcmc ......
+    
+    #......Start of  'extra' ......    
       extra = lambda: None   ###Just get an empty object###
       extra.dumpInputData        = True
       extra.whichOutputDimIsTime = 1
@@ -459,19 +474,28 @@ at zhao.1423@osu.edu.
       extra.numThreadsPerCPU     = 2
       extra.numParThreads        = 0
       if 'cputype' in kwargs.keys():
-            extra.cputype = kwargs.get('cputype')
-		   
-    #......End of displaying extra ......
+            extra.cputype = kwargs.get('cputype')		   
+    #......End of  extra ......
+
+
+      # For developers only, debug the C code on local machine if do_local_mode is not None
+      do_local_mode =  kwargs.get('local')    
+      
       if gui:
-        o = cb.Rbeast('beastv4demo',Y, metadata, prior, mcmc, extra)
+        o = cbeast.Rbeast('beastv4demo',Y, metadata, prior, mcmc, extra)
+      elif do_local_mode is not None:
+        # - Debug the C code on local machine if do_local_mode is not None
+        # - y:/testold/Rbeast.pyd is the compiled C extennsion on my local machine
+        import importlib
+        spec   = importlib.util.spec_from_file_location('Rbeast', 'y:/testold/Rbeast.pyd')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)         
+        class xxx:
+           pass
+        module.setClassObjects(xxx) 
+        o = module.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra) 
       else:
-        #import importlib
-        #spec   = importlib.util.spec_from_file_location('Rbeast', 'y:/testold/Rbeast.pyd')
-        #module = importlib.util.module_from_spec(spec)
-        #spec.loader.exec_module(module)         
-        #class xxx:
-        #   pass
-        #module.setClassObjects(xxx) 
-        o = cb.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra)      
+        o = cbeast.Rbeast('beast_'+method,Y, metadata, prior, mcmc, extra) 
+     
       return (o)
 

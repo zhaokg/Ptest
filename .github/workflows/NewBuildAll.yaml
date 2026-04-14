@@ -264,11 +264,24 @@ jobs:
           #pattern: '*'       # Grabs all unique artifacts (wheels + sdist)
           #merge-multiple: true # Flattens them all into the 'dist' folder          
 
+      # --- Make sure all files name are in lowercase because PyPI's normalization rules--
+      # Use tr (translate) command to convert all uppercase letters to lowercase
+      - name: Rename artifacts to lowercase
+        run: |
+          cd dist
+          for f in *; do
+            lowercased=$(echo "$f" | tr '[:upper:]' '[:lower:]')
+            if [ "$f" != "$lowercased" ]; then
+              mv "$f" "$lowercased"
+              echo "Renamed: $f -> $lowercased"
+            fi
+          done
+          
       #- uses: pypa/gh-action-pypi-publish@v1.5.0
       - uses: pypa/gh-action-pypi-publish@release/v1    
         with:
           user:     __token__  # zhaokg
-          password: ${{ secrets.PYPI_PASSWORD }} 
+          password: ${{secrets.PYPI_PASSWORD}} 
           # The next two lines are for uploading to test.pypi
           #password: ${{ secrets.TEST_PYPI_ORG_PASSWORD }} 
           #repository_url: https://test.pypi.org/legacy/

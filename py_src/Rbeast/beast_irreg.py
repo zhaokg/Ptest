@@ -1,5 +1,5 @@
-from . import Rbeast as cb
-from .cvt_to_numpy import force_convert_to_numpy
+from .             import Rbeast as cb
+from .cvt_to_numpy import force_convert_to_numpy_ndarray
            
 
 def beast_irreg(Y, \
@@ -47,14 +47,16 @@ def beast_irreg(Y, \
 Bayesian changepoint detection and time series decomposition for regular or irregular time series data
     
 The fitted model is:
+
   Y = trend + error             if data has no periodic/seasonal variation (i.e., season='none')
   Y = trend + seasonal + error  if data has periodic/seasonal variation 
   Y = trend + outlier  + error  if data is trend-only (no seasonal variation) but with potential outliers
   Y = trend + seasonal + outlier + error if data has periodic/seasonal variation and also has outliers
-where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to 
-be inferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to 
-be inferred; and the outlier component refers to potential spikes or dips at isolated data points and is 
-included only if metadata.hasOutlierCmpnt=True (in beast123) or hasOutlier=True (in beast or beast_irreg)
+
+where trend is a piecewise linear or polynomial function with an unknown number of trend changepoints to be
+nferred; seasonal is a piecewise periodic function with an unknown number of seasonal changepoints to be 
+inferred; and the outlier component refers to potential anomalous spikes or dips at isolated data points and
+is included only if hasOutlier=True (in beast or beast_irreg) or metadata.hasOutlierCmpnt=True (in beast123) 
 ######################################################################################################
 
 --------------------------------------------------------------------------------------------------  
@@ -158,13 +160,14 @@ tseg_rightmargin:
          tseg_rightmargin must be an unitless integer–the number of time intervals/data points so that the
          time window in the original unit is tseg_rightmargin*deltat.
 s_complexfct:
-          Numeric (defaulted to 0.0); a hyperprior parameter--newly added in Version 1.02--controlling the complexity of
-          the seasonal curve (i.e., the number of seasonal changepoints). A prior of the form  p(k) ~ exp[lambda*(k+1)] 
-          is placed on the number of seasonal changepoints k, where lambda is seasonComplexityFactor (i.e.,s_complexfct:). 
-          Setting lambda = 0 (i.e., s_complexfct=0)  yields a non-informative prior p(k) ~ 1.0  where all model dimensions
-          are equally likely a priori. Users may tune seasonComplexityFactor or s_complexfct: in the range of [-20, 20]} or an
-          even wider range: negative values (e.g., lambda = -15.9) favor fewer changepoints (simpler seasonal curves), whereas 
-          positive values (e.g.,  ambda = 5.76) favor more changepoints (more complex curves).
+          Numeric (defaulted to 0.0); a hyperprior parameter--newly added in Version 0.1.24--controlling the complexity of
+          the seasonal curve (i.e., the model dimension or the number of seasonal changepoints). A prior of the form 
+          "p(k) ~ exp[lambda*(k+1)]" is placed on the number of seasonal changepoints k, where lambda is s_complexfct 
+          (i.e., prior.seasonComplexityFactor in the beast123() function). Setting lambda = 0 (i.e., s_complexfct=0) yields 
+          a non-informative prior "p(k) ~ 1.0" where all model dimensions are equally likely a priori. Users may tune s_complexfct
+          (for beast and beast_irreg)  or seasonComplexityFactor (for beast123) in the range of [-20, 20]} or an
+          even wider range: Negative values (e.g., lambda = -15.9) favor fewer changepoints (simpler seasonal curves), whereas 
+          positive values (e.g., lambda = 5.76) favor more changepoints (more complex curves).
 t_complexfct: 
           Numeric (defaulted to 0.0); analogous to s_complexfct, but for the trend component and the number of trend changepoints.
 method: 
@@ -341,23 +344,23 @@ Contact info: To report bug or get help, do not hesitate to contact Kaiguang Zha
 at zhao.1423@osu.edu.
       """
       
-      Y = force_convert_to_numpy(Y)
+      Y = force_convert_to_numpy_ndarray(Y)
       
       if hasattr(time, "year"):
-            time.year = force_convert_to_numpy(time.year)
+            time.year = force_convert_to_numpy_ndarray(time.year)
             if hasattr(time, "month"):
-                time.month = force_convert_to_numpy(time.month)
+                time.month = force_convert_to_numpy_ndarray(time.month)
             if hasattr(time, "day" ):
-                time.day   = force_convert_to_numpy(time.day)   
+                time.day   = force_convert_to_numpy_ndarray(time.day)   
             if hasattr(time, "doy"):
-                time.doy   = force_convert_to_numpy(time.doy)   
+                time.doy   = force_convert_to_numpy_ndarray(time.doy)   
       elif hasattr(time,'datestr'):
-           time.datestr   = force_convert_to_numpy(time.datestr)       
+           time.datestr   = force_convert_to_numpy_ndarray(time.datestr)       
       elif hasattr(time,'dateStr'):
-           time.dateStr   = force_convert_to_numpy(time.dateStr)  
+           time.dateStr   = force_convert_to_numpy_ndarray(time.dateStr)  
            pass
       else: #then, we assume time is a numerical vector
-           time = force_convert_to_numpy(time) 
+           time = force_convert_to_numpy_ndarray(time) 
                 
      #......Start of displaying 'MetaData' ......
       metadata = lambda: None   ###Just get an empty object###

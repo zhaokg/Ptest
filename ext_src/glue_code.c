@@ -146,7 +146,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 		BEAST2_OPTIONS      option = { {{0,},}, }; 
 	
 		#if P_INTERFACE ==1
-			// Covert the second arg into a Numpy Array. the pointer returend
+			// Convert the second arg into a Numpy Array. the pointer returend
 			// is a new ref that MUST be dec-refed at the end
 			prhs[1] = CvtToPyArray_NewRef(prhs[1]);
 		#endif
@@ -592,7 +592,7 @@ void * mainFunction(void *prhs[], int nrhs) {
 		#endif	
 
 	}
-	#if !defined(R_RELEASE) &&  !defined(M_RELEASE) &&  !defined(P_RELEASE)
+	#if !defined(R_RELEASE) &&  !defined(M_RELEASE) &&  !defined(P_RELEASE) 
 	else if  (__IS_STRING_EQUAL(algorithm, "mrbeast"))
 	{
 		MV_OPTIONS         option;
