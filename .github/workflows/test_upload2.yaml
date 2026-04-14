@@ -39,7 +39,7 @@ jobs:
           
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [ build_sdist, build_wheels_win]
+    needs: [ build_sdist]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     if: ${{ github.event.inputs.should_upload   == 'YES' }} 
