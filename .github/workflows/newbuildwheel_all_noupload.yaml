@@ -90,6 +90,6 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1    
         with:
           user: __token__  # zhaokg
-          password: ${{ secrets.PYPI_PASSWORD }} 
+          password: ${{ secrets.TEST_PYPI_ORG_PASSWORD }} 
           repository_url: https://test.pypi.org/legacy/
           
