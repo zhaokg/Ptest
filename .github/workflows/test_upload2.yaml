@@ -1,0 +1,49 @@
+name: Test_PyPI_Upload2
+#on: [push, pull_request]
+#on: [workflow_dispatch]  # manual tigger
+on:
+  workflow_dispatch:
+    inputs:
+      should_upload:
+        description: 'Upload to PyPI'
+        required: true
+        default: 'NO'
+        type: choice
+        options:
+          - NO
+          - YES
+
+jobs:
+
+############################################################################
+#    Build Sdist
+############################################################################
+  build_sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6      # downloads your code from your GitHub repository onto the runner      
+      - uses: actions/setup-python@v6
+ 
+      - name: Check metadata
+        run: "python setup.py check"
+      - name: Build sdist
+        run: "python setup.py sdist && ls -l dist"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist_artifact       # if missing, the default name is artifact
+          path: ./dist/*.tar.gz
+ 
+      
+          
+  upload_pypi:
+    name: Upload to PyPI (prod)
+    needs: [ build_sdist, build_wheels_win]
+    runs-on: ubuntu-22.04
+    #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    if: ${{ github.event.inputs.should_upload   == 'YES' }} 
+    steps:
+      - name: Check metadata
+        run: "dir *"
+ 
