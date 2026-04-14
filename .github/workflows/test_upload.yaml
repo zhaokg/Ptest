@@ -1,6 +1,6 @@
-name: NewBuildAll
+name: Test_PyPI_Upload
 #on: [push, pull_request]
-on: [workflow_dispatch]  # manual tigger
+on: [workflow_dispatch]    # manual tigger
 
 
 jobs:
@@ -22,6 +22,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: sdist_artifact       # if missing, the default name is artifact
           path: ./dist/*.tar.gz
           
 ############################################################################
@@ -51,48 +52,32 @@ jobs:
       - uses: pypa/cibuildwheel@v2.16.5
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*        
-   
-
-      # 2. Second Build Pass: Modern Versions (cp39-cp314)
-      - name: Install Python (Legacy)
-        uses: actions/setup-python@v6
-        with:
-             python-version: '3.14'
-             
-      - run:  copy  pyproject_np1.19.3_miw39.toml  pyproject_NotUsed.toml 
-      - uses: pypa/cibuildwheel@v3.4.1
-        env:             
-             CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp39-* cp310-* cp311-*  cp312-*  cp313-*  cp314-*
-             #CIBW_ARCHS_MACOS:    x86_64 arm64   
-             #CIBW_BEFORE_BUILD: cp pyproject_np1.17.3_miw3738.toml pyproject.toml             
+             CIBW_BUILD:   cp310-*         #cp311-*         
             
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-windows       # Add this        
           path: ./wheelhouse/*.whl
-
- 
-          
+      
           
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [ build_wheels_win]
+    needs: [ build_sdist, build_wheels_win]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-windows
+          #name: wheels-windows
           path: dist          
-          #pattern: '*'       # Grabs all unique artifacts (wheels + sdist)
-          #merge-multiple: true # Flattens them all into the 'dist' folder          
+          pattern: '*'         # Grabs all unique artifacts (wheels + sdist)
+          merge-multiple: true # Flattens them all into the 'dist' folder          
 
       #- uses: pypa/gh-action-pypi-publish@v1.5.0
       - uses: pypa/gh-action-pypi-publish@release/v1    
         with:
           user: __token__  # zhaokg
-          password: ${{ secrets.PYPI_PASSWORD }} 
+          #password: ${{ secrets.PYPI_PASSWORD }} 
+          password: ${{ secrets.TEST_PYPI_ORG_PASSWORD }} 
           repository_url: https://test.pypi.org/legacy/
           
