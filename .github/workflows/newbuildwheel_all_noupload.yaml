@@ -69,8 +69,7 @@ jobs:
           name: wheels-windows       # Add this        
           path: ./wheelhouse/*.whl
 
- 
-          
+    
           
   upload_pypi:
     name: Upload to PyPI (prod)
@@ -90,6 +89,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1    
         with:
           user: __token__  # zhaokg
+          #password: ${{ secrets.PYPI_PASSWORD }}            # The official PyPI site
           password: ${{ secrets.TEST_PYPI_ORG_PASSWORD }} 
           repository_url: https://test.pypi.org/legacy/
           
