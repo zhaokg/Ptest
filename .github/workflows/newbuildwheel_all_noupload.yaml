@@ -7,11 +7,11 @@ on:
       upload_flag:
         description: 'Upload to PyPI'
         required: true
-        default: 'no'
+        default: 'noxx'
         type: choice
         options:
-          - no
-          - yes
+          - noxx
+          - yesxx
 
 jobs:
 
