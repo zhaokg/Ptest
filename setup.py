@@ -66,13 +66,21 @@ packages = find_packages( include = ['Rbeast'],exclude=['Rbeast.src'] )
 packages = find_namespace_packages( where='./py_src', exclude=['build','tests','extension_src'])
 # print(packages)
 
+# - this is the DISTRUBTION NAME not the IMPORT NAME
+# PyPI requiers the normalized lowecase name. For some reason,
+# cibuildwhell v2.xx always generates a uppercase name if name = "Rbeast"
+# As as workaround, we explictly set the distrubtion name to the lowercase for CP2.7
+pkgname = 'Rbeast'
+if sys.version_info[0] == 3  and sys.version_info[1] == 37:
+   pkgname = 'rbeast'
+
 setup(
 
     #name             = "rbeast",   
     # - this is the DISTRUBTION NAME not the IMPORT NAME
     # - PyPI enforces PEP 503 normalization, which means it treats Rbeast and rbeast as the same project,
     # - but it requires the uploaded files to strictly follow the lowercase naming convention.
-    name             = "Rbeast",    
+    name             = pkgname,    
     version          = '0.1.25',
     description      = "Bayesian changepoint detection and time series decomposition",
     author           = "Kaiguang Zhao",
