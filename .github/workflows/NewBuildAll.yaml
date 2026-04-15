@@ -29,7 +29,7 @@ jobs:
         run: "python setup.py check"
       - name: Build sdist
         #run: "python setup.py sdist && ls -l dist"  # Generate uppercase filename not accepted by PyPI
-        run "pip install build && python -m build --sdist" 
+        run: "pip install build && python -m build --sdist" 
 
       - uses: actions/upload-artifact@v4
         with:
