@@ -7,7 +7,7 @@ on:
       should_upload:
         description: 'Upload to PyPI'
         required: true
-        default: 'NO'
+        default: "NO"
         type: choice
         options:
           - "NO"
