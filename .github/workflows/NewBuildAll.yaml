@@ -11,7 +11,8 @@ on:
         type: choice
         options:
           - 'NO'
-          - 'YES'
+          - 'PyPI.ORG'
+          - 'TEST.PyPI.ORG'
 
 jobs:
 
@@ -60,14 +61,13 @@ jobs:
              python-version: '3.10'
  
       - run:  copy  pyproject_np1.17.3_miw3738.toml  pyproject_NotUsed.toml
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.23.4
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp37-*  cp38-*  cp39-* cp310-*       
-   
+             CIBW_BUILD:   cp37-* 
 
       # 2. Second Build Pass: Modern Versions (cp39-cp314)
-      - name: Install Python (Legacy)
+      - name: Install Python  
         uses: actions/setup-python@v6
         with:
              python-version: '3.14'
@@ -76,13 +76,13 @@ jobs:
       - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp311-*  cp312-*  cp313-*  cp314-*
+             CIBW_BUILD:   cp38-*  cp39-* cp310-*  cp311-*  cp312-*  cp313-*  cp314-*
              #CIBW_ARCHS_MACOS:    x86_64 arm64   
              #CIBW_BEFORE_BUILD: cp pyproject_np1.17.3_miw3738.toml pyproject.toml             
             
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-windows       # Add this        
+          name: wheels-windows        # if missing, the default name is artifact    
           path: ./wheelhouse/*.whl
 
 ############################################################################
@@ -112,7 +112,7 @@ jobs:
       - uses: pypa/cibuildwheel@v3.4.1
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
-             CIBW_BUILD:   cp38-*   cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*      # cp37-*  (not supported by v3 and only by v2)
+             CIBW_BUILD:   cp38-*  cp39-*  cp310-* cp311-*  cp312-*   cp313-*   cp314-*      # cp37-*  (not supported by v3 and only by v2)
               
       - uses: actions/upload-artifact@v4
         with:
@@ -256,7 +256,7 @@ jobs:
     needs: [ merge_artifacts ]
     runs-on: ubuntu-22.04
     #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
-    if: ${{ github.event.inputs.should_upload == 'YES' }} 
+    if: ${{ github.event.inputs.should_upload == 'PyPI.ORG' }} 
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -287,3 +287,44 @@ jobs:
           #password: ${{ secrets.TEST_PYPI_ORG_PASSWORD }} 
           #repository_url: https://test.pypi.org/legacy/
           
+          
+ ############################################################################
+#   Upload the wheels into PyPI
+############################################################################          
+  upload_pypi_test:
+    name:   Upload to TEST.PyPI  
+    needs: [ merge_artifacts ]
+    runs-on: ubuntu-22.04
+    #if: github.repository == 'tornadoweb/tornado' && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    if: ${{ github.event.inputs.should_upload == 'TEST.PyPI.ORG' }} 
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: all-build-artifacts 
+          path: dist          
+          #pattern: '*'         # Grabs all unique artifacts (wheels + sdist)
+          #merge-multiple: true # Flattens them all into the 'dist' folder          
+
+      # --- Make sure all files name are in lowercase because PyPI's normalization rules--
+      # Use tr (translate) command to convert all uppercase letters to lowercase
+      - name: Rename artifacts to lowercase
+        run: |
+          cd dist
+          for f in *; do
+            lowercased=$(echo "$f" | tr '[:upper:]' '[:lower:]')
+            if [ "$f" != "$lowercased" ]; then
+              mv "$f" "$lowercased"
+              echo "Renamed: $f -> $lowercased"
+            fi
+          done
+          
+      #- uses: pypa/gh-action-pypi-publish@v1.5.0
+      - uses: pypa/gh-action-pypi-publish@release/v1    
+        with:
+          user:     __token__  # zhaokg
+          #password: ${{secrets.PYPI_PASSWORD}} 
+          # The next two lines are for uploading to test.pypi
+          password: ${{ secrets.TEST_PYPI_ORG_PASSWORD }} 
+          repository_url: https://test.pypi.org/legacy/
+                             - 
+ 
