@@ -261,7 +261,7 @@ jobs:
         with:
           name: all-build-artifacts 
           path: dist          
-          #pattern: '*'       # Grabs all unique artifacts (wheels + sdist)
+          #pattern: '*'         # Grabs all unique artifacts (wheels + sdist)
           #merge-multiple: true # Flattens them all into the 'dist' folder          
 
       # --- Make sure all files name are in lowercase because PyPI's normalization rules--
