@@ -64,16 +64,7 @@ jobs:
         env:             
              CIBW_ARCHS:   ${{env.arch}}   #all, native AMD64 x86 ARM64
              CIBW_BUILD:   cp37-*    
-   
 
-      # 2. Second Build Pass: Modern Versions (cp39-cp314)
-      - name: Install Python (Legacy)
-        uses: actions/setup-python@v6
-        with:
-             python-version: '3.14'
-             
-            
-            
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-windows       # Add this        

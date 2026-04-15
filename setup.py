@@ -71,7 +71,7 @@ packages = find_namespace_packages( where='./py_src', exclude=['build','tests','
 # cibuildwhell v2.xx always generates a uppercase name if name = "Rbeast"
 # As as workaround, we explictly set the distrubtion name to the lowercase for CP2.7
 pkgname = 'Rbeast'
-if sys.version_info[0] == 3  and sys.version_info[1] == 37:
+if sys.version_info[0] == 3  and sys.version_info[1] == 7:
    pkgname = 'rbeast'
 
 setup(
